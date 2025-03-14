@@ -1,0 +1,147 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(34, 34, 34, 0.87);
+  background-color: #ffffff;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+h1 {
+  font-size: 2.5em;
+  line-height: 1.0;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #646cff;
+  cursor: pointer;
+  color: #ffffff;
+  
+  transition: box-shadow ease 0.3s;
+}
+button:hover {
+  box-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.197);
+  transition: box-shadow ease 0.3s;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  /* dark theme */
+}
+
+.navbar {
+  display: flex;
+  height: 50px;
+  width: 100%;
+  background-color: #646cff;
+  padding: 5px 15px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-link-container {
+  display: flex;
+  gap: 12px;
+}
+
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  height: 100%;
+}
+
+.file-selection-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+
+  width: 50vw;
+  min-height: 30vh;
+  
+  background-color: #f6fafe;
+  
+  border: 2px dashed #bfdaf4;
+  border-radius: 8px;
+}
+
+.file-selection-area.dragged-over {
+  background-color: #aacbed;
+}
+
+.hint {
+  font-size: 0.75em;
+  color: rgba(0, 0, 0, 0.523), 0, 0;
+}
+
+.content-container {
+  padding: 10px;
+}
+
+.file-preparation-area {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  width: 50vw;
+  min-height: 30vh;
+}
+
+.selected-files {
+  background-color: #f6fafe;
+  border: 2px solid #bfdaf4;
+  border-radius: 8px;
+}
+
+.selected-file {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.088);
+}
+
+.selected-file-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.selected-file-extension-select {
+  height: 30px;
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.088);
+}
