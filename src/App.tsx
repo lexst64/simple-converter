@@ -1,17 +1,22 @@
-import Navbar from './components/common/Navbar'
+import Navbar from './components/common/navbar/Navbar'
 import { Routes, Route } from 'react-router'
 import Home from './components/home/Home'
-import ContentContainer from './components/common/ContentContainer'
+import OuterContainer from './components/common/OuterContainer'
+import StatusBar from './components/common/statusbar/StatusBar'
+import StatusProvider from './context/StatusProvider'
 
 export default function App() {
   return (
     <>
       <Navbar />
-      <ContentContainer>
-        <Routes>
-          <Route index element={<Home />} />
-        </Routes>
-      </ContentContainer>
+      <StatusProvider>
+        <OuterContainer>
+          <Routes>
+            <Route index element={<Home />} />
+          </Routes>
+          <StatusBar />
+        </OuterContainer>
+      </StatusProvider>
     </>
   )
 }
