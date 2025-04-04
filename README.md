@@ -1,3 +1,3 @@
 # Simple Converter
 
-Simple Converter is a online video, audio and image converter.
+Simple Converter is an online video, audio and image converter.
