@@ -1,7 +1,6 @@
-import { ReactNode } from "react";
-import { StatusMessageLevel } from "../../../types";
-import IconButton from "../IconButton";
-
+import { ReactNode } from 'react';
+import { StatusMessageLevel } from '../../../types';
+import IconButton from '../IconButton';
 
 interface MessageProps {
     level: StatusMessageLevel;
@@ -16,5 +15,5 @@ export default function Message({ children, level = 'info', onClose }: MessagePr
             {children}
             <IconButton onClick={onClose}>close</IconButton>
         </div>
-    )
+    );
 }

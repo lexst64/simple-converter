@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react';
 
 interface UploadButtonProps extends React.HTMLAttributes<HTMLLabelElement> {
-    onFileChange: React.ChangeEventHandler<HTMLInputElement>
+    onFileChange: React.ChangeEventHandler<HTMLInputElement>;
 }
 
 export default function FileSelectButton({ onFileChange, children, className }: UploadButtonProps) {
@@ -10,5 +10,5 @@ export default function FileSelectButton({ onFileChange, children, className }: 
             <input id="file" type="file" onChange={onFileChange} />
             {children}
         </label>
-    )
+    );
 }

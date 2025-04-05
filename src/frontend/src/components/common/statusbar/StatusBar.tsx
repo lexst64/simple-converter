@@ -1,5 +1,5 @@
-import Message from "./Message"
-import { useStatus } from "../../../hooks/Status"
+import Message from './Message';
+import { useStatus } from '../../../hooks/Status';
 
 export default function StatusBar() {
     const { messages, deleteMessage } = useStatus();
@@ -12,5 +12,5 @@ export default function StatusBar() {
                 </Message>
             ))}
         </div>
-    )
+    );
 }
