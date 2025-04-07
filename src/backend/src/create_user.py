@@ -1,5 +1,4 @@
-from sqlmodel import Session, create_engine, select
-
+from sqlmodel import create_engine, Session
 from db_models import User
 
 sqlite_file_name = 'database.db'
@@ -12,6 +11,5 @@ connect_args = {'check_same_thread': False}
 
 engine = create_engine(sqlite_url, connect_args=connect_args)
 with Session(engine) as session:
-    statement = select(User).where(User.email == 'email')
-    res = session.exec(statement)
-    print(res.one())
+    session.add(User(email='email', name='Joe'))
+    session.commit()
