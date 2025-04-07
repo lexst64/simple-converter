@@ -4,7 +4,11 @@ version = "0.1.0"
 description = "Simple converter server-side application"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "aiofiles>=24.1.0",
+    "fastapi[standard]>=0.115.12",
+    "sqlmodel>=0.0.24",
+]
 
 [dependency-groups]
 dev = [

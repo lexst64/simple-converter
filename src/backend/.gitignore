@@ -177,3 +177,6 @@ cython_debug/
 .vscode/
 *.ogg
 *.ts
+input_files/
+output_files/
+database.db
