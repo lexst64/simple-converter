@@ -1,15 +1,22 @@
-const BASE_URL = 'https://api.simpleconverter.lexst64.com/fileupload';
+import { APIException } from './exceptions';
+import { APIResponse } from './types';
 
-class APIException extends Error {}
+const BASE_URL = 'https://api.simpleconverter.lexst64.com/v1/fileupload';
 
-interface FileUploadResponse {
-    ok: boolean;
+export interface FileUploadData {
+    fileId: string;
 }
 
+/**
+ * Uploads a file to the server.
+ *
+ * @throws {APIException} if an error occured during file uploading or getting response from API.
+ */
+// TODO: implement API services
 export default async function uploadFile(
     file: File,
     uploadSessionKey: string,
-): Promise<FileUploadResponse> {
+): Promise<APIResponse<FileUploadData>> {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -19,7 +26,7 @@ export default async function uploadFile(
             body: formData,
         });
         const data = await res.json();
-        return { ok: data.ok } satisfies FileUploadResponse;
+        return data as APIResponse<FileUploadData>;
     } catch (err) {
         throw new APIException((err as Error).message);
     }

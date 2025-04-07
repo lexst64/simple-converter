@@ -7,12 +7,23 @@ import { MAX_FILE_SIZE, SUPPORTED_FORMATS } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
 
+/**
+ * Represents the status of the user selected files.
+ * - 'pending': File is ready to be uploaded.
+ * - 'uploading': File is being uploaded to the server.
+ * - 'converting': File is being converted on the server.
+ * - 'ready': File has been converted and ready to be downloaded from the server.
+ * - 'failed': An error occured.
+ */
+type FileStatus = 'pending' | 'uploading' | 'converting' | 'ready' | 'failed';
+
 export interface FileHolder {
     id: string;
     file: File;
     inFormat: string;
     outFormat: string;
     isValid: boolean;
+    status: FileStatus;
 
     errorMessage?: string;
 }
@@ -22,6 +33,16 @@ export default function FileConverter() {
     const [isUploading, setIsUploading] = useState<boolean>(false);
 
     const { pushMessage } = useStatus();
+
+    const updateFileStatus = (id: string, status: FileStatus) => {
+        const fh = fileHolders.find(item => item.id === id);
+
+        if (!fh) {
+            throw new Error(`file holder with id ${id} not found`);
+        }
+
+        setFileHolders([...fileHolders.filter(item => item.id !== id), { ...fh, status }]);
+    };
 
     const setFiles = (files: File[]) => {
         const newSelectedFiles: FileHolder[] = files.map(file => {
@@ -45,6 +66,7 @@ export default function FileConverter() {
                 inFormat: inFormat,
                 isValid: isValid,
                 outFormat: '',
+                status: 'pending',
                 errorMessage: errorMessage,
             } satisfies FileHolder;
         });
@@ -73,17 +95,27 @@ export default function FileConverter() {
         }
     };
 
+    // TODO: implement the full file convertation process
     const handleConvert = () => {
         if (fileHolders.filter(fh => !fh.isValid).length > 0) {
-            pushMessage({
-                id: crypto.randomUUID(),
-                content: 'There are invalid files. Remove them first before converting.',
-                level: 'error',
-            });
+            pushMessage('There are invalid files. Remove them first before converting.', 'error');
         } else {
             setIsUploading(true);
-            fileHolders.forEach(fh => {
-                uploadFile(fh.file, '');
+
+            fileHolders.forEach(async fh => {
+                updateFileStatus(fh.id, 'uploading');
+                const uploadResponse = await uploadFile(fh.file, '');
+
+                if (uploadResponse.status !== 'success') {
+                    pushMessage(
+                        `Failed uploading ${fh.file.name}. Reason: ${uploadResponse.message}`,
+                        'error',
+                    );
+                    updateFileStatus(fh.id, 'failed');
+                    return;
+                }
+
+                updateFileStatus(fh.id, 'converting');
             });
         }
     };
@@ -92,7 +124,6 @@ export default function FileConverter() {
         return (
             <div className="file-converter">
                 <FilePreparationArea
-                    isUploading={isUploading}
                     fileHolders={fileHolders}
                     onFileFormatChange={handleFileFormatChange}
                     onFileRemove={handleFileRemove}
@@ -104,11 +135,13 @@ export default function FileConverter() {
                     style={{ width: '100%' }}
                     onClick={handleConvert}
                 >
-                    {isUploading ? 'Uploading...' : 'Convert'}
+                    {isUploading ? 'Converting...' : 'Convert'}
                 </button>
-                <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
-                    Select more
-                </FileSelectButton>
+                {!isUploading && (
+                    <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
+                        Select more
+                    </FileSelectButton>
+                )}
             </div>
         );
     } else if (fileHolders.length === 0) {
