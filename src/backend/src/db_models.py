@@ -1,4 +1,9 @@
+from typing import Literal
+import uuid
+
+from sqlalchemy import String
 from sqlmodel import Field, SQLModel
+from uuid_extensions import uuid7
 
 
 class User(SQLModel, table=True):
@@ -7,10 +12,17 @@ class User(SQLModel, table=True):
     name: str = Field()
 
 
-class InputFile(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    uuid: str = Field(index=True)
-    user_id: int | None = Field(default=None, foreign_key='user.id')
+class FileUpload(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
+    filename: str
+    output_format: str
+    size: int
+    is_uploaded: bool
+
+
+class FileConversion(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
+    status: Literal['converting', 'failed', 'ready'] = Field(sa_type=String)
 
 
 if __name__ == '__main__':
@@ -20,3 +32,4 @@ if __name__ == '__main__':
     sqlite_url = f'sqlite:///{sqlite_file_name}'
 
     engine = create_engine(sqlite_url, echo=True)
+    SQLModel.metadata.create_all(engine)

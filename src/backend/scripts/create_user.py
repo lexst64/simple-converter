@@ -1,4 +1,5 @@
-from sqlmodel import create_engine, Session
+from sqlmodel import Session, create_engine
+
 from db_models import User
 
 sqlite_file_name = 'database.db'

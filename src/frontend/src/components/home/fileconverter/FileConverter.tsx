@@ -6,6 +6,7 @@ import FileSelectionArea from './FileSelectionArea';
 import { MAX_FILE_SIZE, SUPPORTED_FORMATS } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
+import convertFile from '../../../services/fileconvert.service';
 
 /**
  * Represents the status of the user selected files.
@@ -104,7 +105,7 @@ export default function FileConverter() {
 
             fileHolders.forEach(async fh => {
                 updateFileStatus(fh.id, 'uploading');
-                const uploadResponse = await uploadFile(fh.file, '');
+                const uploadResponse = await uploadFile(fh.file);
 
                 if (uploadResponse.status !== 'success') {
                     pushMessage(
@@ -116,6 +117,7 @@ export default function FileConverter() {
                 }
 
                 updateFileStatus(fh.id, 'converting');
+                const convertResponse = await convertFile(uploadResponse.data.fileId);
             });
         }
     };
