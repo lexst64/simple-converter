@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Literal
+from db_models import FileConversionStatus
 
 from pydantic import BaseModel, Field
 
@@ -31,3 +32,6 @@ class FileUploadRequestData(BaseModel):
 
 class FileConversionRequestData(BaseModel):
     fileConversionId: str
+
+class FileConversionStatusData(BaseModel):
+    status: FileConversionStatus

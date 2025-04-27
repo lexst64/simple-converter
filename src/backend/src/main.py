@@ -11,7 +11,13 @@ from sqlmodel import Session, create_engine
 
 from db_models import FileConversion, FileUpload
 from requests import FileConversionRequest, FileUploadRequest
-from responses import FileConversionRequestData, FileUploadData, FileUploadRequestData, Response
+from responses import (
+    FileConversionRequestData,
+    FileConversionStatusData,
+    FileUploadData,
+    FileUploadRequestData,
+    Response,
+)
 
 MAX_FILE_SIZE = 1_073_741_824  # in bytes
 SUPPORTED_FORMATS = {'mp3', 'flac', 'ogg', 'aac', 'alac'}
@@ -161,6 +167,20 @@ async def request_conversion(
 
     return Response[FileConversionRequestData](
         data=FileConversionRequestData(fileConversionId=str(file_conversion_model.id)),
+        message='',
+    )
+
+
+@app.get('/v1/conversion/status/{file_conversion_id}', status_code=status.HTTP_200_OK)
+async def check_conversion_status(
+    file_conversion_id: Annotated[str, Path()], db_session: DBSessionDep
+) -> Response[FileConversionStatusData]:
+    file_conversion_model = db_session.get(FileConversion, uuid.UUID(file_conversion_id))
+    if file_conversion_model is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_conversion_id not found')
+
+    return Response[FileConversionStatusData](
+        data=FileConversionStatusData(status=file_conversion_model.status),
         message='',
     )
 

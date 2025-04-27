@@ -1,9 +1,11 @@
-from typing import Literal
 import uuid
+from typing import Literal
 
 from sqlalchemy import String
 from sqlmodel import Field, SQLModel
 from uuid_extensions import uuid7
+
+type FileConversionStatus = Literal['converting', 'failed', 'ready']
 
 
 class User(SQLModel, table=True):
@@ -22,7 +24,7 @@ class FileUpload(SQLModel, table=True):
 
 class FileConversion(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
-    status: Literal['converting', 'failed', 'ready'] = Field(sa_type=String)
+    status: FileConversionStatus = Field(sa_type=String)
 
 
 if __name__ == '__main__':
