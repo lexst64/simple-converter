@@ -2,6 +2,7 @@ import { DragEvent } from 'react';
 import FileDropArea from '../../common/FileDropArea';
 import { FileHolder } from './FileConverter';
 import SelectedFile from './SelectedFiles';
+import { FixedSizeList } from 'react-window';
 
 interface FilePreparationAreaProps {
     fileHolders: FileHolder[];
@@ -26,18 +27,25 @@ export default function FilePreparationArea({
         <div className="file-preparation-area">
             <FileDropArea onDrop={handleFileDrop}>
                 <div className="selected-files-container">
-                    {fileHolders.map(fh => {
-                        return (
+                    <FixedSizeList
+                        className="no-scrollbar"
+                        height={300}
+                        width={'100%'}
+                        itemCount={fileHolders.length}
+                        itemSize={60}
+                        itemKey={index => fileHolders[index].id}
+                    >
+                        {({ index, style }) => (
                             <SelectedFile
-                                key={fh.id}
-                                fileHolder={fh}
-                                onFileRemove={() => onFileRemove(fh.id)}
+                                style={style}
+                                fileHolder={fileHolders[index]}
+                                onFileRemove={() => onFileRemove(fileHolders[index].id)}
                                 onFileFormatChange={newFormat =>
-                                    onFileFormatChange(fh.id, newFormat)
+                                    onFileFormatChange(fileHolders[index].id, newFormat)
                                 }
                             />
-                        );
-                    })}
+                        )}
+                    </FixedSizeList>
                 </div>
             </FileDropArea>
         </div>
