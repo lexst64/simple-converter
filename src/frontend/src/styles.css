@@ -262,11 +262,9 @@ input[type='file'] {
     border: 2px solid #bfdaf4;
     border-radius: 8px;
     overflow: hidden;
-    min-height: 200px;
 }
 
 .selected-file {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -366,6 +364,14 @@ input[type='file'] {
 
 .status-bar-message.error {
     background-color: rgb(243, 194, 181);
+}
+
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
 }
 
 /* media queries */

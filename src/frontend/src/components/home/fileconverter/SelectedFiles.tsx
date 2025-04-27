@@ -6,11 +6,14 @@ import { FileHolder } from './FileConverter';
 interface SelectedFileProps {
     fileHolder: FileHolder;
 
+    style?: React.CSSProperties;
+
     onFileFormatChange: (newFormat: string) => void;
     onFileRemove: () => void;
 }
 
 export default function SelectedFile({
+    style,
     fileHolder,
     onFileFormatChange,
     onFileRemove,
@@ -21,6 +24,7 @@ export default function SelectedFile({
                 <span>Output: </span>
                 <select
                     className="selected-file-extension-select"
+                    value={fileHolder.outFormat}
                     onChange={ev => onFileFormatChange(ev.target.value)}
                 >
                     {/* default empty option */}
@@ -39,17 +43,17 @@ export default function SelectedFile({
 
     if (fileHolder.isValid) {
         return (
-            <div className="selected-file">
+            <li className="selected-file" style={style}>
                 <div className="selected-file-meta">
                     <span>{truncateMiddle(fileHolder.file.name, 40)}</span>
                     <span>{toHumanReadable(fileHolder.file.size)}</span>
                 </div>
                 {fileHolder.status === 'pending' ? selectedFilesControls : fileHolder.status}
-            </div>
+            </li>
         );
     } else {
         return (
-            <div className="selected-file invalid">
+            <li className="selected-file invalid" style={style}>
                 <div className="selected-file-meta">
                     <span>{truncateMiddle(fileHolder.file.name, 40)}</span>
                     <span>{toHumanReadable(fileHolder.file.size)}</span>
@@ -58,7 +62,7 @@ export default function SelectedFile({
                     {fileHolder.errorMessage || 'Invalid file'}
                     <IconButton onClick={onFileRemove}>delete</IconButton>
                 </div>
-            </div>
+            </li>
         );
     }
 }
