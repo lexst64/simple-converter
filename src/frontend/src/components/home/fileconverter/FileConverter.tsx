@@ -3,7 +3,7 @@ import { toHumanReadable } from '../../../utils';
 import uploadFile from '../../../services/fileupload.service';
 import FilePreparationArea from './FilePreparationArea';
 import FileSelectionArea from './FileSelectionArea';
-import { MAX_FILE_SIZE, SUPPORTED_FORMATS } from '../../../constants';
+import { MAX_FILE_SIZE, STATUS_POLLING_INTERVAL, SUPPORTED_FORMATS } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
 import { convertFile, checkConversionStatus } from '../../../services/fileconvert.service';
@@ -103,40 +103,55 @@ export default function FileConverter() {
     const handleConvert = () => {
         if (fileHolders.filter(fh => !fh.isValid).length > 0) {
             pushMessage('There are invalid files. Remove them first before converting.', 'error');
-        } else {
-            setIsUploading(true);
-            fileHolders.forEach(async fh => {
+            return;
+        }
+
+        setIsUploading(true);
+        fileHolders.forEach(async fh => {
+            let fileConversionId;
+            try {
+                updateFileStatus(fh.id, 'uploading');
+                const fileUploadId = await uploadFile(fh.file, fh.outFormat);
+                updateFileStatus(fh.id, 'converting');
+                fileConversionId = await convertFile(fileUploadId);
+            } catch (err) {
+                pushMessage(
+                    `Failed uploading ${fh.file.name}. Reason: ${(err as APIException).message}`,
+                    'error',
+                );
+                updateFileStatus(fh.id, 'failed');
+                return;
+            }
+
+            const intervalId = setInterval(async () => {
+                let status;
                 try {
-                    updateFileStatus(fh.id, 'uploading');
-                    const fileUploadId = await uploadFile(fh.file, fh.outFormat);
-                    updateFileStatus(fh.id, 'converting');
-                    const fileConversionId = await convertFile(fileUploadId);
-                    const intervalId = setInterval(async () => {
-                        const status = await checkConversionStatus(fileConversionId);
-                        switch (status) {
-                            case 'converting':
-                                break;
-                            case 'failed':
-                                pushMessage(`Failed converting ${fh.file.name}.`, 'error');
-                                updateFileStatus(fh.id, 'failed');
-                                clearInterval(intervalId);
-                                break;
-                            case 'ready':
-                                updateFileStatus(fh.id, 'ready');
-                                clearInterval(intervalId);
-                                break;
-                        }
-                    }, 1000);
+                    status = await checkConversionStatus(fileConversionId);
                 } catch (err) {
                     pushMessage(
                         `Failed uploading ${fh.file.name}. Reason: ${(err as APIException).message}`,
                         'error',
                     );
                     updateFileStatus(fh.id, 'failed');
+                    clearInterval(intervalId);
                     return;
                 }
-            });
-        }
+
+                switch (status) {
+                    case 'converting':
+                        break;
+                    case 'failed':
+                        pushMessage(`Failed converting ${fh.file.name}.`, 'error');
+                        updateFileStatus(fh.id, 'failed');
+                        clearInterval(intervalId);
+                        break;
+                    case 'ready':
+                        updateFileStatus(fh.id, 'ready');
+                        clearInterval(intervalId);
+                        break;
+                }
+            }, STATUS_POLLING_INTERVAL);
+        });
     };
 
     if (fileHolders.length > 0) {
@@ -163,13 +178,11 @@ export default function FileConverter() {
                 )}
             </div>
         );
-    } else if (fileHolders.length === 0) {
+    } else {
         return (
             <div className="file-converter">
                 <FileSelectionArea onFileSelect={setFiles} />
             </div>
         );
-    } else {
-        return <div></div>;
     }
 }
