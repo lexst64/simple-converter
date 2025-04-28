@@ -101,8 +101,15 @@ export default function FileConverter() {
     };
 
     const handleConvert = () => {
-        if (fileHolders.filter(fh => !fh.isValid).length > 0) {
+        if (fileHolders.find(fh => !fh.isValid)) {
             pushMessage('There are invalid files. Remove them first before converting.', 'error');
+            return;
+        }
+        if (fileHolders.find(fh => fh.outFormat === '')) {
+            pushMessage(
+                'Please select an output format for all the files to proceed with conversion.',
+                'error',
+            );
             return;
         }
 
