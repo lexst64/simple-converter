@@ -78,16 +78,26 @@ export default function FileConverter() {
         setFileHolders([...fileHolders, ...newSelectedFiles]);
     };
 
-    const handleFileFormatChange = (fileHolderId: string, newFormat: string) => {
-        setFileHolders(
-            fileHolders.map(fh => {
-                if (fh.id == fileHolderId) {
-                    return { ...fh, outFormat: newFormat };
-                } else {
-                    return fh;
-                }
-            }),
-        );
+    const handleFileFormatChange = (fileHolderId: string | string[], newFormat: string): void => {
+        setFileHolders(fileHolders => {
+            if (fileHolderId instanceof Array) {
+                return fileHolders.map(fh => {
+                    if (fileHolderId.includes(fh.id)) {
+                        return { ...fh, outFormat: newFormat };
+                    } else {
+                        return fh;
+                    }
+                });
+            } else {
+                return fileHolders.map(fh => {
+                    if (fh.id == fileHolderId) {
+                        return { ...fh, outFormat: newFormat };
+                    } else {
+                        return fh;
+                    }
+                });
+            }
+        });
     };
 
     const handleFileRemove = (fileHolderId: string) => {

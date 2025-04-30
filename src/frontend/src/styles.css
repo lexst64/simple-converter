@@ -288,13 +288,6 @@ input[type='file'] {
     align-items: center;
 }
 
-.selected-file-extension-select {
-    height: 30px;
-    padding: 4px;
-    border-radius: 5px;
-    border: 1px solid rgba(0, 0, 0, 0.088);
-}
-
 .file-drop-area {
     position: relative;
 }
@@ -372,6 +365,62 @@ input[type='file'] {
 }
 .no-scrollbar::-webkit-scrollbar {
     display: none;
+}
+
+.file-preparation-area-controls {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.select,
+::picker(select) {
+    appearance: base-select;
+}
+
+::picker(select) {
+    border: none;
+}
+
+.select {
+    border: 2px solid #ddd;
+    background: #eee;
+    padding: 2px 5px;
+    transition: 0.25s;
+}
+
+.select:hover,
+.select:focus {
+    background: #ddd;
+}
+.select::picker-icon {
+    color: #999;
+    transition: 0.25s rotate;
+}
+.select:open::picker-icon {
+    rotate: 180deg;
+}
+
+.option {
+    overflow: hidden;
+    border: 2px solid #ddd;
+    background: #eee;
+    padding: 5px 10px;
+    transition: 0.25s;
+    color: #000;
+}
+
+.option:not(option:last-of-type) {
+    border-bottom: none;
+}
+
+.option:hover,
+.option:focus {
+    background: var(--primary-color);
+}
+
+.output-format-select {
+    width: 80px;
 }
 
 /* media queries */

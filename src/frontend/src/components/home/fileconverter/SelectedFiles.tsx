@@ -1,6 +1,7 @@
 import { SUPPORTED_FORMATS } from '../../../constants';
 import { toHumanReadable, truncateMiddle } from '../../../utils';
 import IconButton from '../../common/IconButton';
+import Select, { Option } from '../../common/Select';
 import { FileHolder } from './FileConverter';
 
 interface SelectedFileProps {
@@ -18,25 +19,20 @@ export default function SelectedFile({
     onFileFormatChange,
     onFileRemove,
 }: SelectedFileProps) {
+    const selectOptions: Option[] = [
+        { label: '---', value: '' },
+        ...SUPPORTED_FORMATS.map(item => ({ label: item, value: item })),
+    ];
+
     const selectedFilesControls = (
         <div className="selected-file-controls">
-            <label>
-                <span>Output: </span>
-                <select
-                    className="selected-file-extension-select"
-                    value={fileHolder.outFormat}
-                    onChange={ev => onFileFormatChange(ev.target.value)}
-                >
-                    {/* default empty option */}
-                    <option value="">---</option>
-                    {/* supported formats */}
-                    {SUPPORTED_FORMATS.map((item, i) => (
-                        <option key={i} value={item}>
-                            {item}
-                        </option>
-                    ))}
-                </select>
-            </label>
+            <Select
+                className="output-format-select"
+                label="Output: "
+                options={selectOptions}
+                value={fileHolder.outFormat}
+                onChange={ev => onFileFormatChange(ev.currentTarget.value)}
+            />
             <IconButton onClick={onFileRemove}>delete</IconButton>
         </div>
     );
