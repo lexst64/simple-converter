@@ -221,10 +221,7 @@ input[type='file'] {
     align-items: center;
     flex-direction: column;
     gap: 5px;
-
-    width: 90vw;
-    max-width: 700px;
-    min-height: 250px;
+    height: 200px;
 
     background-color: var(--secondary-bg-color);
 
@@ -241,6 +238,8 @@ input[type='file'] {
     display: flex;
     flex-direction: column;
     gap: 5px;
+
+    width: 500px;
 }
 
 .file-converter > * {
@@ -253,8 +252,6 @@ input[type='file'] {
     flex-direction: column;
     gap: 5px;
     overflow: hidden;
-
-    width: 50vw;
 }
 
 .selected-files-container {
@@ -421,6 +418,15 @@ input[type='file'] {
 
 .output-format-select {
     width: 80px;
+}
+
+.file-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.088);
 }
 
 /* media queries */

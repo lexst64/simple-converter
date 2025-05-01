@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { toHumanReadable } from '../../../utils';
 import uploadFile from '../../../services/fileupload.service';
-import FilePreparationArea from './FilePreparationArea';
-import FileSelectionArea from './FileSelectionArea';
+import FilePreparation from './FilePreparation';
 import { MAX_FILE_SIZE, STATUS_POLLING_INTERVAL, SUPPORTED_FORMATS } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
 import { convertFile, checkConversionStatus } from '../../../services/fileconvert.service';
 import { APIException } from '../../../services/exceptions';
+import ConversionProgress from './ConversionProgress';
 
 /**
  * Represents the status of the user selected files.
@@ -32,7 +32,7 @@ export interface FileHolder {
 
 export default function FileConverter() {
     const [fileHolders, setFileHolders] = useState<FileHolder[]>([]);
-    const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [isConverting, setIsConverting] = useState<boolean>(false);
 
     const { pushMessage } = useStatus();
 
@@ -123,7 +123,7 @@ export default function FileConverter() {
             return;
         }
 
-        setIsUploading(true);
+        setIsConverting(true);
         fileHolders.forEach(async fh => {
             let fileConversionId;
             try {
@@ -171,35 +171,46 @@ export default function FileConverter() {
         });
     };
 
-    if (fileHolders.length > 0) {
-        return (
-            <div className="file-converter">
-                <FilePreparationArea
-                    fileHolders={fileHolders}
-                    onFileFormatChange={handleFileFormatChange}
-                    onFileRemove={handleFileRemove}
-                    onFileSelect={setFiles}
-                />
-                <button
-                    disabled={isUploading}
-                    className="primary-button"
-                    style={{ width: '100%' }}
-                    onClick={handleConvert}
-                >
-                    {isUploading ? 'Converting...' : 'Convert'}
-                </button>
-                {!isUploading && (
-                    <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
-                        Select more
-                    </FileSelectButton>
-                )}
-            </div>
+    let filesWindow;
+    let actionButton;
+
+    if (isConverting) {
+        filesWindow = <ConversionProgress fileHolders={fileHolders} />;
+        actionButton = (
+            <button disabled={isConverting} className="primary-button" style={{ width: '100%' }}>
+                Converting...
+            </button>
         );
     } else {
-        return (
-            <div className="file-converter">
-                <FileSelectionArea onFileSelect={setFiles} />
-            </div>
+        filesWindow = (
+            <FilePreparation
+                fileHolders={fileHolders}
+                onFileFormatChange={handleFileFormatChange}
+                onFileRemove={handleFileRemove}
+                onFileSelect={setFiles}
+            />
+        );
+        actionButton = (
+            <button
+                disabled={isConverting}
+                className="primary-button"
+                style={{ width: '100%' }}
+                onClick={handleConvert}
+            >
+                Convert
+            </button>
         );
     }
+
+    return (
+        <div className="file-converter">
+            {filesWindow}
+            {!isConverting && (
+                <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
+                    Select more
+                </FileSelectButton>
+            )}
+            {actionButton}
+        </div>
+    );
 }
