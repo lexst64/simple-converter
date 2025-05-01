@@ -30,23 +30,22 @@ export interface FileHolder {
     errorMessage?: string;
 }
 
+export interface ConversionDetail {
+    fileHolderId: string;
+    fileConversionId: string;
+}
+
 export default function FileConverter() {
     const [fileHolders, setFileHolders] = useState<FileHolder[]>([]);
     const [isConverting, setIsConverting] = useState<boolean>(false);
+    const [conversionDetails, setConversionDetails] = useState<ConversionDetail[]>([]);
 
     const { pushMessage } = useStatus();
 
     const updateFileStatus = (id: string, status: FileStatus) => {
-        const fh = fileHolders.find(item => item.id === id);
-
-        if (!fh) {
-            throw new Error(`file holder with id ${id} not found`);
-        }
-
-        setFileHolders(fileHolders => [
-            ...fileHolders.filter(item => item.id !== id),
-            { ...fh, status },
-        ]);
+        setFileHolders(fileHolders =>
+            fileHolders.map(fh => (fh.id === id ? { ...fh, status } : fh)),
+        );
     };
 
     const setFiles = (files: File[]) => {
@@ -164,6 +163,10 @@ export default function FileConverter() {
                         break;
                     case 'ready':
                         updateFileStatus(fh.id, 'ready');
+                        setConversionDetails(conversionDetails => [
+                            ...conversionDetails,
+                            { fileHolderId: fh.id, fileConversionId: fileConversionId },
+                        ]);
                         clearInterval(intervalId);
                         break;
                 }
@@ -175,7 +178,9 @@ export default function FileConverter() {
     let actionButton;
 
     if (isConverting) {
-        filesWindow = <ConversionProgress fileHolders={fileHolders} />;
+        filesWindow = (
+            <ConversionProgress conversionDetails={conversionDetails} fileHolders={fileHolders} />
+        );
         actionButton = (
             <button disabled={isConverting} className="primary-button" style={{ width: '100%' }}>
                 Converting...

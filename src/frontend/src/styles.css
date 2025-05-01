@@ -429,6 +429,30 @@ input[type='file'] {
     border-bottom: 1px solid rgba(0, 0, 0, 0.088);
 }
 
+.circular-loader {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.file-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 /* media queries */
 
 @media (prefers-color-scheme: light) {

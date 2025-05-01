@@ -1,12 +1,16 @@
 import { FixedSizeList } from 'react-window';
-import { FileHolder } from './FileConverter';
+import { ConversionDetail, FileHolder } from './FileConverter';
 import FileProgress from './FileProgress';
 
 interface ConversionProgressProps {
     fileHolders: FileHolder[];
+    conversionDetails: ConversionDetail[];
 }
 
-export default function ConversionProgress({ fileHolders }: ConversionProgressProps) {
+export default function ConversionProgress({
+    fileHolders,
+    conversionDetails,
+}: ConversionProgressProps) {
     return (
         <div className="selected-files-container">
             <FixedSizeList
@@ -18,7 +22,13 @@ export default function ConversionProgress({ fileHolders }: ConversionProgressPr
                 itemKey={index => fileHolders[index].id}
             >
                 {({ index, style }) => (
-                    <FileProgress style={style} fileHolder={fileHolders[index]} />
+                    <FileProgress
+                        style={style}
+                        fileHolder={fileHolders[index]}
+                        conversionDetail={conversionDetails.find(
+                            cd => cd.fileHolderId === fileHolders[index].id,
+                        )}
+                    />
                 )}
             </FixedSizeList>
         </div>
