@@ -53,7 +53,7 @@ export async function checkConversionStatus(
     let res;
     try {
         res = await axios.get<APIResponse<FileConversionStatusData>>(
-            `/v1/conversion/status/${fileConversionId}`,
+            `/v1/conversions/status/${fileConversionId}`,
         );
     } catch (err) {
         if (axios.isAxiosError<APIResponse<FileUploadRequestData>>(err)) {

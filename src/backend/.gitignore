@@ -179,4 +179,5 @@ cython_debug/
 *.ts
 input_files/
 output_files/
+zip_files/
 database.db

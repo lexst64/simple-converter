@@ -6,6 +6,7 @@ from sqlmodel import Field, SQLModel
 from uuid_extensions import uuid7
 
 type FileConversionStatus = Literal['converting', 'failed', 'ready']
+type FilePreparationStatus = Literal['preparing', 'failed', 'ready']
 
 
 class User(SQLModel, table=True):
@@ -26,6 +27,9 @@ class FileConversion(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
     status: FileConversionStatus = Field(sa_type=String)
 
+class FilePreparation(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
+    status: FilePreparationStatus = Field(sa_type=String)
 
 if __name__ == '__main__':
     from sqlmodel import create_engine

@@ -2,18 +2,22 @@ import os
 import pathlib
 import subprocess
 import uuid
+import zipfile
 from typing import Annotated
 
 import aiofiles
 import uvicorn
 from fastapi import BackgroundTasks, Depends, FastAPI, File, HTTPException, Path, UploadFile, status
-from sqlmodel import Session, create_engine
+from fastapi.responses import FileResponse
+from sqlmodel import Session, col, create_engine, select
 
-from db_models import FileConversion, FileUpload
-from requests import FileConversionRequest, FileUploadRequest
+from db_models import FileConversion, FilePreparation, FileUpload
+from requests import FileConversionRequest, FilePrepRequest, FileUploadRequest
 from responses import (
     FileConversionRequestData,
     FileConversionStatusData,
+    FilePrepData,
+    FilePreperationStatusData,
     FileUploadData,
     FileUploadRequestData,
     Response,
@@ -75,6 +79,28 @@ def ffmpeg_convert_media(
             file_conversion_model.status = 'ready'
 
         db_session.add(file_conversion_model)
+        db_session.commit()
+
+
+def create_zip_file(preparation_id: str, filenames: list[str]) -> None:
+    with next(get_database_session()) as db_session:
+        file_preparation_model = db_session.get(FilePreparation, uuid.UUID(preparation_id))
+
+        if file_preparation_model is None:
+            return
+
+        try:
+            with zipfile.ZipFile(
+                f'zip_files/{preparation_id}', 'w', compresslevel=zipfile.ZIP_STORED
+            ) as zip_file:
+                for fn in filenames:
+                    zip_file.write(fn)
+        except Exception:
+            file_preparation_model.status = 'failed'
+        else:
+            file_preparation_model.status = 'ready'
+
+        db_session.add(file_preparation_model)
         db_session.commit()
 
 
@@ -171,7 +197,7 @@ async def request_conversion(
     )
 
 
-@app.get('/v1/conversion/status/{file_conversion_id}', status_code=status.HTTP_200_OK)
+@app.get('/v1/conversions/status/{file_conversion_id}', status_code=status.HTTP_200_OK)
 async def check_conversion_status(
     file_conversion_id: Annotated[str, Path()], db_session: DBSessionDep
 ) -> Response[FileConversionStatusData]:
@@ -179,10 +205,92 @@ async def check_conversion_status(
     if file_conversion_model is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_conversion_id not found')
 
+    if file_conversion_model.status == 'converting':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion is not ready yet')
+    if file_conversion_model.status == 'failed':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion has failed')
+
     return Response[FileConversionStatusData](
         data=FileConversionStatusData(status=file_conversion_model.status),
         message='',
     )
+
+
+@app.get('/v1/conversions/{file_conversion_id}', status_code=status.HTTP_200_OK)
+async def download_converted_file(
+    file_conversion_id: Annotated[str, Path()], db_session: DBSessionDep
+) -> FileResponse:
+    file_conversion_model = db_session.get(FileConversion, uuid.UUID(file_conversion_id))
+    if file_conversion_model is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_conversion_id not found')
+    return FileResponse(f'output_files/{str(file_conversion_model.id)}')
+
+
+@app.post('/v1/file-preps/', status_code=status.HTTP_201_CREATED)
+async def request_file_preparation(
+    file_preparation_req: FilePrepRequest,
+    db_session: DBSessionDep,
+    background_tasks: BackgroundTasks,
+) -> Response[FilePrepData]:
+    file_conversion_UUIDs = [uuid.UUID(id) for id in file_preparation_req.fileConversionIds]
+    file_conversion_models = db_session.exec(
+        select(FileConversion).where(col(FileConversion.id).in_(file_conversion_UUIDs))
+    ).all()
+
+    for fcm in file_conversion_models:
+        if fcm.status == 'converting':
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, 'some of files is still converting')
+        if fcm.status == 'failed':
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, 'some of files has failed')
+
+    if len(file_conversion_models) != len(file_conversion_UUIDs):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'some of files not found')
+
+    file_preparation_model = FilePreparation(status='preparing')
+    db_session.add(file_preparation_model)
+    db_session.commit()
+
+    background_tasks.add_task(
+        create_zip_file,
+        filenames=[f'output_files/{id}' for id in file_preparation_req.fileConversionIds],
+        preparation_id=str(file_preparation_model.id),
+    )
+
+    return Response[FilePrepData](
+        data=FilePrepData(filePrepId=str(file_preparation_model.id)), message=''
+    )
+
+
+@app.get('/v1/file-preps/status/{file_preparation_id}', status_code=status.HTTP_200_OK)
+async def check_file_preparation_status(
+    file_preparation_id: Annotated[str, Path()],
+    db_session: DBSessionDep,
+) -> Response[FilePreperationStatusData]:
+    file_preparation_model = db_session.get(FilePreparation, uuid.UUID(file_preparation_id))
+    if file_preparation_model is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_preparation_id not found')
+
+    return Response[FilePreperationStatusData](
+        data=FilePreperationStatusData(status=file_preparation_model.status),
+        message='',
+    )
+
+
+@app.get('/v1/file-preps/{file_preparation_id}', status_code=status.HTTP_200_OK)
+async def download_file_preparation(
+    file_preparation_id: Annotated[str, Path()],
+    db_session: DBSessionDep,
+) -> FileResponse:
+    file_preparation_model = db_session.get(FilePreparation, uuid.UUID(file_preparation_id))
+    if file_preparation_model is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_preparation_id not found')
+
+    if file_preparation_model.status == 'preparing':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file preparation is not ready yet')
+    if file_preparation_model.status == 'failed':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file preparation has failed')
+
+    return FileResponse(f'zip_files/{str(file_preparation_model.id)}')
 
 
 # for debugging

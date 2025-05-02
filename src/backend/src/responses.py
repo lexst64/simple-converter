@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Literal
-from db_models import FileConversionStatus
+from db_models import FileConversionStatus, FilePreparationStatus
 
 from pydantic import BaseModel, Field
 
@@ -11,10 +11,7 @@ class ReponseMeta(BaseModel):
 
 
 def create_response_meta() -> ReponseMeta:
-    return ReponseMeta(
-        timestamp=datetime.isoformat(datetime.now()),
-        version='v1'
-    )
+    return ReponseMeta(timestamp=datetime.isoformat(datetime.now()), version='v1')
 
 
 class Response[T](BaseModel):
@@ -27,11 +24,22 @@ class Response[T](BaseModel):
 class FileUploadData(BaseModel):
     pass
 
+
 class FileUploadRequestData(BaseModel):
     fileUploadId: str
+
 
 class FileConversionRequestData(BaseModel):
     fileConversionId: str
 
+
 class FileConversionStatusData(BaseModel):
     status: FileConversionStatus
+
+
+class FilePrepData(BaseModel):
+    filePrepId: str
+
+
+class FilePreperationStatusData(BaseModel):
+    status: FilePreparationStatus
