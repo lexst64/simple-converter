@@ -205,11 +205,6 @@ async def check_conversion_status(
     if file_conversion_model is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_conversion_id not found')
 
-    if file_conversion_model.status == 'converting':
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion is not ready yet')
-    if file_conversion_model.status == 'failed':
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion has failed')
-
     return Response[FileConversionStatusData](
         data=FileConversionStatusData(status=file_conversion_model.status),
         message='',
@@ -223,6 +218,12 @@ async def download_converted_file(
     file_conversion_model = db_session.get(FileConversion, uuid.UUID(file_conversion_id))
     if file_conversion_model is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file_conversion_id not found')
+
+    if file_conversion_model.status == 'converting':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion is not ready yet')
+    if file_conversion_model.status == 'failed':
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion has failed')
+
     return FileResponse(f'output_files/{str(file_conversion_model.id)}')
 
 
