@@ -126,6 +126,7 @@ input[type='file'] {
     background-color: var(--primary-color);
     cursor: pointer;
     color: #ffffff;
+    text-decoration: none;
 
     transition: box-shadow ease 0.3s;
 }

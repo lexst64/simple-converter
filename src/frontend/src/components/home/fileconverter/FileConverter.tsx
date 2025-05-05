@@ -1,115 +1,28 @@
-import { useState } from 'react';
-import { toHumanReadable } from '../../../utils';
+import { DragEvent } from 'react';
 import uploadFile from '../../../services/fileupload.service';
-import FilePreparation from './FilePreparation';
-import { MAX_FILE_SIZE, STATUS_POLLING_INTERVAL, SUPPORTED_FORMATS } from '../../../constants';
+import { STATUS_POLLING_INTERVAL } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
 import { convertFile, checkConversionStatus } from '../../../services/fileconvert.service';
 import { APIException } from '../../../services/exceptions';
-import ConversionProgress from './ConversionProgress';
-
-/**
- * Represents the status of the user selected files.
- * - 'pending': File is ready to be uploaded.
- * - 'uploading': File is being uploaded to the server.
- * - 'converting': File is being converted on the server.
- * - 'ready': File has been converted and ready to be downloaded from the server.
- * - 'failed': An error occured.
- */
-type FileStatus = 'pending' | 'uploading' | 'converting' | 'ready' | 'failed';
-
-export interface FileHolder {
-    id: string;
-    file: File;
-    inFormat: string;
-    outFormat: string;
-    isValid: boolean;
-    status: FileStatus;
-
-    errorMessage?: string;
-}
-
-export interface ConversionDetail {
-    fileHolderId: string;
-    fileConversionId: string;
-}
+import FileDropArea from '../../common/FileDropArea';
+import FileList from './FileList';
+import { useFileConverterState } from '../../../hooks/FileConverterState';
+import ActionButton from './ActionButton';
+import { FileHolder } from '../../../context/FileConverterStateProvider';
 
 export default function FileConverter() {
-    const [fileHolders, setFileHolders] = useState<FileHolder[]>([]);
-    const [isConverting, setIsConverting] = useState<boolean>(false);
-    const [conversionDetails, setConversionDetails] = useState<ConversionDetail[]>([]);
-
+    const { addFiles, fileHolders, updateFileStatus, addConversionDetail } =
+        useFileConverterState();
     const { pushMessage } = useStatus();
-
-    const updateFileStatus = (id: string, status: FileStatus) => {
-        setFileHolders(fileHolders =>
-            fileHolders.map(fh => (fh.id === id ? { ...fh, status } : fh)),
-        );
-    };
-
-    const setFiles = (files: File[]) => {
-        const newSelectedFiles: FileHolder[] = files.map(file => {
-            const inFormat = file.name.split('.').pop() || '';
-
-            let isValid = true;
-            let errorMessage = undefined;
-
-            if (!SUPPORTED_FORMATS.includes(inFormat)) {
-                isValid = false;
-                errorMessage = `"${inFormat}" files are not supported`;
-            }
-            if (file.size > MAX_FILE_SIZE) {
-                isValid = false;
-                errorMessage = `File size is over ${toHumanReadable(MAX_FILE_SIZE)}`;
-            }
-
-            return {
-                id: crypto.randomUUID(),
-                file: file,
-                inFormat: inFormat,
-                isValid: isValid,
-                outFormat: '',
-                status: 'pending',
-                errorMessage: errorMessage,
-            } satisfies FileHolder;
-        });
-        setFileHolders([...fileHolders, ...newSelectedFiles]);
-    };
-
-    const handleFileFormatChange = (fileHolderId: string | string[], newFormat: string): void => {
-        setFileHolders(fileHolders => {
-            if (fileHolderId instanceof Array) {
-                return fileHolders.map(fh => {
-                    if (fileHolderId.includes(fh.id)) {
-                        return { ...fh, outFormat: newFormat };
-                    } else {
-                        return fh;
-                    }
-                });
-            } else {
-                return fileHolders.map(fh => {
-                    if (fh.id == fileHolderId) {
-                        return { ...fh, outFormat: newFormat };
-                    } else {
-                        return fh;
-                    }
-                });
-            }
-        });
-    };
-
-    const handleFileRemove = (fileHolderId: string) => {
-        setFileHolders(fileHolders.filter(item => item.id !== fileHolderId));
-    };
 
     const handleFileSelect = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.files) {
-            setFiles(Array.from(ev.target.files));
+            addFiles(Array.from(ev.target.files));
         }
     };
 
-    const handleConvert = () => {
+    const handleConvert = (fileHolders: FileHolder[]) => {
         if (fileHolders.find(fh => !fh.isValid)) {
             pushMessage('There are invalid files. Remove them first before converting.', 'error');
             return;
@@ -122,7 +35,6 @@ export default function FileConverter() {
             return;
         }
 
-        setIsConverting(true);
         fileHolders.forEach(async fh => {
             let fileConversionId;
             try {
@@ -144,6 +56,8 @@ export default function FileConverter() {
                 try {
                     status = await checkConversionStatus(fileConversionId);
                 } catch (err) {
+                    console.log(status, err);
+
                     pushMessage(
                         `Failed uploading ${fh.file.name}. Reason: ${(err as APIException).message}`,
                         'error',
@@ -163,10 +77,7 @@ export default function FileConverter() {
                         break;
                     case 'ready':
                         updateFileStatus(fh.id, 'ready');
-                        setConversionDetails(conversionDetails => [
-                            ...conversionDetails,
-                            { fileHolderId: fh.id, fileConversionId: fileConversionId },
-                        ]);
+                        addConversionDetail(fh.id, fileConversionId);
                         clearInterval(intervalId);
                         break;
                 }
@@ -174,48 +85,27 @@ export default function FileConverter() {
         });
     };
 
-    let filesWindow;
-    let actionButton;
-
-    if (isConverting) {
-        filesWindow = (
-            <ConversionProgress conversionDetails={conversionDetails} fileHolders={fileHolders} />
-        );
-        actionButton = (
-            <button disabled={isConverting} className="primary-button" style={{ width: '100%' }}>
-                Converting...
-            </button>
-        );
-    } else {
-        filesWindow = (
-            <FilePreparation
-                fileHolders={fileHolders}
-                onFileFormatChange={handleFileFormatChange}
-                onFileRemove={handleFileRemove}
-                onFileSelect={setFiles}
-            />
-        );
-        actionButton = (
-            <button
-                disabled={isConverting}
-                className="primary-button"
-                style={{ width: '100%' }}
-                onClick={handleConvert}
-            >
-                Convert
-            </button>
-        );
-    }
+    const handleFileDrop = (ev: DragEvent) => {
+        if (ev.dataTransfer) {
+            addFiles(Array.from(ev.dataTransfer.files));
+        }
+    };
 
     return (
         <div className="file-converter">
-            {filesWindow}
-            {!isConverting && (
-                <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
-                    Select more
-                </FileSelectButton>
+            {fileHolders.length > 0 ? (
+                <FileList />
+            ) : (
+                <FileDropArea onDrop={handleFileDrop}>
+                    <div className="file-selection-area">
+                        <FileSelectButton onFileChange={handleFileSelect}>
+                            Select files
+                        </FileSelectButton>
+                        <span className="hint">or drag-and-drop here (up to 1.0 GB)</span>
+                    </div>
+                </FileDropArea>
             )}
-            {actionButton}
+            <ActionButton onConvert={handleConvert} />
         </div>
     );
 }
