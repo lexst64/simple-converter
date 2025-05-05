@@ -16,7 +16,7 @@ from requests import FileConversionRequest, FilePrepRequest, FileUploadRequest
 from responses import (
     FileConversionRequestData,
     FileConversionStatusData,
-    FilePrepData,
+    FilePreperationData,
     FilePreperationStatusData,
     FileUploadData,
     FileUploadRequestData,
@@ -232,7 +232,7 @@ async def request_file_preparation(
     file_preparation_req: FilePrepRequest,
     db_session: DBSessionDep,
     background_tasks: BackgroundTasks,
-) -> Response[FilePrepData]:
+) -> Response[FilePreperationData]:
     file_conversion_UUIDs = [uuid.UUID(id) for id in file_preparation_req.fileConversionIds]
     file_conversion_models = db_session.exec(
         select(FileConversion).where(col(FileConversion.id).in_(file_conversion_UUIDs))
@@ -257,8 +257,8 @@ async def request_file_preparation(
         preparation_id=str(file_preparation_model.id),
     )
 
-    return Response[FilePrepData](
-        data=FilePrepData(filePrepId=str(file_preparation_model.id)), message=''
+    return Response[FilePreperationData](
+        data=FilePreperationData(filePreperationId=str(file_preparation_model.id)), message=''
     )
 
 

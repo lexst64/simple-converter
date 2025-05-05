@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Literal
-from db_models import FileConversionStatus, FilePreparationStatus
 
 from pydantic import BaseModel, Field
+
+from db_models import FileConversionStatus, FilePreparationStatus
 
 
 class ReponseMeta(BaseModel):
@@ -37,8 +38,8 @@ class FileConversionStatusData(BaseModel):
     status: FileConversionStatus
 
 
-class FilePrepData(BaseModel):
-    filePrepId: str
+class FilePreperationData(BaseModel):
+    filePreperationId: str
 
 
 class FilePreperationStatusData(BaseModel):
