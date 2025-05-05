@@ -70,13 +70,3 @@ export async function checkConversionStatus(
     }
     return res.data.data.status;
 }
-
-/**
- * Generates a relative download link for a file conversion based on the provided file conversion ID.
- *
- * @param fileConversionId - The unique identifier for the file conversion.
- * @returns The URL string for downloading the converted file.
- */
-export function createDownloadLink(fileConversionId: string) {
-    return `/v1/conversions/${fileConversionId}`;
-}

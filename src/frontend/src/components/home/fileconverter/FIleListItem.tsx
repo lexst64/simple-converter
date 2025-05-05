@@ -6,7 +6,7 @@ import Select, { Option } from '../../common/Select';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import { ConversionDetail, FileHolder } from '../../../context/FileConverterStateProvider';
 import CircularLoader from '../../common/CircularLoader';
-import { createDownloadLink } from '../../../services/fileconvert.service';
+import { createDownloadLink } from '../../../services/filedownload.service';
 
 interface FileListItemProps {
     fileHolder: FileHolder;

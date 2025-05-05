@@ -26,6 +26,7 @@
     --primary-bg-color: #ffffff;
     --secondary-bg-color: #f6fafe;
     --primary-color: #646cff;
+    --primary-color-disabled: #9196ff;
     --icon-color: #222222bf;
     --text-color: #222222de;
 
@@ -137,6 +138,11 @@ input[type='file'] {
 .primary-button:focus,
 .primary-button:focus-visible {
     outline: 4px auto -webkit-focus-ring-color;
+}
+.primary-button:disabled {
+    cursor: default;
+    box-shadow: none;
+    background-color: var(--primary-color-disabled);
 }
 
 .secondary-button {

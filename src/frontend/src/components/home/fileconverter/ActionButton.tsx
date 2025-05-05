@@ -1,5 +1,6 @@
 import { FileHolder } from '../../../context/FileConverterStateProvider';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
+import DownloadAllButton from './DownloadAllButton';
 
 interface ActionButtonProps {
     onConvert: (fileHolders: FileHolder[]) => void;
@@ -32,12 +33,7 @@ export default function ActionButton({ onConvert }: ActionButtonProps) {
             </button>
         );
     } else if (uniqueStates.size === 1 && uniqueStates.has('ready')) {
-        // todo: implement donwload all feature
-        return (
-            <a className="primary-button" href="#" download>
-                <span>Download all</span>
-            </a>
-        );
+        return <DownloadAllButton />;
     } else {
         return <></>;
     }
