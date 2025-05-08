@@ -10,11 +10,15 @@ export interface FormatData {
 interface FormatSelectProps {
     onChange: (newFormat: string) => void;
     dropdownPosition?: 'left' | 'right';
+    currentFormat?: string;
 }
 
-export default function FormatSelect({ onChange, dropdownPosition = 'right' }: FormatSelectProps) {
+export default function FormatSelect({
+    onChange,
+    dropdownPosition = 'right',
+    currentFormat,
+}: FormatSelectProps) {
     const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [format, setFormat] = useState<string | undefined>(undefined);
 
     const formatData: FormatData[] = [
         { type: 'audio', formats: AUDIO_FORMATS },
@@ -23,7 +27,6 @@ export default function FormatSelect({ onChange, dropdownPosition = 'right' }: F
 
     const updateFormat = (newFormat: string) => {
         onChange(newFormat);
-        setFormat(newFormat);
         setIsOpen(!isOpen);
     };
 
@@ -34,7 +37,7 @@ export default function FormatSelect({ onChange, dropdownPosition = 'right' }: F
                 className="secondary-button-small"
                 style={{ justifyContent: 'left', width: '90px' }}
             >
-                <span>{format || 'Choose'}</span>
+                <span>{currentFormat || 'Choose'}</span>
                 <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
                     arrow_drop_down
                 </span>
@@ -43,7 +46,7 @@ export default function FormatSelect({ onChange, dropdownPosition = 'right' }: F
                 <Dropdown
                     formatData={formatData}
                     onChange={updateFormat}
-                    currentFormat={format}
+                    currentFormat={currentFormat}
                     position={dropdownPosition}
                 />
             )}

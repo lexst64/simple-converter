@@ -1,6 +1,6 @@
 import FileDropArea from '../../common/FileDropArea';
 import FileListItem from './FIleListItem';
-import { DragEvent } from 'react';
+import { DragEvent, useMemo } from 'react';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import FormatSelect from './formatselect/FormatSelect';
 
@@ -11,9 +11,15 @@ export default function FileList() {
         addFiles(Array.from(ev.dataTransfer.files));
     };
 
+    const currentSelectFormat = useMemo(() => {
+        const uniqueFormats = [...new Set(fileHolders.map(fh => fh.outFormat))];
+        return uniqueFormats.length === 1 ? uniqueFormats[0] : undefined;
+    }, [fileHolders]);
+
     const listControls = (
         <div className="file-preparation-area-controls">
             <FormatSelect
+                currentFormat={currentSelectFormat}
                 onChange={newFormat =>
                     changeFilesFormat(
                         fileHolders.map(fh => fh.id),

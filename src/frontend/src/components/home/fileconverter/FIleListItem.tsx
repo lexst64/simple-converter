@@ -28,6 +28,7 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
             fileControls = (
                 <div className="selected-file-controls">
                     <FormatSelect
+                        currentFormat={fileHolder.outFormat}
                         onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
                         dropdownPosition="left"
                     />
