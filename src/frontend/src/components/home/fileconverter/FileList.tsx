@@ -8,51 +8,66 @@ import ConversionStatusBar from './ConversionStatusBar';
 export default function FileList() {
     const { fileHolders, conversionDetails, changeFilesFormat, addFiles } = useFileConverterState();
 
-    const handleFileDrop = (ev: DragEvent) => {
-        addFiles(Array.from(ev.dataTransfer.files));
-    };
+    const isPending: boolean = useMemo(() => {
+        return fileHolders.map(fh => fh.status).includes('pending');
+    }, [fileHolders]);
 
     const currentSelectFormat = useMemo(() => {
         const uniqueFormats = [...new Set(fileHolders.map(fh => fh.outFormat))];
         return uniqueFormats.length === 1 ? uniqueFormats[0] : undefined;
     }, [fileHolders]);
 
+    const handleFileDrop = (ev: DragEvent) => {
+        addFiles(Array.from(ev.dataTransfer.files));
+    };
+
     const listControls = (
         <div className="file-preparation-area-controls">
-            <FormatSelect
-                currentFormat={currentSelectFormat}
-                onChange={newFormat =>
-                    changeFilesFormat(
-                        fileHolders.map(fh => fh.id),
-                        newFormat,
-                    )
-                }
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span>Change all:</span>
+                <FormatSelect
+                    currentFormat={currentSelectFormat}
+                    onChange={newFormat =>
+                        changeFilesFormat(
+                            // filter out those that are "ready"
+                            fileHolders.filter(fh => fh.status !== 'ready').map(fh => fh.id),
+                            newFormat,
+                        )
+                    }
+                />
+            </div>
             <ConversionStatusBar />
-            <span>Total: {fileHolders.length}</span>
+            <span>
+                Total: <b>{fileHolders.length}</b>
+            </span>
+        </div>
+    );
+
+    const selectedFilesContainer = (
+        <div className="selected-files-container">
+            <div
+                className="no-scrollbar"
+                style={{ height: '300px', width: '100%', overflowY: 'auto' }}
+            >
+                {fileHolders.map(fh => (
+                    <FileListItem
+                        key={fh.id}
+                        fileHolder={fh}
+                        conversionDetail={conversionDetails.find(cd => cd.fileHolderId === fh.id)}
+                    />
+                ))}
+            </div>
         </div>
     );
 
     return (
         <div className="file-preparation-area">
             {listControls}
-            <FileDropArea onDrop={handleFileDrop}>
-                <div className="selected-files-container">
-                    <div
-                        className="no-scrollbar"
-                        style={{ height: '300px', width: '100%', overflowY: 'auto' }}
-                    >
-                        {fileHolders.map(fh => (
-                            <FileListItem
-                                fileHolder={fh}
-                                conversionDetail={conversionDetails.find(
-                                    cd => cd.fileHolderId === fh.id,
-                                )}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </FileDropArea>
+            {isPending ? (
+                <FileDropArea onDrop={handleFileDrop}>{selectedFilesContainer}</FileDropArea>
+            ) : (
+                selectedFilesContainer
+            )}
         </div>
     );
 }

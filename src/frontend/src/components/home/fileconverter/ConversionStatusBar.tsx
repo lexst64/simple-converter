@@ -18,14 +18,13 @@ export default function ConversionStatusBar() {
     return (
         <div className="file-preparation-status">
             {Array.from(counts).map(([status, count]) => (
-                <>
-                    <div className={classNames('file-preparation-count', status)}>
-                        <span>
-                            {status.charAt(0).toUpperCase()}
-                            {count}
-                        </span>
-                    </div>
-                </>
+                // status is unique and consistent, we can use it as a key
+                <div key={status} className={classNames('file-preparation-count', status)}>
+                    <span>
+                        {status.charAt(0).toUpperCase()}
+                        {count}
+                    </span>
+                </div>
             ))}
         </div>
     );

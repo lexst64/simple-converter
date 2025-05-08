@@ -4,7 +4,7 @@ import FileConverter from './fileconverter/FileConverter';
 export default function Home() {
     return (
         <div className="home">
-            <h1>Video converter</h1>
+            <h1>Audio & Video converter</h1>
             <FileConverterStateProvider>
                 <FileConverter />
             </FileConverterStateProvider>

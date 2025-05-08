@@ -24,25 +24,24 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
     let fileControls;
 
     if (fileHolder.status === 'pending' || fileHolder.status === 'failed') {
-        if (fileHolder.isValid) {
-            fileControls = (
-                <div className="selected-file-controls">
-                    <FormatSelect
-                        currentFormat={fileHolder.outFormat}
-                        onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
-                        dropdownPosition="left"
-                    />
-                    <IconButton onClick={handleFileRemove}>delete</IconButton>
-                </div>
-            );
-        } else {
-            fileControls = (
-                <div className="selected-file-controls">
-                    {fileHolder.errorMessage || 'Invalid file'}
-                    <IconButton onClick={handleFileRemove}>delete</IconButton>
-                </div>
-            );
-        }
+        fileControls = (
+            <div className="selected-file-controls">
+                {fileHolder.isValid ? (
+                    <>
+                        <FormatSelect
+                            currentFormat={fileHolder.outFormat}
+                            onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
+                            dropdownPosition="left"
+                        />
+                        <IconButton onClick={handleFileRemove} style={{ opacity: 0.7 }}>
+                            delete
+                        </IconButton>
+                    </>
+                ) : (
+                    <>{fileHolder.errorMessage || 'Invalid file'}</>
+                )}
+            </div>
+        );
     } else if (fileHolder.status === 'converting' || fileHolder.status === 'uploading') {
         fileControls = (
             <span className="file-status">
@@ -66,6 +65,7 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
                         }
                         download
                         className="icon-button"
+                        style={{ opacity: 0.7 }}
                     >
                         <span className="material-symbols-outlined">download</span>
                     </a>
@@ -77,8 +77,10 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
     return (
         <li className={classNames('selected-file', { invalid: !fileHolder.isValid })} style={style}>
             <div className="selected-file-meta">
-                <span>{truncateMiddle(fileHolder.file.name, 40)}</span>
-                <span>{toHumanReadable(fileHolder.file.size)}</span>
+                <span className="selected-file-name">
+                    {truncateMiddle(fileHolder.file.name, 40)}
+                </span>
+                <span className="selected-file-size">{toHumanReadable(fileHolder.file.size)}</span>
             </div>
             {fileControls}
         </li>

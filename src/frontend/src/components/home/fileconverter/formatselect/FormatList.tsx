@@ -30,6 +30,8 @@ function FormatDataList({ formatData, currentFormat, onChange }: FormatDataListP
             <div className="format-list-tabs-container">
                 {formatData.map(data => (
                     <button
+                        // format data type is unique and consistent, we can use it as a key
+                        key={data.type}
                         className={classNames('format-list-tab', {
                             active: currentTab === data.type,
                         })}
@@ -50,6 +52,8 @@ function FormatDataList({ formatData, currentFormat, onChange }: FormatDataListP
                         .find(data => data.type === currentTab)
                         ?.formats.map(format => (
                             <button
+                                // format is unique and consistent, we can use it as a key
+                                key={format}
                                 onClick={() => onChange(format)}
                                 className={classNames('format-list-choice', {
                                     active: format === currentFormat,
@@ -76,6 +80,8 @@ function StringList({ formatData, currentFormat, onChange }: StringListProps) {
                 >
                     {formatData.map(format => (
                         <button
+                            // format is unique and consistent, we can use it as a key
+                            key={format}
                             onClick={() => onChange(format)}
                             className={classNames('format-list-choice', {
                                 active: format === currentFormat,

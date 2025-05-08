@@ -1,4 +1,4 @@
-import { DragEvent } from 'react';
+import { DragEvent, useMemo } from 'react';
 import uploadFile from '../../../services/fileupload.service';
 import { STATUS_POLLING_INTERVAL } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
@@ -15,6 +15,10 @@ export default function FileConverter() {
     const { addFiles, fileHolders, updateFileStatus, addConversionDetail } =
         useFileConverterState();
     const { pushMessage } = useStatus();
+
+    const isPending: boolean = useMemo(() => {
+        return fileHolders.map(fh => fh.status).includes('pending');
+    }, [fileHolders]);
 
     const handleFileSelect = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.files) {
@@ -106,6 +110,11 @@ export default function FileConverter() {
                 </FileDropArea>
             )}
             <ActionButton onConvert={handleConvert} />
+            {isPending && (
+                <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
+                    Add more files
+                </FileSelectButton>
+            )}
         </div>
     );
 }

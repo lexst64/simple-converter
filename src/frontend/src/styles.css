@@ -244,9 +244,9 @@ input[type='file'] {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 30px;
 
-    padding-top: 10vh;
+    padding-top: 7vh;
 }
 
 .file-selection-area {
@@ -255,12 +255,13 @@ input[type='file'] {
     align-items: center;
     flex-direction: column;
     gap: 5px;
-    height: 200px;
+    height: 300px;
 
     background-color: var(--secondary-bg-color);
 
     border: 2px dashed #bfdaf4;
     border-radius: 8px;
+    overflow: hidden;
 }
 
 .hint {
@@ -271,21 +272,23 @@ input[type='file'] {
 .file-converter {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-
-    width: 500px;
-}
-
-.file-converter > * {
+    gap: 10px;
     border-radius: 8px;
     overflow: hidden;
+
+    @media (min-width: 700px) {
+        width: 700px;
+    }
+
+    @media (max-width: 700px) {
+        width: 100%;
+    }
 }
 
 .file-preparation-area {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    overflow: hidden;
+    gap: 10px;
 }
 
 .selected-files-container {
@@ -311,6 +314,15 @@ input[type='file'] {
 .selected-file-meta {
     display: flex;
     flex-direction: column;
+}
+
+.selected-file-name {
+    font-size: 1rem;
+}
+
+.selected-file-size {
+    color: #777;
+    font-size: 0.9rem;
 }
 
 .selected-file-controls {
@@ -403,6 +415,7 @@ input[type='file'] {
     align-items: center;
     justify-content: space-between;
     gap: 5px;
+    padding: 0px 10px;
 }
 
 .select,
@@ -599,6 +612,7 @@ input[type='file'] {
 }
 
 .file-preparation-count {
+    cursor: default;
     color: #fff;
     border-radius: 5px;
     padding: 1px 5px;
