@@ -27,19 +27,17 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
         fileControls = (
             <div className="selected-file-controls">
                 {fileHolder.isValid ? (
-                    <>
-                        <FormatSelect
-                            currentFormat={fileHolder.outFormat}
-                            onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
-                            dropdownPosition="left"
-                        />
-                        <IconButton onClick={handleFileRemove} style={{ opacity: 0.7 }}>
-                            delete
-                        </IconButton>
-                    </>
+                    <FormatSelect
+                        currentFormat={fileHolder.outFormat}
+                        onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
+                        dropdownPosition="left"
+                    />
                 ) : (
-                    <>{fileHolder.errorMessage || 'Invalid file'}</>
+                    <span>{fileHolder.errorMessage || 'Invalid file'}</span>
                 )}
+                <IconButton onClick={handleFileRemove} style={{ opacity: 0.7 }}>
+                    delete
+                </IconButton>
             </div>
         );
     } else if (fileHolder.status === 'converting' || fileHolder.status === 'uploading') {
