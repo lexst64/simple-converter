@@ -401,6 +401,7 @@ input[type='file'] {
 .file-preparation-area-controls {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 5px;
 }
 
@@ -589,6 +590,34 @@ input[type='file'] {
 }
 .search-bar:focus {
     border: 2px solid #777;
+}
+
+.file-preparation-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.file-preparation-count {
+    color: #fff;
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-weight: 500;
+}
+.file-preparation-count.pending {
+    background-color: #85bef3;
+}
+.file-preparation-count.uploading {
+    background-color: #ffce65;
+}
+.file-preparation-count.converting {
+    background-color: #b64cd9;
+}
+.file-preparation-count.ready {
+    background-color: #4fa936;
+}
+.file-preparation-count.failed {
+    background-color: #cb5252;
 }
 
 /* media queries */

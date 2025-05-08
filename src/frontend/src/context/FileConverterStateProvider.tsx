@@ -10,7 +10,7 @@ import { toHumanReadable } from '../utils';
  * - 'ready': File has been converted and ready to be downloaded from the server.
  * - 'failed': An error occured.
  */
-type FileStatus = 'pending' | 'uploading' | 'converting' | 'ready' | 'failed';
+export type FileStatus = 'pending' | 'uploading' | 'converting' | 'ready' | 'failed';
 
 export interface FileHolder {
     id: string;

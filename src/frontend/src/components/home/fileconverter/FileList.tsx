@@ -3,6 +3,7 @@ import FileListItem from './FIleListItem';
 import { DragEvent, useMemo } from 'react';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import FormatSelect from './formatselect/FormatSelect';
+import ConversionStatusBar from './ConversionStatusBar';
 
 export default function FileList() {
     const { fileHolders, conversionDetails, changeFilesFormat, addFiles } = useFileConverterState();
@@ -27,6 +28,8 @@ export default function FileList() {
                     )
                 }
             />
+            <ConversionStatusBar />
+            <span>Total: {fileHolders.length}</span>
         </div>
     );
 
