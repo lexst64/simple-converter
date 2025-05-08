@@ -612,10 +612,15 @@ input[type='file'] {
 }
 
 .file-preparation-count {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: default;
     color: #fff;
     border-radius: 5px;
-    padding: 1px 5px;
+    width: 25px;
+    height: 25px;
+    line-height: 1;
     font-weight: 500;
 }
 .file-preparation-count.pending {
