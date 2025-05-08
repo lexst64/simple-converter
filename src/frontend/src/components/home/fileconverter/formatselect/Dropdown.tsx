@@ -27,10 +27,23 @@ export default function Dropdown({
     useClickOutside(dropdownRef, onClose);
     useEscapeKey(onClose);
 
-    const allFormats: string[] = useMemo(
-        () => formatData.reduce<string[]>((acc, data) => [...acc, ...data.formats], []),
-        [formatData],
+    const filteredFormats: string[] = useMemo(
+        () =>
+            formatData
+                .reduce<string[]>((acc, data) => [...acc, ...data.formats], [])
+                .filter(format => format.includes(searchValue.trim())),
+        [formatData, searchValue],
     );
+
+    const handleKeyUp = (ev: React.KeyboardEvent) => {
+        if (ev.key !== 'Enter' || searchValue.trim().length === 0) {
+            return;
+        }
+        if (filteredFormats.length !== 1) {
+            return;
+        }
+        onChange(filteredFormats[0]);
+    };
 
     return (
         <div
@@ -43,14 +56,11 @@ export default function Dropdown({
                 placeholder="Search"
                 value={searchValue}
                 onChange={ev => setSearchValue(ev.target.value)}
+                onKeyUp={handleKeyUp}
             />
             <FormatList
                 currentFormat={currentFormat}
-                formatData={
-                    searchValue.trim().length === 0
-                        ? formatData
-                        : allFormats.filter(format => format.includes(searchValue.trim()))
-                }
+                formatData={searchValue.trim().length === 0 ? formatData : filteredFormats}
                 onChange={onChange}
             />
         </div>
