@@ -27,13 +27,13 @@ export default function FormatSelect({
 
     const updateFormat = (newFormat: string) => {
         onChange(newFormat);
-        setIsOpen(!isOpen);
+        setIsOpen(false);
     };
 
     return (
         <div className="format-select-container">
             <button
-                onClick={() => setIsOpen(isOpen => !isOpen)}
+                onClick={() => setIsOpen(!isOpen)}
                 className="secondary-button-small"
                 style={{ justifyContent: 'left', width: '90px' }}
             >
@@ -44,6 +44,7 @@ export default function FormatSelect({
             </button>
             {isOpen && (
                 <Dropdown
+                    onClose={() => setIsOpen(false)}
                     formatData={formatData}
                     onChange={updateFormat}
                     currentFormat={currentFormat}
