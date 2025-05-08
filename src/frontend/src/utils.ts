@@ -26,3 +26,10 @@ export const truncateMiddle = (str: string, maxLength: number): string => {
 
     return `${start} ... ${end}`;
 };
+
+export const capitalize = (str: string): string => {
+    if (str.length === 0) {
+        return str;
+    }
+    return str.charAt(0).toUpperCase() + str.substring(1);
+};

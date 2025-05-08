@@ -1,12 +1,11 @@
 import classNames from 'classnames';
-import { SUPPORTED_FORMATS } from '../../../constants';
 import { toHumanReadable, truncateMiddle } from '../../../utils';
 import IconButton from '../../common/IconButton';
-import Select, { Option } from '../../common/Select';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import { ConversionDetail, FileHolder } from '../../../context/FileConverterStateProvider';
 import CircularLoader from '../../common/CircularLoader';
 import { createDownloadLink } from '../../../services/filedownload.service';
+import FormatSelect from './formatselect/FormatSelect';
 
 interface FileListItemProps {
     fileHolder: FileHolder;
@@ -18,11 +17,6 @@ interface FileListItemProps {
 export default function FileListItem({ fileHolder, style }: FileListItemProps) {
     const { removeFiles, changeFilesFormat, conversionDetails } = useFileConverterState();
 
-    const selectOptions: Option[] = [
-        { label: '---', value: '' },
-        ...SUPPORTED_FORMATS.map(item => ({ label: item, value: item })),
-    ];
-
     const handleFileRemove = () => {
         removeFiles([fileHolder.id]);
     };
@@ -33,12 +27,9 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
         if (fileHolder.isValid) {
             fileControls = (
                 <div className="selected-file-controls">
-                    <Select
-                        className="output-format-select"
-                        label="Output: "
-                        options={selectOptions}
-                        value={fileHolder.outFormat}
-                        onChange={ev => changeFilesFormat(fileHolder.id, ev.currentTarget.value)}
+                    <FormatSelect
+                        onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
+                        dropdownPosition="left"
                     />
                     <IconButton onClick={handleFileRemove}>delete</IconButton>
                 </div>

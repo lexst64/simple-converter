@@ -1,18 +1,11 @@
-import { FixedSizeList } from 'react-window';
-import { SUPPORTED_FORMATS } from '../../../constants';
 import FileDropArea from '../../common/FileDropArea';
-import Select, { Option } from '../../common/Select';
 import FileListItem from './FIleListItem';
 import { DragEvent } from 'react';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
+import FormatSelect from './formatselect/FormatSelect';
 
 export default function FileList() {
     const { fileHolders, conversionDetails, changeFilesFormat, addFiles } = useFileConverterState();
-
-    const selectOptions: Option[] = [
-        { label: '---', value: '' },
-        ...SUPPORTED_FORMATS.map(item => ({ label: item, value: item })),
-    ];
 
     const handleFileDrop = (ev: DragEvent) => {
         addFiles(Array.from(ev.dataTransfer.files));
@@ -20,18 +13,11 @@ export default function FileList() {
 
     const listControls = (
         <div className="file-preparation-area-controls">
-            <Select
-                className="output-format-select"
-                options={selectOptions}
-                label={`Convert all (${fileHolders.length}) to: `}
-                value={(() => {
-                    const uniqueOutFormats = [...new Set(fileHolders.map(fh => fh.outFormat))];
-                    return uniqueOutFormats.length === 1 ? uniqueOutFormats[0] : '';
-                })()}
-                onChange={ev =>
+            <FormatSelect
+                onChange={newFormat =>
                     changeFilesFormat(
                         fileHolders.map(fh => fh.id),
-                        ev.currentTarget.value,
+                        newFormat,
                     )
                 }
             />
@@ -43,24 +29,19 @@ export default function FileList() {
             {listControls}
             <FileDropArea onDrop={handleFileDrop}>
                 <div className="selected-files-container">
-                    <FixedSizeList
+                    <div
                         className="no-scrollbar"
-                        height={300}
-                        width={'100%'}
-                        itemCount={fileHolders.length}
-                        itemSize={60}
-                        itemKey={index => fileHolders[index].id}
+                        style={{ height: '300px', width: '100%', overflowY: 'auto' }}
                     >
-                        {({ index, style }) => (
+                        {fileHolders.map(fh => (
                             <FileListItem
-                                style={style}
-                                fileHolder={fileHolders[index]}
+                                fileHolder={fh}
                                 conversionDetail={conversionDetails.find(
-                                    cd => cd.fileHolderId === fileHolders[index].id,
+                                    cd => cd.fileHolderId === fh.id,
                                 )}
                             />
-                        )}
-                    </FixedSizeList>
+                        ))}
+                    </div>
                 </div>
             </FileDropArea>
         </div>

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useMemo, useState } from 'react';
-import { MAX_FILE_SIZE, SUPPORTED_FORMATS } from '../constants';
+import { AUDIO_FORMATS, MAX_FILE_SIZE, VIDEO_FORMATS } from '../constants';
 import { toHumanReadable } from '../utils';
 
 /**
@@ -55,7 +55,7 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
                 let isValid = true;
                 let errorMessage = undefined;
 
-                if (!SUPPORTED_FORMATS.includes(inFormat)) {
+                if (!VIDEO_FORMATS.includes(inFormat) && !AUDIO_FORMATS.includes(inFormat)) {
                     isValid = false;
                     errorMessage = `"${inFormat}" files are not supported`;
                 }
