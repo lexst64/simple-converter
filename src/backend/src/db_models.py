@@ -12,7 +12,7 @@ type FilePreparationStatus = Literal['preparing', 'failed', 'ready']
 class User(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     email: str = Field(unique=True, index=True)
-    name: str = Field()
+    name: str
 
 
 class FileUpload(SQLModel, table=True):
@@ -26,10 +26,14 @@ class FileUpload(SQLModel, table=True):
 class FileConversion(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
     status: FileConversionStatus = Field(sa_type=String)
+    filename: str
+    output_format: str
+
 
 class FilePreparation(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid7, primary_key=True)
     status: FilePreparationStatus = Field(sa_type=String)
+
 
 if __name__ == '__main__':
     from sqlmodel import create_engine

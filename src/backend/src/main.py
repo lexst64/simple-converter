@@ -104,7 +104,7 @@ def ffmpeg_convert_media(
         db_session.commit()
 
 
-def create_zip_file(preparation_id: str, filenames: list[str]) -> None:
+def create_zip_file(preparation_id: str, filenames: list[str], arcnames: list[str]) -> None:
     with next(get_database_session()) as db_session:
         file_preparation_model = db_session.get(FilePreparation, uuid.UUID(preparation_id))
 
@@ -115,8 +115,8 @@ def create_zip_file(preparation_id: str, filenames: list[str]) -> None:
             with zipfile.ZipFile(
                 f'zip_files/{preparation_id}', 'w', compresslevel=zipfile.ZIP_STORED
             ) as zip_file:
-                for fn in filenames:
-                    zip_file.write(fn)
+                for filename, arcname in zip(filenames, arcnames, strict=True):
+                    zip_file.write(filename, arcname)
         except Exception:
             file_preparation_model.status = 'failed'
         else:
@@ -200,7 +200,11 @@ async def request_conversion(
     if not file_upload_model.is_uploaded:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file has not been uploaded yet')
 
-    file_conversion_model = FileConversion(status='converting')
+    file_conversion_model = FileConversion(
+        status='converting',
+        filename=file_upload_model.filename,
+        output_format=file_upload_model.output_format,
+    )
     db_session.add(file_conversion_model)
     db_session.commit()
 
@@ -246,7 +250,10 @@ async def download_converted_file(
     if file_conversion_model.status == 'failed':
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion has failed')
 
-    return FileResponse(f'output_files/{str(file_conversion_model.id)}', filename='')
+    root, ext = os.path.splitext(file_conversion_model.filename)
+    new_filename = f'{root}.{file_conversion_model.output_format}'
+
+    return FileResponse(f'output_files/{str(file_conversion_model.id)}', filename=new_filename)
 
 
 @app.post('/v1/file-preps/', status_code=status.HTTP_201_CREATED)
@@ -273,9 +280,18 @@ async def request_file_preparation(
     db_session.add(file_preparation_model)
     db_session.commit()
 
+    filenames = []
+    arcnames = []
+    for fcm in file_conversion_models:
+        filenames.append(f'output_files/{str(fcm.id)}')
+        root, ext = os.path.splitext(fcm.filename)
+        new_filename = f'{root}.{fcm.output_format}'
+        arcnames.append(new_filename)
+
     background_tasks.add_task(
         create_zip_file,
-        filenames=[f'output_files/{id}' for id in file_preparation_req.fileConversionIds],
+        filenames=filenames,
+        arcnames=arcnames,
         preparation_id=str(file_preparation_model.id),
     )
 
@@ -313,7 +329,9 @@ async def download_file_preparation(
     if file_preparation_model.status == 'failed':
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file preparation has failed')
 
-    return FileResponse(f'zip_files/{str(file_preparation_model.id)}')
+    arc_filename = f'{str(file_preparation_model.id)[:8]}.zip'
+
+    return FileResponse(f'zip_files/{str(file_preparation_model.id)}', filename=arc_filename)
 
 
 # for debugging
