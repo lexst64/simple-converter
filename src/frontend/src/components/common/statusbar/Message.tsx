@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { StatusMessageLevel } from '../../../types';
+import { MdOutlineClose } from 'react-icons/md';
 import IconButton from '../IconButton';
 
 interface MessageProps {
@@ -13,7 +14,9 @@ export default function Message({ children, level = 'info', onClose }: MessagePr
     return (
         <div className={`status-bar-message ${level}`}>
             {children}
-            <IconButton onClick={onClose}>close</IconButton>
+            <IconButton onClick={onClose}>
+                <MdOutlineClose />
+            </IconButton>
         </div>
     );
 }

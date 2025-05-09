@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AUDIO_FORMATS, VIDEO_FORMATS } from '../../../../constants';
 import Dropdown from './Dropdown';
+import { MdArrowDropDown } from 'react-icons/md';
 
 export interface FormatData {
     type: string;
@@ -37,9 +38,9 @@ export default function FormatSelect({
                 className="secondary-button-small"
                 style={{ justifyContent: 'left', width: '90px' }}
             >
-                <span>{currentFormat || 'Choose'}</span>
-                <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
-                    arrow_drop_down
+                {currentFormat || 'Choose'}
+                <span>
+                    <MdArrowDropDown />
                 </span>
             </button>
             {isOpen && (

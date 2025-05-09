@@ -191,10 +191,7 @@ input[type='file'] {
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1.125em;
     padding: 4px;
-    line-height: 0;
-    color: var(--icon-color);
 }
 
 .navbar {
@@ -637,6 +634,12 @@ input[type='file'] {
 }
 .file-preparation-count.failed {
     background-color: #cb5252;
+}
+
+.md-icon {
+    vertical-align: middle;
+    color: var(--icon-color);
+    opacity: 0.8;
 }
 
 /* media queries */

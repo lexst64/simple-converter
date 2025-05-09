@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FormatData } from './FormatSelect';
 import classNames from 'classnames';
 import { capitalize } from '../../../../utils';
+import { MdOutlineChevronRight } from 'react-icons/md';
 
 interface BaseFormatListProps {
     currentFormat?: string;
@@ -39,9 +40,9 @@ function FormatDataList({ formatData, currentFormat, onChange }: FormatDataListP
                             setCurrentTab(data.type);
                         }}
                     >
-                        <span>{capitalize(data.type)}</span>
-                        <span className="material-symbols-outlined" style={{ fontSize: '1.2rem' }}>
-                            chevron_right
+                        {capitalize(data.type)}
+                        <span>
+                            <MdOutlineChevronRight />
                         </span>
                     </button>
                 ))}

@@ -1,11 +1,12 @@
 import classNames from 'classnames';
 import { toHumanReadable, truncateMiddle } from '../../../utils';
-import IconButton from '../../common/IconButton';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import { ConversionDetail, FileHolder } from '../../../context/FileConverterStateProvider';
 import CircularLoader from '../../common/CircularLoader';
 import { createDownloadLink } from '../../../services/filedownload.service';
 import FormatSelect from './formatselect/FormatSelect';
+import { MdDeleteOutline, MdOutlineDownload } from 'react-icons/md';
+import IconButton from '../../common/IconButton';
 
 interface FileListItemProps {
     fileHolder: FileHolder;
@@ -35,8 +36,8 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
                 ) : (
                     <span>{fileHolder.errorMessage || 'Invalid file'}</span>
                 )}
-                <IconButton onClick={handleFileRemove} style={{ opacity: 0.7 }}>
-                    delete
+                <IconButton onClick={handleFileRemove}>
+                    <MdDeleteOutline />
                 </IconButton>
             </div>
         );
@@ -65,7 +66,7 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
                         className="icon-button"
                         style={{ opacity: 0.7 }}
                     >
-                        <span className="material-symbols-outlined">download</span>
+                        <MdOutlineDownload />
                     </a>
                 </span>
             );
