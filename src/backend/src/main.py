@@ -24,7 +24,27 @@ from responses import (
 )
 
 MAX_FILE_SIZE = 1_073_741_824  # in bytes
-SUPPORTED_FORMATS = {'mp3', 'flac', 'ogg', 'aac', 'alac'}
+
+# supported formats and corresponding ffmpeg args
+SUPPORTED_FORMATS: dict[str, list[str]] = {
+    '3gp': ['-f', '3gp', '-c:v', 'h264', '-c:a', 'aac'],
+    'avi': ['-f', 'avi', '-c:v', 'mpeg4', '-c:a', 'mp3'],
+    'flv': ['-f', 'flv', '-c:v', 'h264', '-c:a', 'aac'],
+    'mkv': ['-f', 'matroska', '-c:v', 'h264', '-c:a', 'aac'],
+    'mov': ['-f', 'mov', '-c:v', 'h264', '-c:a', 'aac'],
+    'mp4': ['-f', 'mp4', '-c:v', 'h264', '-c:a', 'aac'],
+    'ogv': ['-f', 'ogg', '-c:v', 'libtheora', '-c:a', 'libvorbis'],
+    'webm': ['-f', 'webm', '-c:v', 'libvpx-vp9', '-c:a', 'libvorbis'],
+    'wmv': ['-c:v', 'wmv2', '-c:a', 'wmav2', '-f', 'asf'],
+    'mp3': ['-c:a', 'libmp3lame', '-f', 'mp3'],
+    'flac': ['-c:a', 'flac', '-f', 'flac'],
+    'ogg': ['-c:a', 'libvorbis', '-f', 'ogg'],
+    'aac': ['-c:a', 'aac', '-f', 'adts'],
+    'alac': ['-c:a', 'alac', '-f', 'm4a'],
+    'aiff': ['-c:a', 'pcm_s16be', '-f', 'aiff'],
+    'amr': ['-c:a', 'libopencore_amrnb', '-f', 'amr'],
+    'm4a': ['-c:a', 'aac', '-f', 'm4a'],
+}
 
 SQLITE_FILE_NAME = 'database.db'
 SQLITE_URL = f'sqlite:///{SQLITE_FILE_NAME}'
@@ -57,9 +77,9 @@ def ffmpeg_convert_media(
     process = subprocess.Popen(
         [
             'ffmpeg',
-            '-f', 'flac',
+            '-f', input_format,
             '-i', str(input_filename),
-            '-f', 'adts',
+            *SUPPORTED_FORMATS[output_format],
             '-loglevel', 'error',
             output_filename
         ],
@@ -75,6 +95,8 @@ def ffmpeg_convert_media(
 
         if stderr:
             file_conversion_model.status = 'failed'
+            # todo: do some better logging
+            print(stderr)
         else:
             file_conversion_model.status = 'ready'
 
@@ -224,7 +246,7 @@ async def download_converted_file(
     if file_conversion_model.status == 'failed':
         raise HTTPException(status.HTTP_400_BAD_REQUEST, 'file conversion has failed')
 
-    return FileResponse(f'output_files/{str(file_conversion_model.id)}')
+    return FileResponse(f'output_files/{str(file_conversion_model.id)}', filename='')
 
 
 @app.post('/v1/file-preps/', status_code=status.HTTP_201_CREATED)
