@@ -4,4 +4,5 @@ export interface StatusMessage {
     id: string;
     content: string;
     level: StatusMessageLevel;
+    timeoutId?: number;
 }
