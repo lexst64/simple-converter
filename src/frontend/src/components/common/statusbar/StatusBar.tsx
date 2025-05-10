@@ -9,13 +9,13 @@ export default function StatusBar() {
             {messages.map(m => (
                 <Message
                     hasTimeout={m.timeoutId !== undefined}
-                    onMouseEnter={() => {
+                    onPointerEnter={() => {
                         if (m.timeoutId === undefined) {
                             return;
                         }
                         removeTimeout(m.id);
                     }}
-                    onMouseLeave={() => {
+                    onPointerLeave={() => {
                         if (m.timeoutId !== undefined) {
                             return;
                         }

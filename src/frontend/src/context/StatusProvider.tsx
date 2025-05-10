@@ -2,7 +2,7 @@ import React, { createContext, useCallback, useMemo, useState } from 'react';
 import { StatusMessage, StatusMessageLevel } from '../types';
 
 export interface StatusContextType {
-    pushMessage: (content: string, level: StatusMessageLevel) => void;
+    pushMessage: (content: string, level?: StatusMessageLevel) => void;
     deleteMessage: (id: string) => void;
     removeTimeout: (id: string) => void;
     resetTimeout: (id: string) => void;
@@ -31,7 +31,7 @@ export default function StatusProvider({ children }: React.PropsWithChildren) {
     );
 
     const pushMessage = useCallback(
-        (content: string, level: StatusMessageLevel) => {
+        (content: string, level: StatusMessageLevel = 'info') => {
             const newMessage = {
                 id: crypto.randomUUID(),
                 content,
