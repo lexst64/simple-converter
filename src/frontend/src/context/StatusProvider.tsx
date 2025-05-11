@@ -16,19 +16,16 @@ export default function StatusProvider({ children }: React.PropsWithChildren) {
 
     const timeoutDurationMs = 5000;
 
-    const deleteMessage = useCallback(
-        (id: string) => {
-            setMessages(messages => {
-                const messageToDelete = messages.find(m => m.id === id);
-                if (!messageToDelete) {
-                    return messages;
-                }
-                clearTimeout(messageToDelete.timeoutId);
-                return messages.filter(m => m.id !== id);
-            });
-        },
-        [messages],
-    );
+    const deleteMessage = useCallback((id: string) => {
+        setMessages(messages => {
+            const messageToDelete = messages.find(m => m.id === id);
+            if (!messageToDelete) {
+                return messages;
+            }
+            clearTimeout(messageToDelete.timeoutId);
+            return messages.filter(m => m.id !== id);
+        });
+    }, []);
 
     const pushMessage = useCallback(
         (content: string, level: StatusMessageLevel = 'info') => {
