@@ -33,3 +33,7 @@ export const capitalize = (str: string): string => {
     }
     return str.charAt(0).toUpperCase() + str.substring(1);
 };
+
+export const getFileExtension = (filename: string): string => {
+    return filename.split('.').pop() || '';
+};

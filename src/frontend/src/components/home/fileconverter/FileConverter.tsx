@@ -28,7 +28,7 @@ export default function FileConverter() {
 
     const handleConvert = (fileHolders: FileHolder[]) => {
         if (fileHolders.find(fh => !fh.isValid)) {
-            pushMessage('There are invalid files. Remove them first before converting.', 'error');
+            pushMessage('There are invalid files. Review them first before converting.', 'error');
             return;
         }
         if (fileHolders.find(fh => fh.outFormat === '')) {
@@ -89,26 +89,41 @@ export default function FileConverter() {
         });
     };
 
-    const handleFileDrop = (ev: DragEvent) => {
-        if (ev.dataTransfer) {
-            addFiles(Array.from(ev.dataTransfer.files));
+    const handleFilesDrop = (ev: DragEvent) => {
+        const possibleDirs = Array.from(ev.dataTransfer.items)
+            .map(item => item.webkitGetAsEntry())
+            .filter(entry => entry && entry.isDirectory);
+        const possibleDirsNames = possibleDirs.map(entry => entry && entry.name);
+
+        // add only files, possible empty array
+        addFiles(
+            Array.from(ev.dataTransfer.files).filter(
+                file => !possibleDirsNames.includes(file.name),
+            ),
+        );
+
+        if (possibleDirs.length > 0) {
+            pushMessage(
+                `Directories are not supported: ${possibleDirsNames.map(dirName => `"${dirName}"`).join(', ')} ${possibleDirsNames.length > 1 ? 'were' : 'was'} not added`,
+                'error',
+            );
         }
     };
 
     return (
         <div className="file-converter">
-            {fileHolders.length > 0 ? (
-                <FileList />
-            ) : (
-                <FileDropArea onDrop={handleFileDrop}>
+            <FileDropArea onDrop={handleFilesDrop}>
+                {fileHolders.length > 0 ? (
+                    <FileList />
+                ) : (
                     <div className="file-selection-area">
                         <FileSelectButton onFileChange={handleFileSelect}>
                             Select files
                         </FileSelectButton>
                         <span className="hint">or drag-and-drop here (up to 1.0 GB)</span>
                     </div>
-                </FileDropArea>
-            )}
+                )}
+            </FileDropArea>
             <ActionButton onConvert={handleConvert} />
             {isPending && (
                 <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>

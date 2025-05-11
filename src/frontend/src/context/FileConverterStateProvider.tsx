@@ -1,6 +1,6 @@
 import { createContext, useCallback, useMemo, useState } from 'react';
 import { AUDIO_FORMATS, MAX_FILE_SIZE, VIDEO_FORMATS } from '../constants';
-import { toHumanReadable } from '../utils';
+import { getFileExtension, toHumanReadable } from '../utils';
 
 /**
  * Represents the status of the user selected files.
@@ -50,7 +50,7 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
     const addFiles = useCallback(
         (files: File[]) => {
             const newSelectedFiles: FileHolder[] = files.map(file => {
-                const inFormat = file.name.split('.').pop() || '';
+                const inFormat = getFileExtension(file.name);
 
                 let isValid = true;
                 let errorMessage = undefined;
@@ -58,10 +58,12 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
                 if (!VIDEO_FORMATS.includes(inFormat) && !AUDIO_FORMATS.includes(inFormat)) {
                     isValid = false;
                     errorMessage = `"${inFormat}" files are not supported`;
-                }
-                if (file.size > MAX_FILE_SIZE) {
+                } else if (file.size > MAX_FILE_SIZE) {
                     isValid = false;
                     errorMessage = `File size is over ${toHumanReadable(MAX_FILE_SIZE)}`;
+                } else if (file.size === 0) {
+                    isValid = false;
+                    errorMessage = `File cannot be empty`;
                 }
 
                 return {
