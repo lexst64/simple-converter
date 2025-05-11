@@ -9,11 +9,14 @@ import FileDropArea from '../../common/FileDropArea';
 import FileList from './FileList';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import ActionButton from './ActionButton';
-import { FileHolder } from '../../../context/FileConverterStateProvider';
 
 export default function FileConverter() {
-    const { addFiles, fileHolders, updateFileStatus, addConversionDetail } =
-        useFileConverterState();
+    const {
+        addFiles,
+        fileHolders,
+        updateFileStatus,
+        setConversionId: addConversionDetail,
+    } = useFileConverterState();
     const { pushMessage } = useStatus();
 
     const isPending: boolean = useMemo(() => {
@@ -26,12 +29,12 @@ export default function FileConverter() {
         }
     };
 
-    const handleConvert = (fileHolders: FileHolder[]) => {
-        if (fileHolders.find(fh => !fh.isValid)) {
+    const handleConvert = () => {
+        if (fileHolders.find(fh => fh.errorMessage !== undefined)) {
             pushMessage('There are invalid files. Review them first before converting.', 'error');
             return;
         }
-        if (fileHolders.find(fh => fh.outFormat === '')) {
+        if (fileHolders.find(fh => fh.outputFormat === '')) {
             pushMessage(
                 'Please select an output format for all the files to proceed with conversion.',
                 'error',
@@ -43,7 +46,7 @@ export default function FileConverter() {
             let fileConversionId;
             try {
                 updateFileStatus(fh.id, 'uploading');
-                const fileUploadId = await uploadFile(fh.file, fh.outFormat);
+                const fileUploadId = await uploadFile(fh.file, fh.outputFormat);
                 updateFileStatus(fh.id, 'converting');
                 fileConversionId = await convertFile(fileUploadId);
             } catch (err) {

@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import { toHumanReadable, truncateMiddle } from '../../../utils';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
-import { ConversionDetail, FileHolder } from '../../../context/FileConverterStateProvider';
+import { FileHolder } from '../../../context/FileConverterStateProvider';
 import CircularLoader from '../../common/CircularLoader';
 import { createDownloadLink } from '../../../services/filedownload.service';
 import FormatSelect from './formatselect/FormatSelect';
@@ -10,13 +10,11 @@ import IconButton from '../../common/IconButton';
 
 interface FileListItemProps {
     fileHolder: FileHolder;
-    conversionDetail?: ConversionDetail;
-
     style?: React.CSSProperties;
 }
 
 export default function FileListItem({ fileHolder, style }: FileListItemProps) {
-    const { removeFiles, changeFilesFormat, conversionDetails } = useFileConverterState();
+    const { removeFiles, changeFilesFormat } = useFileConverterState();
 
     const handleFileRemove = () => {
         removeFiles([fileHolder.id]);
@@ -27,9 +25,9 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
     if (fileHolder.status === 'pending' || fileHolder.status === 'failed') {
         fileControls = (
             <div className="selected-file-controls">
-                {fileHolder.isValid ? (
+                {fileHolder.errorMessage === undefined ? (
                     <FormatSelect
-                        currentFormat={fileHolder.outFormat}
+                        currentFormat={fileHolder.outputFormat}
                         onChange={newFormat => changeFilesFormat(fileHolder.id, newFormat)}
                         dropdownPosition="left"
                     />
@@ -49,8 +47,7 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
             </span>
         );
     } else {
-        const conversionDetail = conversionDetails.find(cd => cd.fileHolderId === fileHolder.id);
-        if (!conversionDetail) {
+        if (!fileHolder.conversionId) {
             fileControls = <span className="file-status">error</span>;
         } else {
             fileControls = (
@@ -58,8 +55,8 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
                     <p>{fileHolder.status}</p>
                     <a
                         href={
-                            conversionDetail
-                                ? createDownloadLink(conversionDetail.fileConversionId)
+                            fileHolder.conversionId
+                                ? createDownloadLink(fileHolder.conversionId)
                                 : '#'
                         }
                         download
@@ -74,7 +71,12 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
     }
 
     return (
-        <li className={classNames('selected-file', { invalid: !fileHolder.isValid })} style={style}>
+        <li
+            className={classNames('selected-file', {
+                invalid: fileHolder.errorMessage !== undefined,
+            })}
+            style={style}
+        >
             <div className="selected-file-meta">
                 <span className="selected-file-name">
                     {truncateMiddle(fileHolder.file.name, 40)}

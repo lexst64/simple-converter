@@ -24,7 +24,9 @@ export default function DownloadAllButton() {
 
     const handleClick = async () => {
         const filePreparationId = await prepareFiles(
-            state.conversionDetails.map(cd => cd.fileConversionId),
+            state.fileHolders
+                .map(fh => fh.conversionId)
+                .filter(conversionId => conversionId !== undefined),
         );
 
         setIsDisabled(true);

@@ -15,28 +15,22 @@ export type FileStatus = 'pending' | 'uploading' | 'converting' | 'ready' | 'fai
 export interface FileHolder {
     id: string;
     file: File;
-    inFormat: string;
-    outFormat: string;
-    isValid: boolean;
+    inputFormat: string;
+    outputFormat: string;
     status: FileStatus;
 
+    conversionId?: string;
     errorMessage?: string;
-}
-
-export interface ConversionDetail {
-    fileHolderId: string;
-    fileConversionId: string;
 }
 
 export interface FileConverterStateContextType {
     fileHolders: FileHolder[];
-    conversionDetails: ConversionDetail[];
 
     addFiles: (file: File[]) => void;
     changeFilesFormat: (fileHolderId: string | string[], newFormat: string) => void;
     removeFiles: (fileHolderIds: string[]) => void;
     updateFileStatus: (id: string, status: FileStatus) => void;
-    addConversionDetail: (fileHolderId: string, fileConversionId: string) => void;
+    setConversionId: (fileHolderId: string, fileConversionId: string) => void;
 }
 
 export const FileConverterStateContext = createContext<FileConverterStateContextType | undefined>(
@@ -45,33 +39,27 @@ export const FileConverterStateContext = createContext<FileConverterStateContext
 
 export default function FileConverterStateProvider({ children }: React.PropsWithChildren) {
     const [fileHolders, setFileHolders] = useState<FileHolder[]>([]);
-    const [conversionDetails, setConversionDetails] = useState<ConversionDetail[]>([]);
 
     const addFiles = useCallback(
         (files: File[]) => {
             const newSelectedFiles: FileHolder[] = files.map(file => {
                 const inFormat = getFileExtension(file.name);
 
-                let isValid = true;
                 let errorMessage = undefined;
 
                 if (!VIDEO_FORMATS.includes(inFormat) && !AUDIO_FORMATS.includes(inFormat)) {
-                    isValid = false;
                     errorMessage = `"${inFormat}" files are not supported`;
                 } else if (file.size > MAX_FILE_SIZE) {
-                    isValid = false;
                     errorMessage = `File size is over ${toHumanReadable(MAX_FILE_SIZE)}`;
                 } else if (file.size === 0) {
-                    isValid = false;
                     errorMessage = `File cannot be empty`;
                 }
 
                 return {
                     id: crypto.randomUUID(),
                     file: file,
-                    inFormat: inFormat,
-                    isValid: isValid,
-                    outFormat: '',
+                    inputFormat: inFormat,
+                    outputFormat: '',
                     status: 'pending',
                     errorMessage: errorMessage,
                 } satisfies FileHolder;
@@ -87,7 +75,7 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
                 if (fileHolderId instanceof Array) {
                     return fileHolders.map(fh => {
                         if (fileHolderId.includes(fh.id)) {
-                            return { ...fh, outFormat: newFormat };
+                            return { ...fh, outputFormat: newFormat };
                         } else {
                             return fh;
                         }
@@ -95,7 +83,7 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
                 } else {
                     return fileHolders.map(fh => {
                         if (fh.id == fileHolderId) {
-                            return { ...fh, outFormat: newFormat };
+                            return { ...fh, outputFormat: newFormat };
                         } else {
                             return fh;
                         }
@@ -119,32 +107,30 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
         );
     }, []);
 
-    const addConversionDetail = useCallback((fileHolderId: string, fileConversionId: string) => {
-        setConversionDetails(conversionDetails => [
-            ...conversionDetails,
-            { fileHolderId, fileConversionId },
-        ]);
-    }, []);
+    const setConversionId = useCallback(
+        (fileHolderId: string, conversionId: string) => {
+            setFileHolders(
+                fileHolders.map(fh => {
+                    if (fh.id === fileHolderId) {
+                        return { ...fh, conversionId };
+                    }
+                    return fh;
+                }),
+            );
+        },
+        [fileHolders],
+    );
 
     const contextValue = useMemo(
         () => ({
             fileHolders,
-            conversionDetails,
             addFiles,
             changeFilesFormat,
             removeFiles,
             updateFileStatus,
-            addConversionDetail,
+            setConversionId,
         }),
-        [
-            fileHolders,
-            conversionDetails,
-            addFiles,
-            changeFilesFormat,
-            removeFiles,
-            updateFileStatus,
-            addConversionDetail,
-        ],
+        [fileHolders, addFiles, changeFilesFormat, removeFiles, updateFileStatus, setConversionId],
     );
     return (
         <FileConverterStateContext.Provider value={contextValue}>

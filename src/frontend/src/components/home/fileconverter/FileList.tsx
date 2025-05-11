@@ -5,10 +5,10 @@ import FormatSelect from './formatselect/FormatSelect';
 import ConversionStatusBar from './ConversionStatusBar';
 
 export default function FileList() {
-    const { fileHolders, conversionDetails, changeFilesFormat } = useFileConverterState();
+    const { fileHolders, changeFilesFormat } = useFileConverterState();
 
     const currentSelectFormat = useMemo(() => {
-        const uniqueFormats = [...new Set(fileHolders.map(fh => fh.outFormat))];
+        const uniqueFormats = [...new Set(fileHolders.map(fh => fh.outputFormat))];
         return uniqueFormats.length === 1 ? uniqueFormats[0] : undefined;
     }, [fileHolders]);
 
@@ -39,13 +39,7 @@ export default function FileList() {
                     style={{ height: '300px', width: '100%', overflowY: 'auto' }}
                 >
                     {fileHolders.map(fh => (
-                        <FileListItem
-                            key={fh.id}
-                            fileHolder={fh}
-                            conversionDetail={conversionDetails.find(
-                                cd => cd.fileHolderId === fh.id,
-                            )}
-                        />
+                        <FileListItem key={fh.id} fileHolder={fh} />
                     ))}
                 </div>
             </div>
