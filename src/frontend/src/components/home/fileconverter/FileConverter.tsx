@@ -19,6 +19,11 @@ export default function FileConverter() {
         return fileHolders.map(fh => fh.status).includes('pending');
     }, [fileHolders]);
 
+    const areAllReady: boolean = useMemo(() => {
+        const uniqueStates = Array.from(new Set(fileHolders.map(fh => fh.status)));
+        return uniqueStates.length === 1 ? uniqueStates[0] === 'ready' : false;
+    }, [fileHolders]);
+
     const handleFileSelect = (ev: React.ChangeEvent<HTMLInputElement>) => {
         if (ev.target.files) {
             addFiles(Array.from(ev.target.files));
@@ -128,6 +133,11 @@ export default function FileConverter() {
                 <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
                     Add more files
                 </FileSelectButton>
+            )}
+            {areAllReady && (
+                <a className="secondary-button" href="/" target="_blank">
+                    Convert more files
+                </a>
             )}
         </div>
     );
