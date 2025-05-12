@@ -107,19 +107,16 @@ export default function FileConverterStateProvider({ children }: React.PropsWith
         );
     }, []);
 
-    const setConversionId = useCallback(
-        (fileHolderId: string, conversionId: string) => {
-            setFileHolders(
-                fileHolders.map(fh => {
-                    if (fh.id === fileHolderId) {
-                        return { ...fh, conversionId };
-                    }
-                    return fh;
-                }),
-            );
-        },
-        [fileHolders],
-    );
+    const setConversionId = useCallback((fileHolderId: string, conversionId: string) => {
+        setFileHolders(fileHolders =>
+            fileHolders.map(fh => {
+                if (fh.id === fileHolderId) {
+                    return { ...fh, conversionId };
+                }
+                return fh;
+            }),
+        );
+    }, []);
 
     const contextValue = useMemo(
         () => ({

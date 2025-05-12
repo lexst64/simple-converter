@@ -9,14 +9,10 @@ import FileDropArea from '../../common/FileDropArea';
 import FileList from './FileList';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import ActionButton from './ActionButton';
+import { FileHolder } from '../../../context/FileConverterStateProvider';
 
 export default function FileConverter() {
-    const {
-        addFiles,
-        fileHolders,
-        updateFileStatus,
-        setConversionId: addConversionDetail,
-    } = useFileConverterState();
+    const { addFiles, fileHolders, updateFileStatus, setConversionId } = useFileConverterState();
     const { pushMessage } = useStatus();
 
     const isPending: boolean = useMemo(() => {
@@ -29,7 +25,7 @@ export default function FileConverter() {
         }
     };
 
-    const handleConvert = () => {
+    const handleConvert = (fileHolders: FileHolder[]) => {
         if (fileHolders.find(fh => fh.errorMessage !== undefined)) {
             pushMessage('There are invalid files. Review them first before converting.', 'error');
             return;
@@ -84,7 +80,7 @@ export default function FileConverter() {
                         break;
                     case 'ready':
                         updateFileStatus(fh.id, 'ready');
-                        addConversionDetail(fh.id, fileConversionId);
+                        setConversionId(fh.id, fileConversionId);
                         clearInterval(intervalId);
                         break;
                 }
