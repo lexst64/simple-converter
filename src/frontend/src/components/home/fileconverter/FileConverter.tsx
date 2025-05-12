@@ -1,6 +1,6 @@
 import { DragEvent, useMemo } from 'react';
 import uploadFile from '../../../services/fileupload.service';
-import { STATUS_POLLING_INTERVAL } from '../../../constants';
+import { MAX_FILE_SIZE, STATUS_POLLING_INTERVAL } from '../../../constants';
 import FileSelectButton from '../../common/UploadButton';
 import { useStatus } from '../../../hooks/Status';
 import { convertFile, checkConversionStatus } from '../../../services/fileconvert.service';
@@ -10,13 +10,15 @@ import FileList from './FileList';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import ActionButton from './ActionButton';
 import { FileHolder } from '../../../context/FileConverterStateProvider';
+import { toHumanReadable } from '../../../utils';
 
 export default function FileConverter() {
     const { addFiles, fileHolders, updateFileStatus, setConversionId } = useFileConverterState();
     const { pushMessage } = useStatus();
 
-    const isPending: boolean = useMemo(() => {
-        return fileHolders.map(fh => fh.status).includes('pending');
+    const areAllPending: boolean = useMemo(() => {
+        const uniqueStates = Array.from(new Set(fileHolders.map(fh => fh.status)));
+        return uniqueStates.length === 1 ? uniqueStates[0] === 'pending' : false;
     }, [fileHolders]);
 
     const areAllReady: boolean = useMemo(() => {
@@ -114,22 +116,30 @@ export default function FileConverter() {
         }
     };
 
+    let content;
+    if (fileHolders.length > 0) {
+        content = <FileList />;
+    } else {
+        content = (
+            <div className="file-selection-area">
+                <FileSelectButton onFileChange={handleFileSelect}>Select files</FileSelectButton>
+                <span className="hint">
+                    or drag-and-drop here (up to {toHumanReadable(MAX_FILE_SIZE)})
+                </span>
+            </div>
+        );
+    }
+
     return (
         <div className="file-converter">
-            <FileDropArea onDrop={handleFilesDrop}>
-                {fileHolders.length > 0 ? (
-                    <FileList />
-                ) : (
-                    <div className="file-selection-area">
-                        <FileSelectButton onFileChange={handleFileSelect}>
-                            Select files
-                        </FileSelectButton>
-                        <span className="hint">or drag-and-drop here (up to 1.0 GB)</span>
-                    </div>
-                )}
-            </FileDropArea>
+            {areAllPending ? (
+                <FileDropArea onDrop={handleFilesDrop}>{content}</FileDropArea>
+            ) : (
+                content
+            )}
+
             <ActionButton onConvert={handleConvert} />
-            {isPending && (
+            {areAllPending && (
                 <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
                     Add more files
                 </FileSelectButton>

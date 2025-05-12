@@ -12,17 +12,27 @@ export default function FileList() {
         return uniqueFormats.length === 1 ? uniqueFormats[0] : undefined;
     }, [fileHolders]);
 
-    return (
-        <div className="file-preparation-area">
-            <div className="file-preparation-area-controls">
+    const hasPendingFiles: boolean = useMemo(() => {
+        return fileHolders.map(fh => fh.status).includes('pending');
+    }, [fileHolders]);
+
+    const hasFailedFiles: boolean = useMemo(() => {
+        return fileHolders.map(fh => fh.status).includes('failed');
+    }, [fileHolders]);
+
+    let controls;
+    if (hasPendingFiles) {
+        controls = (
+            <>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <span>Change all:</span>
+                    <span>{hasFailedFiles ? 'Change failed:' : 'Change all:'}</span>
                     <FormatSelect
                         currentFormat={currentSelectFormat}
                         onChange={newFormat =>
                             changeFilesFormat(
-                                // filter out those that are "ready"
-                                fileHolders.filter(fh => fh.status !== 'ready').map(fh => fh.id),
+                                fileHolders
+                                    .filter(fh => fh.status === 'pending' || fh.status === 'failed')
+                                    .map(fh => fh.id),
                                 newFormat,
                             )
                         }
@@ -32,7 +42,22 @@ export default function FileList() {
                 <span>
                     Total: <b>{fileHolders.length}</b>
                 </span>
-            </div>
+            </>
+        );
+    } else {
+        controls = (
+            <>
+                <ConversionStatusBar />
+                <span>
+                    Total: <b>{fileHolders.length}</b>
+                </span>
+            </>
+        );
+    }
+
+    return (
+        <div className="file-preparation-area">
+            <div className="file-preparation-area-controls">{controls}</div>
             <div className="selected-files-container">
                 <div
                     className="no-scrollbar"
