@@ -1,7 +1,7 @@
 {
     "name": "simple-converter",
     "private": true,
-    "version": "1.0.0",
+    "version": "1.0.0-alpha",
     "type": "module",
     "scripts": {
         "dev": "vite --port 8888",
