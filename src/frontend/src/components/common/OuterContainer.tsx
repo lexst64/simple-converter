@@ -1,5 +1,9 @@
-import React from 'react';
+import styled from 'styled-components';
 
-export default function OuterContainer({ children }: React.PropsWithChildren) {
-    return <div className="outer-container">{children}</div>;
-}
+const OuterContainer = styled.div`
+    position: relative;
+    flex-grow: 1;
+    padding: 10px;
+`;
+
+export default OuterContainer;

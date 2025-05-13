@@ -1,7 +1,46 @@
 import { useMemo } from 'react';
 import { FileStatus } from '../../../context/FileConverterStateProvider';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
-import classNames from 'classnames';
+import styled, { css } from 'styled-components';
+
+const Wrapper = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 5px;
+`;
+
+const countWrapperMixins = {
+    pending: css`
+        background-color: #85bef3;
+    `,
+    uploading: css`
+        background-color: #ffce65;
+    `,
+    converting: css`
+        background-color: #b64cd9;
+    `,
+    ready: css`
+        background-color: #4fa936;
+    `,
+    failed: css`
+        background-color: #cb5252;
+    `,
+};
+
+const CountWrapper = styled.div<{ $status: FileStatus }>`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    color: #fff;
+    border-radius: 5px;
+    width: 25px;
+    height: 25px;
+    line-height: 1;
+    font-weight: 500;
+
+    ${props => props.$status in countWrapperMixins && countWrapperMixins[props.$status]}
+`;
 
 export default function ConversionStatusBar() {
     const { fileHolders } = useFileConverterState();
@@ -16,16 +55,16 @@ export default function ConversionStatusBar() {
     }, [fileHolders]);
 
     return (
-        <div className="file-preparation-status">
+        <Wrapper>
             {Array.from(counts).map(([status, count]) => (
                 // status is unique and consistent, we can use it as a key
-                <div key={status} className={classNames('file-preparation-count', status)}>
+                <CountWrapper $status={status} key={status}>
                     <span>
                         {status.charAt(0).toUpperCase()}
                         {count}
                     </span>
-                </div>
+                </CountWrapper>
             ))}
-        </div>
+        </Wrapper>
     );
 }

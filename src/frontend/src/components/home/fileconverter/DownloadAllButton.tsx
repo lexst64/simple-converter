@@ -6,6 +6,8 @@ import {
     prepareFiles,
 } from '../../../services/filedownload.service';
 import { STATUS_POLLING_INTERVAL } from '../../../constants';
+import PrimaryLinkButton from '../../common/buttons/PrimaryLinkButton';
+import PrimaryButton from '../../common/buttons/PrimaryButton';
 
 export default function DownloadAllButton() {
     const state = useFileConverterState();
@@ -55,13 +57,13 @@ export default function DownloadAllButton() {
     return (
         <>
             {downloadLink ? (
-                <a ref={linkButtonRef} className="primary-button" href={downloadLink} download>
+                <PrimaryLinkButton ref={linkButtonRef} href={downloadLink} download>
                     <span>{textContent}</span>
-                </a>
+                </PrimaryLinkButton>
             ) : (
-                <button className="primary-button" disabled={isDisabled} onClick={handleClick}>
+                <PrimaryButton disabled={isDisabled} onClick={handleClick}>
                     {textContent}
-                </button>
+                </PrimaryButton>
             )}
         </>
     );

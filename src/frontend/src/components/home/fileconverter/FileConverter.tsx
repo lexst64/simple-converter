@@ -1,7 +1,7 @@
 import { DragEvent, useMemo } from 'react';
 import uploadFile from '../../../services/fileupload.service';
 import { MAX_FILE_SIZE, STATUS_POLLING_INTERVAL } from '../../../constants';
-import FileSelectButton from '../../common/UploadButton';
+import InputFileButton from '../../common/buttons/InputFileButton';
 import { useStatus } from '../../../hooks/Status';
 import { convertFile, checkConversionStatus } from '../../../services/fileconvert.service';
 import { APIException } from '../../../services/exceptions';
@@ -11,6 +11,44 @@ import { useFileConverterState } from '../../../hooks/FileConverterState';
 import ActionButton from './ActionButton';
 import { FileHolder } from '../../../context/FileConverterStateProvider';
 import { toHumanReadable } from '../../../utils';
+import styled from 'styled-components';
+import SecondaryLinkButton from '../../common/buttons/SecondaryLinkButton';
+
+const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border-radius: 8px;
+    overflow: hidden;
+
+    @media (min-width: 700px) {
+        width: 700px;
+    }
+
+    @media (max-width: 700px) {
+        width: 100%;
+    }
+`;
+
+const FileSelectionArea = styled.div`
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 5px;
+    height: 300px;
+
+    background-color: var(--secondary-bg-color);
+
+    border: 2px dashed #bfdaf4;
+    border-radius: 8px;
+    overflow: hidden;
+`;
+
+const Hint = styled.span`
+    font-size: 0.75em;
+    color: rgba(0, 0, 0, 0.523), 0, 0;
+`;
 
 export default function FileConverter() {
     const { addFiles, fileHolders, updateFileStatus, setConversionId } = useFileConverterState();
@@ -121,17 +159,17 @@ export default function FileConverter() {
         content = <FileList />;
     } else {
         content = (
-            <div className="file-selection-area">
-                <FileSelectButton onFileChange={handleFileSelect}>Select files</FileSelectButton>
-                <span className="hint">
-                    or drag-and-drop here (up to {toHumanReadable(MAX_FILE_SIZE)})
-                </span>
-            </div>
+            <FileSelectionArea>
+                <InputFileButton primary={true} onFileChange={handleFileSelect}>
+                    Select files
+                </InputFileButton>
+                <Hint>or drag-and-drop here (up to {toHumanReadable(MAX_FILE_SIZE)})</Hint>
+            </FileSelectionArea>
         );
     }
 
     return (
-        <div className="file-converter">
+        <Wrapper>
             {areAllPending ? (
                 <FileDropArea onDrop={handleFilesDrop}>{content}</FileDropArea>
             ) : (
@@ -140,15 +178,15 @@ export default function FileConverter() {
 
             <ActionButton onConvert={handleConvert} />
             {areAllPending && (
-                <FileSelectButton className="secondary-button" onFileChange={handleFileSelect}>
+                <InputFileButton primary={false} onFileChange={handleFileSelect}>
                     Add more files
-                </FileSelectButton>
+                </InputFileButton>
             )}
             {areAllReady && (
-                <a className="secondary-button" href="/" target="_blank">
+                <SecondaryLinkButton $small={false} href="/" target="_blank">
                     Convert more files
-                </a>
+                </SecondaryLinkButton>
             )}
-        </div>
+        </Wrapper>
     );
 }

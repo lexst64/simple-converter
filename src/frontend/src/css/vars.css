@@ -1,0 +1,10 @@
+:root {
+    --primary-bg-color: #ffffff;
+    --secondary-bg-color: #f6fafe;
+    --primary-color: #646cff;
+    --primary-color-disabled: #9196ff;
+    --icon-color: #222222bf;
+    --text-color: #222222de;
+
+    --timeout-duration: 5s;
+}

@@ -1,5 +1,13 @@
-import { InputHTMLAttributes } from 'react';
+import styled from 'styled-components';
 
-export default function SearchBar(props: InputHTMLAttributes<HTMLInputElement>) {
-    return <input className="search-bar" type="text" {...props} />;
-}
+const SearchBar = styled.input.attrs(() => ({ type: 'text' }))`
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: none;
+    color: var(--text-color);
+    border: 2px solid #999;
+    outline: none;
+    transition: border 0.2s ease;
+`;
+
+export default SearchBar;

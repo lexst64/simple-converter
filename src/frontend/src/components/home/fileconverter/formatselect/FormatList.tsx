@@ -1,8 +1,84 @@
 import { useState } from 'react';
 import { FormatData } from './FormatSelect';
-import classNames from 'classnames';
 import { capitalize } from '../../../../utils';
 import { MdOutlineChevronRight } from 'react-icons/md';
+import styled, { css } from 'styled-components';
+import { nonScrollableMixin } from '../../../../mixins';
+
+const Wrapper = styled.div`
+    display: flex;
+    justify-content: center;
+    padding-top: 10px;
+    gap: 10px;
+`;
+
+const TabsWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 100px;
+`;
+
+const Tab = styled.button<{ $active: boolean }>`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-size: 1rem;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 50px;
+    border: none;
+    width: 100%;
+    background: none;
+    font-weight: 400;
+
+    ${props =>
+        props.$active
+            ? css`
+                  color: var(--primary-color);
+              `
+            : css`
+                  color: var(--text-color);
+              `}
+`;
+
+const ChoicesWrapper = styled.div`
+    overflow-y: auto;
+    max-height: 250px;
+
+    ${nonScrollableMixin}
+`;
+
+const ChoicesGrid = styled.div<{ $nColumns: number }>`
+    display: grid;
+    gap: 5px;
+    grid-template-columns: repeat(${props => props.$nColumns}, 1fr);
+`;
+
+const Choice = styled.button<{ $active: boolean }>`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 3px;
+    cursor: pointer;
+    width: 50px;
+    border-radius: 5px;
+    border: none;
+
+    ${props =>
+        props.$active
+            ? css`
+                  background-color: var(--primary-color);
+              `
+            : css`
+                  background-color: #999;
+              `}
+
+    &:hover {
+        background-color: #777;
+    }
+`;
 
 interface BaseFormatListProps {
     currentFormat?: string;
@@ -27,73 +103,60 @@ function FormatDataList({ formatData, currentFormat, onChange }: FormatDataListP
     });
 
     return (
-        <div className="format-list-container">
-            <div className="format-list-tabs-container">
+        <Wrapper>
+            <TabsWrapper>
                 {formatData.map(data => (
-                    <button
+                    <Tab
                         // format data type is unique and consistent, we can use it as a key
                         key={data.type}
-                        className={classNames('format-list-tab', {
-                            active: currentTab === data.type,
-                        })}
-                        onClick={() => {
-                            setCurrentTab(data.type);
-                        }}
+                        $active={currentTab === data.type}
+                        onClick={() => setCurrentTab(data.type)}
                     >
                         {capitalize(data.type)}
                         <span>
                             <MdOutlineChevronRight />
                         </span>
-                    </button>
+                    </Tab>
                 ))}
-            </div>
-            <div className="format-list-choices-container no-scrollbar">
-                <div className="format-list-choices-grid">
+            </TabsWrapper>
+            <ChoicesWrapper>
+                <ChoicesGrid $nColumns={4}>
                     {formatData
                         .find(data => data.type === currentTab)
                         ?.formats.map(format => (
-                            <button
+                            <Choice
                                 // format is unique and consistent, we can use it as a key
                                 key={format}
                                 onClick={() => onChange(format)}
-                                className={classNames('format-list-choice', {
-                                    active: format === currentFormat,
-                                })}
+                                $active={format === currentFormat}
                             >
                                 {format}
-                            </button>
+                            </Choice>
                         ))}
-                </div>
-            </div>
-        </div>
+                </ChoicesGrid>
+            </ChoicesWrapper>
+        </Wrapper>
     );
 }
 
 function StringList({ formatData, currentFormat, onChange }: StringListProps) {
     return (
-        <div className="format-list-container">
-            <div className="format-list-choices-container no-scrollbar">
-                <div
-                    className="format-list-choices-grid"
-                    style={{
-                        gridTemplateColumns: `repeat(${formatData.length >= 4 ? 4 : formatData.length}, 1fr)`,
-                    }}
-                >
+        <Wrapper>
+            <ChoicesWrapper>
+                <ChoicesGrid $nColumns={formatData.length >= 4 ? 4 : formatData.length}>
                     {formatData.map(format => (
-                        <button
+                        <Choice
                             // format is unique and consistent, we can use it as a key
                             key={format}
                             onClick={() => onChange(format)}
-                            className={classNames('format-list-choice', {
-                                active: format === currentFormat,
-                            })}
+                            $active={format === currentFormat}
                         >
                             {format}
-                        </button>
+                        </Choice>
                     ))}
-                </div>
-            </div>
-        </div>
+                </ChoicesGrid>
+            </ChoicesWrapper>
+        </Wrapper>
     );
 }
 

@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { AUDIO_FORMATS, VIDEO_FORMATS } from '../../../../constants';
 import Dropdown from './Dropdown';
 import { MdArrowDropDown } from 'react-icons/md';
+import styled from 'styled-components';
+import SecondaryButton from '../../../common/buttons/SecondaryButton';
+
+const Wrapper = styled.div`
+    position: relative;
+`;
+
+const SelectButton = styled(SecondaryButton)`
+    justify-content: left;
+    width: 90px;
+`;
 
 export interface FormatData {
     type: string;
@@ -32,17 +43,13 @@ export default function FormatSelect({
     };
 
     return (
-        <div className="format-select-container">
-            <button
-                onClick={() => setIsOpen(!isOpen)}
-                className="secondary-button-small"
-                style={{ justifyContent: 'left', width: '90px' }}
-            >
+        <Wrapper>
+            <SelectButton $small onClick={() => setIsOpen(!isOpen)}>
                 {currentFormat || 'Choose'}
                 <span>
                     <MdArrowDropDown />
                 </span>
-            </button>
+            </SelectButton>
             {isOpen && (
                 <Dropdown
                     onClose={() => setIsOpen(false)}
@@ -52,6 +59,6 @@ export default function FormatSelect({
                     position={dropdownPosition}
                 />
             )}
-        </div>
+        </Wrapper>
     );
 }

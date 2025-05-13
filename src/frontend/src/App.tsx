@@ -5,12 +5,19 @@ import OuterContainer from './components/common/OuterContainer';
 import StatusBar from './components/common/statusbar/StatusBar';
 import StatusProvider from './context/StatusProvider';
 import { IconContext } from 'react-icons';
+import { CSSProperties } from 'react';
 
 export default function App() {
+    const iconStyle: CSSProperties = {
+        verticalAlign: 'middle',
+        color: 'var(--icon-color)',
+        opacity: 0.8,
+    };
+
     return (
         <>
             <Navbar />
-            <IconContext.Provider value={{ className: 'md-icon', size: '1.5em' }}>
+            <IconContext.Provider value={{ style: iconStyle, size: '1.5em' }}>
                 <StatusProvider>
                     <OuterContainer>
                         <Routes>

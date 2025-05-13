@@ -3,6 +3,40 @@ import { useMemo } from 'react';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import FormatSelect from './formatselect/FormatSelect';
 import ConversionStatusBar from './ConversionStatusBar';
+import styled from 'styled-components';
+import { nonScrollableMixin } from '../../../mixins';
+
+const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+`;
+
+const Controls = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 5px;
+    padding: 0px 10px;
+`;
+
+const FileContainer = styled.div`
+    ${nonScrollableMixin}
+
+    background-color: var(--secondary-bg-color);
+    border: 2px solid #bfdaf4;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 300px;
+    width: 100%;
+    overflow-y: auto;
+`;
+
+const FormatSelectWrapper = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 5px;
+`;
 
 export default function FileList() {
     const { fileHolders, changeFilesFormat } = useFileConverterState();
@@ -24,7 +58,7 @@ export default function FileList() {
     if (hasPendingFiles) {
         controls = (
             <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <FormatSelectWrapper>
                     <span>{hasFailedFiles ? 'Change failed:' : 'Change all:'}</span>
                     <FormatSelect
                         currentFormat={currentSelectFormat}
@@ -37,7 +71,7 @@ export default function FileList() {
                             )
                         }
                     />
-                </div>
+                </FormatSelectWrapper>
                 <ConversionStatusBar />
                 <span>
                     Total: <b>{fileHolders.length}</b>
@@ -56,18 +90,13 @@ export default function FileList() {
     }
 
     return (
-        <div className="file-preparation-area">
-            <div className="file-preparation-area-controls">{controls}</div>
-            <div className="selected-files-container">
-                <div
-                    className="no-scrollbar"
-                    style={{ height: '300px', width: '100%', overflowY: 'auto' }}
-                >
-                    {fileHolders.map(fh => (
-                        <FileListItem key={fh.id} fileHolder={fh} />
-                    ))}
-                </div>
-            </div>
-        </div>
+        <Wrapper>
+            <Controls>{controls}</Controls>
+            <FileContainer>
+                {fileHolders.map(fh => (
+                    <FileListItem key={fh.id} fileHolder={fh} />
+                ))}
+            </FileContainer>
+        </Wrapper>
     );
 }

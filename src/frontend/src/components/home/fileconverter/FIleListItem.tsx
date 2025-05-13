@@ -1,4 +1,3 @@
-import classNames from 'classnames';
 import { toHumanReadable, truncateMiddle } from '../../../utils';
 import { useFileConverterState } from '../../../hooks/FileConverterState';
 import { FileHolder } from '../../../context/FileConverterStateProvider';
@@ -6,14 +5,56 @@ import CircularLoader from '../../common/CircularLoader';
 import { createDownloadLink } from '../../../services/filedownload.service';
 import FormatSelect from './formatselect/FormatSelect';
 import { MdDeleteOutline, MdOutlineDownload } from 'react-icons/md';
-import IconButton from '../../common/IconButton';
+import IconButton from '../../common/buttons/IconButton';
+import styled, { css } from 'styled-components';
+import IconLinkButton from '../../common/buttons/IconLinkButton';
+
+const ControlsWrapper = styled.div`
+    display: flex;
+    gap: 5px;
+    align-items: center;
+`;
+
+const FileStatus = styled.span`
+    display: flex;
+    align-items: center;
+    gap: 5px;
+`;
+
+const Wrapper = styled.li<{ $valid: boolean }>`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.088);
+
+    ${props =>
+        !props.$valid &&
+        css`
+            background: rgba(255, 51, 0, 0.2);
+        `}
+`;
+
+const FileMeta = styled.div`
+    display: flex;
+    flex-direction: column;
+`;
+
+const FileName = styled.span`
+    font-size: 1rem;
+`;
+
+const FileSize = styled.span`
+    color: #777;
+    font-size: 0.9rem;
+`;
 
 interface FileListItemProps {
     fileHolder: FileHolder;
-    style?: React.CSSProperties;
 }
 
-export default function FileListItem({ fileHolder, style }: FileListItemProps) {
+export default function FileListItem({ fileHolder }: FileListItemProps) {
     const { removeFiles, changeFilesFormat } = useFileConverterState();
 
     const handleFileRemove = () => {
@@ -24,7 +65,7 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
 
     if (fileHolder.status === 'pending' || fileHolder.status === 'failed') {
         fileControls = (
-            <div className="selected-file-controls">
+            <ControlsWrapper>
                 {fileHolder.errorMessage === undefined ? (
                     <FormatSelect
                         currentFormat={fileHolder.outputFormat}
@@ -37,53 +78,45 @@ export default function FileListItem({ fileHolder, style }: FileListItemProps) {
                 <IconButton onClick={handleFileRemove}>
                     <MdDeleteOutline />
                 </IconButton>
-            </div>
+            </ControlsWrapper>
         );
     } else if (fileHolder.status === 'converting' || fileHolder.status === 'uploading') {
         fileControls = (
-            <span className="file-status">
+            <FileStatus>
                 <p>{fileHolder.status}</p>
                 <CircularLoader />
-            </span>
+            </FileStatus>
         );
     } else {
         if (!fileHolder.conversionId) {
-            fileControls = <span className="file-status">error</span>;
+            fileControls = <FileStatus>error</FileStatus>;
         } else {
             fileControls = (
-                <span className="file-status">
+                <FileStatus>
                     <p>{fileHolder.status}</p>
-                    <a
+                    <IconLinkButton
                         href={
                             fileHolder.conversionId
                                 ? createDownloadLink(fileHolder.conversionId)
                                 : '#'
                         }
                         download
-                        className="icon-button"
                         style={{ opacity: 0.7 }}
                     >
                         <MdOutlineDownload />
-                    </a>
-                </span>
+                    </IconLinkButton>
+                </FileStatus>
             );
         }
     }
 
     return (
-        <li
-            className={classNames('selected-file', {
-                invalid: fileHolder.errorMessage !== undefined,
-            })}
-            style={style}
-        >
-            <div className="selected-file-meta">
-                <span className="selected-file-name">
-                    {truncateMiddle(fileHolder.file.name, 40)}
-                </span>
-                <span className="selected-file-size">{toHumanReadable(fileHolder.file.size)}</span>
-            </div>
+        <Wrapper $valid={fileHolder.errorMessage === undefined}>
+            <FileMeta>
+                <FileName>{truncateMiddle(fileHolder.file.name, 40)}</FileName>
+                <FileSize>{toHumanReadable(fileHolder.file.size)}</FileSize>
+            </FileMeta>
             {fileControls}
-        </li>
+        </Wrapper>
     );
 }

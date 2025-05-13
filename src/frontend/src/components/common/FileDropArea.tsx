@@ -1,5 +1,36 @@
-import classNames from 'classnames';
 import React, { DragEvent, useState } from 'react';
+import { MdFileUpload } from 'react-icons/md';
+import styled from 'styled-components';
+
+const Wrapper = styled.div`
+    position: relative;
+`;
+
+const DropPopup = styled.div<{ $draggedOver: boolean }>`
+    /* show only when is hovered with a file */
+    display: ${props => (props.$draggedOver ? 'flex' : 'none')};
+
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    background: #666effe6;
+    color: #ffffff;
+
+    /* ensure popup is above children */
+    z-index: 1;
+`;
+
+const Hint = styled.span`
+    font-size: 1.5rem;
+`;
 
 interface FileDropAreaProps extends React.HTMLAttributes<HTMLDivElement> {
     onDrop?: (ev: DragEvent) => void;
@@ -41,23 +72,17 @@ export default function FileDropArea({ onDrop, children }: FileDropAreaProps) {
     };
 
     return (
-        <div
-            className="file-drop-area"
+        <Wrapper
             onDrop={handleDrop}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
             onDragOver={handleDragOver}
         >
             {children}
-            <div
-                className={classNames({
-                    'drop-popup': true,
-                    'dragged-over': isDraggedOver,
-                })}
-            >
-                <i style={{ fontSize: '3rem' }} className="fa-regular fa-file"></i>
-                <span style={{ fontSize: '1.5rem' }}>Drop here</span>
-            </div>
-        </div>
+            <DropPopup $draggedOver={isDraggedOver}>
+                <MdFileUpload />
+                <Hint>Drop here</Hint>
+            </DropPopup>
+        </Wrapper>
     );
 }

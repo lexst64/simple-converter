@@ -4,6 +4,35 @@ import FormatList from './FormatList';
 import SearchBar from '../../../common/SearchBar';
 import useClickOutside from '../../../../hooks/ClickOutside';
 import useEscapeKey from '../../../../hooks/EscapeKey';
+import styled, { css } from 'styled-components';
+
+const Wrapper = styled.div<{ $position: 'left' | 'right' }>`
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+
+    position: absolute;
+    top: calc(100% + 5px);
+    z-index: 100;
+
+    width: 370px;
+    min-height: 250px;
+    max-height: 300px;
+    border-radius: 10px;
+    background-color: var(--primary-bg-color);
+    overflow: hidden;
+
+    box-shadow: 0 0 15px rgba(84, 84, 84, 0.211);
+
+    ${props =>
+        props.$position === 'left'
+            ? css`
+                  right: 0;
+              `
+            : css`
+                  left: 0;
+              `};
+`;
 
 interface DropdownProps {
     formatData: FormatData[];
@@ -46,11 +75,7 @@ export default function Dropdown({
     };
 
     return (
-        <div
-            ref={dropdownRef}
-            className="format-select-dropdown"
-            style={position === 'right' ? { left: 0 } : { right: 0 }}
-        >
+        <Wrapper $position={position} ref={dropdownRef}>
             <SearchBar
                 autoFocus
                 placeholder="Search"
@@ -63,6 +88,6 @@ export default function Dropdown({
                 formatData={searchValue.trim().length === 0 ? formatData : filteredFormats}
                 onChange={onChange}
             />
-        </div>
+        </Wrapper>
     );
 }
