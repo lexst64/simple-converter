@@ -3,10 +3,54 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Simple Converter</title>
+        <meta
+            name="description"
+            content="Simple Converter - Convert between audio and video formats easily"
+        />
+        <meta name="theme-color" content="#ffffff" />
+        <meta property="og:title" content="Simple Converter" />
+        <meta property="og:description" content="Fast and easy unit conversion tool" />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://_.com" />
+        <meta property="og:image" content="./assets/og-image.png" />
+
+        <title>Simple Converter | Easy Audio & Video Converter</title>
+
+        <link rel="preload" href="./src/main.tsx" as="script" />
+
+        <link rel="icon" href="./assets/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+        <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+
+        <link rel="manifest" href="./assets/manifest.json" />
+
+        <style>
+            :root {
+                font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+            }
+
+            .no-js {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                text-align: center;
+            }
+        </style>
     </head>
     <body>
         <div id="root"></div>
-        <script type="module" src="/src/main.tsx"></script>
+        <noscript>
+            <div class="no-js">
+                <body>
+                    <h1>JavaScript Required</h1>
+                    <p>
+                        This application requires JavaScript to function. Please enable JavaScript
+                        and reload the page.
+                    </p>
+                </body>
+            </div>
+        </noscript>
+        <script type="module" src="./src/main.tsx"></script>
     </body>
 </html>

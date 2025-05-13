@@ -1,0 +1,21 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="50" cy="50" r="45" fill="#3498db" />
+  
+  <!-- Inner Circle (representing media) -->
+  <circle cx="50" cy="50" r="20" fill="#ffffff" />
+  
+  <!-- Conversion Arrows -->
+  <path d="M30,40 L15,50 L30,60" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M70,40 L85,50 L70,60" stroke="#ffffff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Horizontal Lines -->
+  <line x1="15" y1="50" x2="35" y2="50" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+  <line x1="65" y1="50" x2="85" y2="50" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+  
+  <!-- Media Wave Symbols -->
+  <path d="M45,40 Q50,30 55,40" stroke="#3498db" stroke-width="2.5" fill="none" />
+  <path d="M42,45 Q50,30 58,45" stroke="#3498db" stroke-width="2.5" fill="none" />
+  <path d="M45,60 Q50,70 55,60" stroke="#3498db" stroke-width="2.5" fill="none" />
+  <path d="M42,55 Q50,70 58,55" stroke="#3498db" stroke-width="2.5" fill="none" />
+</svg>

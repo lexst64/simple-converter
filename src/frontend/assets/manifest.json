@@ -1,0 +1,8 @@
+{
+    "name": "Simple Converter",
+    "short_name": "Converter",
+    "description": "Convert between audio and video formats easily",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff"
+}
