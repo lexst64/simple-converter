@@ -156,26 +156,29 @@ export default function FileConverter() {
 
     let content;
     if (fileHolders.length > 0) {
-        content = <FileList />;
+        content = areAllPending ? (
+            <FileDropArea onDrop={handleFilesDrop}>
+                <FileList />
+            </FileDropArea>
+        ) : (
+            <FileList />
+        );
     } else {
         content = (
-            <FileSelectionArea>
-                <InputFileButton primary={true} onFileChange={handleFileSelect}>
-                    Select files
-                </InputFileButton>
-                <Hint>or drag-and-drop here (up to {toHumanReadable(MAX_FILE_SIZE)})</Hint>
-            </FileSelectionArea>
+            <FileDropArea onDrop={handleFilesDrop}>
+                <FileSelectionArea>
+                    <InputFileButton primary={true} onFileChange={handleFileSelect}>
+                        Select files
+                    </InputFileButton>
+                    <Hint>or drag-and-drop here (up to {toHumanReadable(MAX_FILE_SIZE)})</Hint>
+                </FileSelectionArea>
+            </FileDropArea>
         );
     }
 
     return (
         <Wrapper>
-            {areAllPending ? (
-                <FileDropArea onDrop={handleFilesDrop}>{content}</FileDropArea>
-            ) : (
-                content
-            )}
-
+            {content}
             <ActionButton onConvert={handleConvert} />
             {areAllPending && (
                 <InputFileButton primary={false} onFileChange={handleFileSelect}>

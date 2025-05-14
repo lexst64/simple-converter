@@ -80,7 +80,7 @@ export default function FileDropArea({ onDrop, children }: FileDropAreaProps) {
         >
             {children}
             <DropPopup $draggedOver={isDraggedOver}>
-                <MdFileUpload />
+                <MdFileUpload style={{ color: '#ffffff' }} />
                 <Hint>Drop here</Hint>
             </DropPopup>
         </Wrapper>

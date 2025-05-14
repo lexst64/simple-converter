@@ -11,7 +11,6 @@ export default function App() {
     const iconStyle: CSSProperties = {
         verticalAlign: 'middle',
         color: 'var(--icon-color)',
-        opacity: 0.8,
     };
 
     return (
