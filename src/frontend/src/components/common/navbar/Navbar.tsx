@@ -37,7 +37,6 @@ const LinkContainer = styled.div`
     }
 
     & a.active {
-        font-weight: 500;
         opacity: 1;
     }
 `;
@@ -58,6 +57,7 @@ export default function Navbar() {
             </NavLinkLogo>
             <LinkContainer>
                 <NavLink to="/">Home</NavLink>
+                <NavLink to="history">History</NavLink>
                 <a target="_blank" href={githubLink}>
                     Source code
                 </a>
