@@ -1,0 +1,23 @@
+{
+  "name": "simple-converter",
+  "version": "1.0.0",
+  "main": "index.html",
+  "scripts": {
+    "start": "live-server --port=3000",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint \"src/**/*.js\" --no-error-on-unmatched-pattern",
+    "lint:fix": "eslint \"src/**/*.js\" --fix --no-error-on-unmatched-pattern"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.5.0",
+    "live-server": "^1.2.2",
+    "prettier": "^3.8.2"
+  }
+}
