@@ -1,113 +1,111 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="Simple Converter - Convert between media formats easily"
-    />
-    <meta name="theme-color" content="#ffffff" />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="description"
+            content="Simple Converter - Convert between media formats easily"
+        />
+        <meta name="theme-color" content="#ffffff" />
 
-    <link href="styles.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+        <link href="styles.css" rel="stylesheet" />
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
-    <title>Simple Converter | Easy Media Converter</title>
-  </head>
-  <body class="min-h-screen flex flex-col font-sans">
-    <header
-      class="relative flex items-center justify-between bg-indigo-500 px-[25px] py-[15px]"
-    >
-      <a href="/" class="text-white no-underline">Simple Converter</a>
-      <nav class="hidden md:block">
-        <ul class="flex list-none gap-[15px]">
-          <li>
-            <a href="/" class="text-white no-underline">Home</a>
-          </li>
-          <li>
-            <a href="#" class="text-white no-underline">History</a>
-          </li>
-          <li>
-            <a href="#" class="text-white no-underline">Sign in</a>
-          </li>
-        </ul>
-      </nav>
-      <details class="relative md:hidden">
-        <summary
-          class="list-none cursor-pointer rounded-md border border-white/50 px-3 py-2 text-white [&::-webkit-details-marker]:hidden"
+        <title>Simple Converter | Easy Media Converter</title>
+    </head>
+    <body class="min-h-screen flex flex-col font-sans">
+        <header
+            class="relative flex items-center justify-between bg-indigo-500 px-[25px] py-[15px]"
         >
-          <span class="sr-only">Open menu</span>
-          <svg
-            class="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            aria-hidden="true"
-          >
-            <path d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </summary>
-        <nav
-          class="absolute right-0 top-[calc(100%+8px)] z-20 w-44 rounded-lg bg-white p-2 shadow-lg"
-        >
-          <ul class="flex list-none flex-col gap-1">
-            <li>
-              <a
-                href="/"
-                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
-                >Home</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
-                >History</a
-              >
-            </li>
-            <li>
-              <a
-                href="#"
-                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
-                >Sign in</a
-              >
-            </li>
-          </ul>
-        </nav>
-      </details>
-    </header>
-    <main class="flex flex-1 flex-col items-center gap-[50px] py-[30px]">
-      <h1 class="text-4xl font-bold tracking-tight text-slate-900">
-        Image, Audio & Video Converter
-      </h1>
-      <section aria-label="File Uploader">
-        <div
-          class="flex min-h-[30vh] w-[92vw] flex-col items-center justify-center gap-[10px] rounded-[20px] border-2 border-dashed border-[#bfdaf4] bg-[#f6fafe] md:min-w-[50vw] md:w-auto"
-        >
-          <button
-            class="rounded-lg bg-indigo-500 px-[1.2rem] py-[0.6rem] text-base text-white hover:cursor-pointer"
-          >
-            Select files
-          </button>
-          <span class="hidden md:block"
-            >or drag-and-drop here (up to 1.0 GB)</span
-          >
-        </div>
-      </section>
-    </main>
-    <footer class="flex justify-between bg-[#dbdbdb] p-[5px]">
-      <p>
-        &copy; 2026 Oleksii Stoliarchuk. Distributed under the
-        <a href="#">MIT License</a>.
-      </p>
-      <nav class="hidden md:block">
-        <ul class="flex list-none gap-[15px]">
-          <li><a href="#">Source code</a></li>
-          <li><a href="#">FAQ</a></li>
-          <li><a href="#">Contact</a></li>
-        </ul>
-      </nav>
-    </footer>
-  </body>
+            <a href="/" class="text-white no-underline">Simple Converter</a>
+            <nav class="hidden md:block">
+                <ul class="flex list-none gap-[15px]">
+                    <li>
+                        <a href="/" class="text-white no-underline">Home</a>
+                    </li>
+                    <li>
+                        <a href="#" class="text-white no-underline">History</a>
+                    </li>
+                    <li>
+                        <a href="#" class="text-white no-underline">Sign in</a>
+                    </li>
+                </ul>
+            </nav>
+            <details class="relative md:hidden">
+                <summary
+                    class="list-none cursor-pointer rounded-md border border-white/50 px-3 py-2 text-white [&::-webkit-details-marker]:hidden"
+                >
+                    <span class="sr-only">Open menu</span>
+                    <svg
+                        class="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        aria-hidden="true"
+                    >
+                        <path d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </summary>
+                <nav
+                    class="absolute right-0 top-[calc(100%+8px)] z-20 w-44 rounded-lg bg-white p-2 shadow-lg"
+                >
+                    <ul class="flex list-none flex-col gap-1">
+                        <li>
+                            <a
+                                href="/"
+                                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
+                                >Home</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="#"
+                                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
+                                >History</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="#"
+                                class="block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
+                                >Sign in</a
+                            >
+                        </li>
+                    </ul>
+                </nav>
+            </details>
+        </header>
+        <main class="flex flex-1 flex-col items-center gap-[50px] py-[30px]">
+            <h1 class="text-4xl font-bold tracking-tight text-slate-900">
+                Image, Audio & Video Converter
+            </h1>
+            <section aria-label="File Uploader">
+                <div
+                    class="flex min-h-[30vh] w-[92vw] flex-col items-center justify-center gap-[10px] rounded-[20px] border-2 border-dashed border-[#bfdaf4] bg-[#f6fafe] md:min-w-[50vw] md:w-auto"
+                >
+                    <button
+                        class="rounded-lg bg-indigo-500 px-[1.2rem] py-[0.6rem] text-base text-white hover:cursor-pointer"
+                    >
+                        Select files
+                    </button>
+                    <span class="hidden md:block">or drag-and-drop here (up to 1.0 GB)</span>
+                </div>
+            </section>
+        </main>
+        <footer class="flex justify-between bg-[#dbdbdb] p-[5px]">
+            <p>
+                &copy; 2026 Oleksii Stoliarchuk. Distributed under the
+                <a href="#">MIT License</a>.
+            </p>
+            <nav class="hidden md:block">
+                <ul class="flex list-none gap-[15px]">
+                    <li><a href="#">Source code</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </footer>
+    </body>
 </html>
