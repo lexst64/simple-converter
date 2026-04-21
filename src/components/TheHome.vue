@@ -1,5 +1,5 @@
 <template>
-  <main class="flex flex-1 flex-col items-center gap-[50px] py-[30px]">
+  <div class="flex flex-col items-center gap-[50px]">
     <h1 class="text-4xl font-bold tracking-tight text-slate-900">Image, Audio & Video Converter</h1>
     <section aria-label="File Uploader">
       <div
@@ -13,5 +13,5 @@
         <span class="hidden md:block">or drag-and-drop here (up to 1.0 GB)</span>
       </div>
     </section>
-  </main>
+  </div>
 </template>
