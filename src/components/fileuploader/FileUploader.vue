@@ -2,12 +2,18 @@
 import { ref } from 'vue'
 import RemoveIcon from '../icons/RemoveIcon.vue'
 import { formatBytes } from '@/utils'
+import IconButton from '../IconButton.vue'
+
+interface FileHolder {
+  id: string
+  file: File
+  targetFormat?: string
+}
 
 const isDragOver = ref(false)
-const selectedFiles = ref<File[]>([])
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const selectedFormatByFile = ref<Record<string, string>>({})
-const defaultOutputFormat = 'png'
+
+const fileHolders = ref<FileHolder[]>([])
 
 const outputFormats = [
   { value: 'png', label: 'PNG' },
@@ -19,16 +25,16 @@ const outputFormats = [
   { value: 'mp4', label: 'MP4' },
   { value: 'mov', label: 'MOV' },
 ]
+const defaultOutputFormat = outputFormats[0]?.value
 
 const addFiles = (files: FileList) => {
-  const incomingFiles = Array.from(files)
-  selectedFiles.value.push(...incomingFiles)
-
-  for (const file of incomingFiles) {
-    if (!selectedFormatByFile.value[file.name]) {
-      selectedFormatByFile.value[file.name] = defaultOutputFormat
-    }
-  }
+  fileHolders.value.push(
+    ...Array.from(files).map((file) => ({
+      id: crypto.randomUUID(),
+      file: file,
+      targetFormat: defaultOutputFormat,
+    })),
+  )
 }
 
 const onDragEnter = () => {
@@ -64,9 +70,8 @@ const onFileChange = (event: Event) => {
   target.value = ''
 }
 
-const removeFile = (fileName: string) => {
-  selectedFiles.value = selectedFiles.value.filter((file) => file.name !== fileName)
-  delete selectedFormatByFile.value[fileName]
+const removeFile = (id: string) => {
+  fileHolders.value = fileHolders.value.filter((fh) => fh.id !== id)
 }
 </script>
 
@@ -74,14 +79,14 @@ const removeFile = (fileName: string) => {
   <section aria-label="File Uploader">
     <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
     <div
-      class="flex h-[30vh] w-[92vw] items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[50vw] md:w-auto overflow-y-scroll scrollbar-hide"
+      class="flex h-[50vh] w-[92vw] items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[50vw] md:w-auto overflow-y-scroll scrollbar-hide"
       :class="isDragOver ? 'border-[#5aa8f3] bg-[#e8f3ff]' : 'border-[#bfdaf4] bg-[#f6fafe]'"
       @dragenter.prevent="onDragEnter"
       @dragover.prevent="onDragOver"
       @dragleave.prevent="onDragLeave"
       @drop.prevent="onDrop"
     >
-      <div v-if="selectedFiles.length === 0" class="flex flex-col items-center gap-2.5">
+      <div v-if="fileHolders.length === 0" class="flex flex-col items-center gap-2.5">
         <button
           type="button"
           @click="openFileSelector"
@@ -89,29 +94,32 @@ const removeFile = (fileName: string) => {
         >
           Select files
         </button>
-        <span class="hidden md:block">or drag-and-drop here (up to 1.0 GB)</span>
+        <div class="text-xs">
+          <span class="hidden md:inline">or drag-and-drop here </span>
+          <span>(up to 1.0 GB per file)</span>
+        </div>
       </div>
       <div v-else class="flex w-full flex-col self-start">
         <div
           class="w-full py-2 px-3 flex justify-between border-b-gray-200 border-b"
-          v-for="file in selectedFiles"
-          :key="file.name"
+          v-for="fh in fileHolders"
+          :key="fh.id"
         >
           <div>
-            <p>{{ file.name }}</p>
-            <p class="text-gray-500">{{ formatBytes(file.size) }}</p>
+            <p>{{ fh.file.name }}</p>
+            <p class="text-gray-500">{{ formatBytes(fh.file.size) }}</p>
           </div>
 
           <div class="flex items-center gap-3">
             <select
-              v-model="selectedFormatByFile[file.name]"
+              v-model="fh.targetFormat"
               class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none"
             >
               <option v-for="format in outputFormats" :key="format.value" :value="format.value">
                 {{ format.label }}
               </option>
             </select>
-            <button @click="() => removeFile(file.name)"><RemoveIcon class="size-5" /></button>
+            <IconButton @click="() => removeFile(fh.id)"><RemoveIcon class="size-5" /></IconButton>
           </div>
         </div>
       </div>

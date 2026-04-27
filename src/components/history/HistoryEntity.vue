@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatBytes } from '../../utils'
+import IconButton from '../IconButton.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
 import type { HistoryEntityProps } from './types'
 
@@ -25,6 +26,6 @@ const props = defineProps<HistoryEntityProps>()
         </span>
       </span>
     </div>
-    <button class="cursor-pointer"><DownloadIcon class="size-4" /></button>
+    <IconButton><DownloadIcon /></IconButton>
   </div>
 </template>
