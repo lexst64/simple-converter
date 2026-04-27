@@ -119,7 +119,7 @@ const removeFile = (id: string) => {
                 {{ format.label }}
               </option>
             </select>
-            <IconButton @click="() => removeFile(fh.id)"><RemoveIcon class="size-5" /></IconButton>
+            <IconButton @click="() => removeFile(fh.id)"><RemoveIcon /></IconButton>
           </div>
         </div>
       </div>

@@ -15,7 +15,7 @@ withDefaults(
   <button
     :type="type"
     :disabled="disabled"
-    class="inline-flex items-center gap-2 rounded-md p-1 transition-colors duration-200 ease-out hover:cursor-pointer hover:bg-blue-100 focus-visible:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
+    class="inline-flex items-center gap-2 rounded-md p-1 transition-colors duration-200 ease-out hover:cursor-pointer hover:bg-blue-100 focus-visible:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 size-7 text-gray-700"
   >
     <slot />
   </button>
