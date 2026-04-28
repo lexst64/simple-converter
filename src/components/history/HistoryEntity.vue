@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatBytes } from '../../utils'
-import IconButton from '../IconButton.vue'
+import IconButton from '../common/IconButton.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
 import type { HistoryEntityProps } from './types'
 

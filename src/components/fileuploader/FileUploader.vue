@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import RemoveIcon from '../icons/RemoveIcon.vue'
 import { formatBytes } from '@/utils'
-import IconButton from '../IconButton.vue'
+import IconButton from '../common/IconButton.vue'
+import Button from '../common/BaseButton.vue'
 
 interface FileHolder {
   id: string
@@ -76,10 +77,10 @@ const removeFile = (id: string) => {
 </script>
 
 <template>
-  <section aria-label="File Uploader">
+  <section aria-label="File Uploader" class="flex flex-col gap-2">
     <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
     <div
-      class="flex h-[50vh] w-[92vw] items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[50vw] md:w-auto overflow-y-scroll scrollbar-hide"
+      class="flex h-[50vh] w-[92vw] items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[40vw] md:w-auto overflow-y-scroll scrollbar-hide"
       :class="isDragOver ? 'border-[#5aa8f3] bg-[#e8f3ff]' : 'border-[#bfdaf4] bg-[#f6fafe]'"
       @dragenter.prevent="onDragEnter"
       @dragover.prevent="onDragOver"
@@ -87,13 +88,7 @@ const removeFile = (id: string) => {
       @drop.prevent="onDrop"
     >
       <div v-if="fileHolders.length === 0" class="flex flex-col items-center gap-2.5">
-        <button
-          type="button"
-          @click="openFileSelector"
-          class="rounded-lg bg-indigo-500 px-[1.2rem] py-[0.6rem] text-base text-white hover:cursor-pointer"
-        >
-          Select files
-        </button>
+        <Button @click="openFileSelector">Select files</Button>
         <div class="text-xs">
           <span class="hidden md:inline">or drag-and-drop here </span>
           <span>(up to 1.0 GB per file)</span>
@@ -123,6 +118,10 @@ const removeFile = (id: string) => {
           </div>
         </div>
       </div>
+    </div>
+    <div class="flex flex-col gap-2" v-if="fileHolders.length !== 0">
+      <Button secondary @click="openFileSelector" class="w-full"> Add more files </Button>
+      <Button class="w-full">Convert</Button>
     </div>
   </section>
 </template>
