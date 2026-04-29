@@ -100,8 +100,8 @@ const removeFile = (id: string) => {
           v-for="fh in fileHolders"
           :key="fh.id"
         >
-          <div>
-            <p>{{ fh.file.name }}</p>
+          <div class="max-w-[50%]">
+            <p class="truncate">{{ fh.file.name }}</p>
             <p class="text-gray-500">{{ formatBytes(fh.file.size) }}</p>
           </div>
 
