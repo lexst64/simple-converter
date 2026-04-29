@@ -4,6 +4,8 @@ import HistoryView from '@/views/HistoryView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  linkActiveClass: 'nav-link-active',
+  linkExactActiveClass: 'nav-link-exact-active',
   routes: [
     {
       path: '/',
