@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { useAuth } from '@/composables/useAuth'
+
+const { isAuthenticated, logout } = useAuth()
 </script>
 
 <template>
   <header class="relative flex items-center justify-between bg-indigo-500 px-6.25 py-3.75">
     <a href="/" class="text-white no-underline">Simple Converter</a>
     <nav class="hidden md:block">
-      <ul class="flex list-none gap-3.75">
+      <ul class="flex list-none gap-3.75 items-center">
         <li>
           <RouterLink to="/" class="nav-link text-white no-underline">Home</RouterLink>
         </li>
@@ -14,7 +17,7 @@ import { RouterLink } from 'vue-router'
           <RouterLink to="/history" class="nav-link text-white no-underline">History</RouterLink>
         </li>
         <li>
-          <RouterLink to="/auth" class="nav-link text-white no-underline">Sign in</RouterLink>
+          <RouterLink to="/profile" class="nav-link text-white no-underline">My profile</RouterLink>
         </li>
       </ul>
     </nav>
@@ -54,7 +57,15 @@ import { RouterLink } from 'vue-router'
               History
             </RouterLink>
           </li>
-          <li>
+          <li v-if="isAuthenticated">
+            <button
+              @click="logout"
+              class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100 w-full text-left"
+            >
+              Logout
+            </button>
+          </li>
+          <li v-else>
             <RouterLink
               to="/auth"
               class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
