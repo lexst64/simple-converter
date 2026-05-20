@@ -16,6 +16,7 @@ const fileInputRef = ref<HTMLInputElement | null>(null)
 
 const fileHolders = ref<FileHolder[]>([])
 
+const MAX_FILE_SIZE = 1073741824
 const outputFormats = [
   { value: 'png', label: 'PNG' },
   { value: 'jpg', label: 'JPG' },
@@ -28,7 +29,19 @@ const outputFormats = [
 ]
 const defaultOutputFormat = outputFormats[0]?.value
 
-const addFiles = (files: FileList) => {
+const filterFiles = (files: File[]): File[] => {
+  const rejectedFiles = Array.from(files).filter((f) => f.size > MAX_FILE_SIZE)
+  const acceptedFiles = Array.from(files).filter((f) => f.size <= MAX_FILE_SIZE)
+
+  if (rejectedFiles.length > 0) {
+    console.log(`${rejectedFiles.map((f) => f.name).join(', ')} are over 1.0 GB limit`)
+    return acceptedFiles
+  }
+
+  return acceptedFiles
+}
+
+const addFiles = (files: File[]) => {
   fileHolders.value.push(
     ...Array.from(files).map((file) => ({
       id: crypto.randomUUID(),
@@ -52,8 +65,9 @@ const onDragLeave = () => {
 
 const onDrop = (event: DragEvent) => {
   isDragOver.value = false
-  const files = event.dataTransfer?.files
+  let files = Array.from(event.dataTransfer?.files || [])
   if (!files || files.length == 0) return
+  files = filterFiles(files)
   addFiles(files)
 }
 
@@ -63,11 +77,11 @@ const openFileSelector = () => {
 
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const files = target.files
+  let files = Array.from(target.files || [])
   if (!files || files.length === 0) return
-
+  files = filterFiles(files)
   addFiles(files)
-  // Reset value so selecting the same file again still triggers change
+  // reset value so selecting the same file again still triggers change
   target.value = ''
 }
 

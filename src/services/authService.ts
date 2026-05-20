@@ -4,7 +4,7 @@ import { api } from '@/main'
 
 export const authService = {
   async getUser(): Promise<User> {
-    const response = await api.get<User>('/me')
+    const response = await api.get<User>('/auth/me')
     return response.data
   },
   async loginWithGoogle(token: string): Promise<{ token: string; user: User }> {
