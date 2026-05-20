@@ -1,8 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import HistoryView from '@/views/HistoryView.vue'
-import AuthView from '@/views/AuthView.vue'
-import MyProfileView from '@/views/MyProfileView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -12,7 +8,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('../views/HomeView.vue'),
       meta: {
         requiresAuth: true,
       },
@@ -20,7 +16,7 @@ const router = createRouter({
     {
       path: '/history',
       name: 'history',
-      component: HistoryView,
+      component: () => import('../views/HistoryView.vue'),
       meta: {
         requiresAuth: true,
       },
@@ -28,7 +24,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: MyProfileView,
+      component: () => import('../views/MyProfileView.vue'),
       meta: {
         requiresAuth: true,
       },
@@ -36,7 +32,7 @@ const router = createRouter({
     {
       path: '/auth',
       name: 'auth',
-      component: AuthView,
+      component: () => import('../views/AuthView.vue'),
     },
   ],
 })
