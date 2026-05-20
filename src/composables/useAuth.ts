@@ -3,15 +3,18 @@ import type { AuthState, AuthContextType } from '@/types/auth'
 import { authService } from '@/services/authService'
 import type { User } from '@/types/user'
 
+const TOKEN_KEY = 'token'
+const USER_KEY = 'user'
+
 const state = ref<AuthState>({
-  user: JSON.parse(localStorage.getItem('user') || '{}') as User,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
+  user: JSON.parse(localStorage.getItem(USER_KEY) || '{}') as User,
+  token: localStorage.getItem(TOKEN_KEY),
+  isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
 })
 
 export function useAuth(): AuthContextType {
   const login = async (token: string) => {
-    localStorage.setItem('token', token)
+    localStorage.setItem(TOKEN_KEY, token)
     state.value.token = token
     try {
       const user = await authService.getUser()
@@ -26,8 +29,8 @@ export function useAuth(): AuthContextType {
   }
 
   const logout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
     state.value.user = null
     state.value.token = null
     state.value.isAuthenticated = false

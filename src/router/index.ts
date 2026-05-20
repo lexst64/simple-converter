@@ -5,7 +5,7 @@ import AuthView from '@/views/AuthView.vue'
 import MyProfileView from '@/views/MyProfileView.vue'
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   linkActiveClass: 'nav-link-active',
   linkExactActiveClass: 'nav-link-exact-active',
   routes: [
