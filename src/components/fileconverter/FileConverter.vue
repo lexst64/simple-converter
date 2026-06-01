@@ -86,29 +86,34 @@ const convert = async () => {
 
       try {
         const uploadedFileId = await ConverterService.uploadFile(fileHolder.file)
-        const job = await ConverterService.createConversionJob(
-          uploadedFileId,
-          fileHolder.targetFormat!,
-        )
+        const jobId = (
+          await ConverterService.createConversionJob(uploadedFileId, fileHolder.targetFormat!)
+        ).id
 
         await new Promise<void>((resolve, reject) => {
           const eventSource = new EventSource(
-            `${API_URL}/conversions/job/${job.id}/status?token=${auth.token}`,
+            `${API_URL}/conversions/job/${jobId}/status?token=${auth.token}`,
           )
 
           eventSource.onmessage = (event) => {
-            const statusData = JSON.parse(event.data)
-            const status = statusData.status as ConversionStatus
+            const statusData = JSON.parse(event.data) as { status: ConversionStatus }
 
-            fileStore.setStatus(fileHolder.id, status)
+            fileStore.setStatus(fileHolder.id, statusData.status)
 
-            if (status === 'completed') {
+            if (statusData.status === 'completed') {
               eventSource.close()
               fileStore.setSelected(fileHolder.id, false)
-              resolve()
-            } else if (status === 'failed') {
+              ConverterService.getJobDetails(jobId).then((job) => {
+                if (job.outputFileId) {
+                  fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
+                  resolve()
+                } else {
+                  reject(new Error('Conversion failed'))
+                }
+              })
+            } else if (statusData.status === 'failed') {
               eventSource.close()
-              reject(new Error(statusData.errorMessage || 'Conversion failed'))
+              reject(new Error('Conversion failed'))
             }
           }
 

@@ -6,6 +6,7 @@ import IconButton from '../common/IconButton.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
 import SmallBadge from '../common/SmallBadge.vue'
 import FormatSelector from './FormatSelector.vue'
+import { ConverterService } from '@/services/converter.service.ts'
 
 const statusClasses = {
   pending: 'bg-slate-100 text-slate-700 ring-slate-200',
@@ -16,7 +17,7 @@ const statusClasses = {
   completed: 'bg-emerald-100 text-emerald-700 ring-emerald-200',
 } as const
 
-defineProps<{
+const props = defineProps<{
   file: FileHolder
   allSupportedFormats: string[]
 }>()
@@ -26,6 +27,16 @@ const selected = defineModel('selected')
 const fileStore = useFileStore()
 
 const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
+
+const download = async () => {
+  if (props.file.outputFileId) {
+    const originalFileName = props.file.file.name;
+    const newFileName = `${originalFileName.split('.')[0]}.${props.file.targetFormat}`
+    await ConverterService.downloadFile(props.file.outputFileId, newFileName)
+  } else {
+    console.log('No outputFileId')
+  }
+}
 </script>
 
 <template>
@@ -59,7 +70,7 @@ const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
         <SmallBadge class="bg-blue-100 text-blue-800 ring-blue-300">{{
           file.targetFormat?.toUpperCase()
         }}</SmallBadge>
-        <IconButton><DownloadIcon></DownloadIcon></IconButton>
+        <IconButton @click="download"><DownloadIcon></DownloadIcon></IconButton>
       </div>
     </div>
   </div>
