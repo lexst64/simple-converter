@@ -2,11 +2,13 @@
 import InlineLink from '@/components/common/InlineLink.vue'
 import { useAuth } from '@/composables/useAuth'
 import router from '@/router'
+import { useFileStore } from '@/stores/useFileStore'
 
 const { user, logout } = useAuth()
 
 const handleLogout = () => {
   logout()
+  useFileStore().clearFiles()
   router.push('/')
 }
 </script>
