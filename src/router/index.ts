@@ -1,3 +1,4 @@
+import { useFileStore } from '@/stores/useFileStore.ts'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -12,6 +13,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
+      beforeEnter: () => {
+        const {selectedFiles} = useFileStore()
+        if (selectedFiles.length > 0) return '/converter'
+        return true
+      }
     },
     {
       path: '/history',
@@ -33,6 +39,14 @@ const router = createRouter({
       path: '/auth',
       name: 'auth',
       component: () => import('../views/AuthView.vue'),
+    },
+    {
+      path: '/converter',
+      name: 'converter',
+      component: () => import('../views/ConverterView.vue'),
+      meta: {
+        requiresAuth: true,
+      },
     },
   ],
 })

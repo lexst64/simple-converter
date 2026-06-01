@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { AuthState, AuthContextType } from '@/types/auth'
-import { authService } from '@/services/authService'
+import { AuthService } from '@/services/auth.service'
 import type { User } from '@/types/user'
 
 const TOKEN_KEY = 'token'
@@ -17,7 +17,7 @@ export function useAuth(): AuthContextType {
     localStorage.setItem(TOKEN_KEY, token)
     state.value.token = token
     try {
-      const user = await authService.getUser()
+      const user = await AuthService.getUser()
       localStorage.setItem('user', JSON.stringify(user))
       state.value.user = user
       state.value.isAuthenticated = true

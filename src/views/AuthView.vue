@@ -2,7 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
-import { authService } from '@/services/authService'
+import { AuthService } from '@/services/auth.service'
 
 const googleBtn = ref<HTMLElement | null>(null)
 const router = useRouter()
@@ -17,7 +17,7 @@ interface CredentialResponse {
 
 const handleCredentialResponse = async (response: CredentialResponse): Promise<void> => {
   try {
-    const res = await authService.loginWithGoogle(response.credential)
+    const res = await AuthService.loginWithGoogle(response.credential)
     await login(res.token)
     router.push('/')
   } catch (error) {
