@@ -1,18 +1,28 @@
 <script setup lang="ts">
 import { useFileStore } from '@/stores/useFileStore'
 import BaseButton from '../common/BaseButton.vue'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import FileItem from './FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
 import { useAuth } from '@/composables/useAuth.ts'
 import { API_URL } from '@/main.ts'
 import type { ConversionStatus } from '@/types/api.ts'
+import FormatSelector from './FormatSelector.vue'
 
 const auth = useAuth()
 
 const fileStore = useFileStore()
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isConverting = ref(false)
+// target format chosen in the top-level selector; applied to all selected files
+const targetFormat = ref<string | null>(null)
+
+watch(targetFormat, (val) => {
+  if (!val) return
+  fileStore.files.forEach((f) => {
+    if (f.selected) f.targetFormat = val
+  })
+})
 
 const supportedFormats = {
   video: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv'],
@@ -40,22 +50,37 @@ const onFileChange = (event: Event) => {
 
 const isConvertDisabled = () => {
   return (
-    fileStore.selectedFiles.some((f) => !f.targetFormat) ||
-    fileStore.selectedFiles.length === 0 ||
-    isConverting.value
+    isConverting.value ||
+    numSelectedFiles.value === 0 ||
+    fileStore.files.filter((f) => f.selected).some((f) => !f.targetFormat)
   )
 }
 
-const areAllCompleted = () => fileStore.selectedFiles.every((f) => f.status === 'completed')
+const numSelectedFiles = computed(() => fileStore.files.filter((f) => f.selected).length)
+
+const allFilesSelected = computed(
+  () => fileStore.files.length > 0 && fileStore.files.every((f) => f.selected),
+)
+
+const toggleSelectAll = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  fileStore.files.forEach((file) => {
+    if (file.status === 'uploading' || file.status === 'processing' || file.status === 'completed')
+      return
+    file.selected = target.checked
+  })
+}
 
 const convert = async () => {
   if (isConvertDisabled()) return
 
   isConverting.value = true
 
+  const selectedFiles = fileStore.files.filter((f) => f.selected)
+
   try {
-    for (const fileHolder of fileStore.selectedFiles) {
-      if (fileHolder.status === 'completed') continue
+    const conversionPromises = selectedFiles.map(async (fileHolder) => {
+      if (fileHolder.status === 'completed') return
 
       fileStore.setStatus(fileHolder.id, 'uploading')
 
@@ -74,11 +99,12 @@ const convert = async () => {
           eventSource.onmessage = (event) => {
             const statusData = JSON.parse(event.data)
             const status = statusData.status as ConversionStatus
-            
+
             fileStore.setStatus(fileHolder.id, status)
 
             if (status === 'completed') {
               eventSource.close()
+              fileStore.setSelected(fileHolder.id, false)
               resolve()
             } else if (status === 'failed') {
               eventSource.close()
@@ -96,7 +122,9 @@ const convert = async () => {
         console.error(`Failed to convert ${fileHolder.file.name}:`, error)
         fileStore.setStatus(fileHolder.id, 'failed')
       }
-    }
+    })
+
+    await Promise.allSettled(conversionPromises)
   } finally {
     isConverting.value = false
   }
@@ -104,23 +132,27 @@ const convert = async () => {
 </script>
 <template>
   <div class="flex flex-col gap-2">
-    <p>Total: {{ fileStore.selectedFiles.length }}</p>
+    <div class="flex gap-2">
+      <input type="checkbox" :checked="allFilesSelected" @change="toggleSelectAll" />
+      <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
+      <p v-else>Selected: {{ numSelectedFiles }}</p>
+      <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
+    </div>
+
     <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
     <div
       class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-[#5aa8f3] bg-[#e8f3ff]"
     >
       <FileItem
-        v-for="file in fileStore.selectedFiles"
+        v-for="file in fileStore.files"
         :file="file"
         :allSupportedFormats="allSupportedFormats"
         :key="file.id"
         v-model:target-format="file.targetFormat"
+        v-model:selected="file.selected"
       />
     </div>
     <BaseButton secondary @click="openFileSelector" class="w-full">Add more files</BaseButton>
-    <BaseButton v-if="areAllCompleted()" class="w-full">Download all</BaseButton>
-    <BaseButton v-else :disabled="isConvertDisabled()" @click="convert" class="w-full"
-      >Convert</BaseButton
-    >
+    <BaseButton :disabled="isConvertDisabled()" @click="convert" class="w-full">Convert</BaseButton>
   </div>
 </template>

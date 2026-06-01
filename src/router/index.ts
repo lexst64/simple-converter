@@ -14,10 +14,10 @@ const router = createRouter({
         requiresAuth: true,
       },
       beforeEnter: () => {
-        const {selectedFiles} = useFileStore()
-        if (selectedFiles.length > 0) return '/converter'
+        const { files } = useFileStore()
+        if (files.length > 0) return '/converter'
         return true
-      }
+      },
     },
     {
       path: '/history',

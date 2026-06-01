@@ -5,6 +5,7 @@ import RemoveIcon from '../icons/RemoveIcon.vue'
 import IconButton from '../common/IconButton.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
 import SmallBadge from '../common/SmallBadge.vue'
+import FormatSelector from './FormatSelector.vue'
 
 const statusClasses = {
   pending: 'bg-slate-100 text-slate-700 ring-slate-200',
@@ -21,7 +22,7 @@ defineProps<{
 }>()
 
 const targetFormat = defineModel('targetFormat')
-
+const selected = defineModel('selected')
 const fileStore = useFileStore()
 
 const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
@@ -29,9 +30,19 @@ const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
 <template>
   <div class="w-full py-2 px-3 flex justify-between border-b-gray-200 border-b">
-    <div class="max-w-[50%]">
-      <p class="truncate">{{ file.file.name }}</p>
-      <p class="text-gray-500">{{ formatBytes(file.file.size) }}</p>
+    <div class="flex w-full gap-4">
+      <input
+        :disabled="
+          file.status === 'uploading' || file.status === 'processing' || file.status === 'completed'
+        "
+        v-model="selected"
+        type="checkbox"
+        :value="file.id"
+      />
+      <div class="max-w-[50%]">
+        <p class="truncate">{{ file.file.name }}</p>
+        <p class="text-gray-500">{{ formatBytes(file.file.size) }}</p>
+      </div>
     </div>
 
     <div
@@ -39,15 +50,8 @@ const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
       class="flex items-center gap-3"
     >
       <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
-      <select
-        v-model="targetFormat"
-        class="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-800 focus:border-indigo-500 focus:outline-none"
-      >
-        <option v-for="format in allSupportedFormats" :key="format" :value="format">
-          {{ format.toUpperCase() }}
-        </option>
-      </select>
-      <IconButton @click="() => fileStore.removeFile(file.id)"><RemoveIcon /></IconButton>
+      <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
+      <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
     </div>
     <div v-else class="flex items-center gap-3">
       <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
