@@ -82,13 +82,20 @@ const convert = async () => {
     const conversionPromises = selectedFiles.map(async (fileHolder) => {
       if (fileHolder.status === 'completed') return
 
-      fileStore.setStatus(fileHolder.id, 'uploading')
-
       try {
-        const uploadedFileId = await ConverterService.uploadFile(fileHolder.file)
+        let uploadFileId: string
+        // if previous convertion failed, skip uploading the same file again
+        if (!fileHolder.uploadFileId) {
+          fileStore.setStatus(fileHolder.id, 'uploading')
+          uploadFileId = await ConverterService.uploadFile(fileHolder.file)
+          fileStore.setUploadFileId(fileHolder.id, uploadFileId)
+        } else {
+          uploadFileId = fileHolder.uploadFileId
+        }
+
         const jobId = (
-          await ConverterService.createConversionJob(uploadedFileId, fileHolder.targetFormat!)
-        ).id
+          await ConverterService.createConversionJob(uploadFileId, fileHolder.targetFormat!)
+        )._id
 
         await new Promise<void>((resolve, reject) => {
           const eventSource = new EventSource(

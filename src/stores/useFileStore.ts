@@ -10,6 +10,7 @@ export interface FileHolder {
   status: FileStatus
   selected: boolean
   targetFormat?: string
+  uploadFileId?: string
   outputFileId?: string
 }
 
@@ -82,6 +83,18 @@ export const useFileStore = defineStore('fileStore', () => {
     }
   }
 
+  const setUploadFileId = (id: string, uploadFileId: string) => {
+    const idx = files.value.findIndex((f) => f.id === id)
+
+    if (idx === -1) return
+
+    const existing = files.value[idx]!
+    files.value[idx] = {
+      ...existing,
+      uploadFileId,
+    }
+  }
+
   return {
     files,
     addFiles,
@@ -91,5 +104,6 @@ export const useFileStore = defineStore('fileStore', () => {
     setStatus,
     setSelected,
     setOutputFileId,
+    setUploadFileId,
   }
 })
