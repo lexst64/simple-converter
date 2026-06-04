@@ -1,4 +1,4 @@
-import { ConversionStatus } from '@/types/api'
+import { JobStatus } from '@/types/api'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -9,6 +9,7 @@ export interface FileHolder {
   file: File
   status: FileStatus
   selected: boolean
+  progress: number
   targetFormat?: string
   uploadFileId?: string
   outputFileId?: string
@@ -23,6 +24,7 @@ export const useFileStore = defineStore('fileStore', () => {
       file: f,
       status: 'pending',
       selected: false,
+      progress: 0,
     }))
     files.value = [...files.value, ...newHolders]
   }
@@ -95,6 +97,18 @@ export const useFileStore = defineStore('fileStore', () => {
     }
   }
 
+  const setProgress = (id: string, progress: number) => {
+    const idx = files.value.findIndex((f) => f.id === id)
+
+    if (idx === -1) return
+
+    const existing = files.value[idx]!
+    files.value[idx] = {
+      ...existing,
+      progress,
+    }
+  }
+
   return {
     files,
     addFiles,
@@ -105,5 +119,6 @@ export const useFileStore = defineStore('fileStore', () => {
     setSelected,
     setOutputFileId,
     setUploadFileId,
+    setProgress,
   }
 })

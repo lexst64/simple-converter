@@ -1,11 +1,11 @@
 export interface FileUploadResponse {
-  id: string;
-  userId: string;
-  type: 'upload' | 'output';
-  originalName?: string;
-  mimeType?: string;
-  size: number;
-  createdAt: Date;
+  id: string
+  userId: string
+  type: 'upload' | 'output'
+  originalName?: string
+  mimeType?: string
+  size: number
+  createdAt: Date
 }
 
 export interface ConversionJobRequest {
@@ -13,7 +13,7 @@ export interface ConversionJobRequest {
   outputFormat: string
 }
 
-export enum ConversionStatus {
+export enum JobStatus {
   PENDING = 'pending',
   PROCESSING = 'processing',
   COMPLETED = 'completed',
@@ -21,12 +21,13 @@ export enum ConversionStatus {
   CANCELLED = 'cancelled',
 }
 
-export interface ConversionJob {
+export interface Job {
   _id: string
   userId: string
   inputFileId: string
   outputFormat: string
-  status: ConversionStatus
+  progress: number
+  status: JobStatus
   createdAt: Date
   updatedAt: Date
   completedAt?: Date
@@ -36,7 +37,7 @@ export interface ConversionJob {
 
 export interface ConversionStatusResponse {
   id: string
-  status: ConversionStatus
+  status: JobStatus
   errorMessage?: string
   outputFileId?: string
   completedAt?: Date

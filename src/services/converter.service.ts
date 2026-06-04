@@ -1,5 +1,5 @@
 import { api } from '@/main'
-import type { ConversionJob, ConversionJobRequest, FileUploadResponse } from '@/types/api'
+import type { Job, ConversionJobRequest, FileUploadResponse } from '@/types/api'
 
 export class ConverterService {
   static async uploadFile(file: File): Promise<string> {
@@ -8,12 +8,9 @@ export class ConverterService {
     return (await api.post<FileUploadResponse>('/files', formData)).data.id
   }
 
-  static async createConversionJob(
-    uploadedFileId: string,
-    outputFormat: string,
-  ): Promise<ConversionJob> {
+  static async createConversionJob(uploadedFileId: string, outputFormat: string): Promise<Job> {
     return (
-      await api.post<ConversionJob>('/conversions/job', {
+      await api.post<Job>('/conversions/job', {
         inputFileId: uploadedFileId,
         outputFormat,
       } satisfies ConversionJobRequest)
@@ -38,7 +35,7 @@ export class ConverterService {
     window.URL.revokeObjectURL(url)
   }
 
-  static async getJobDetails(jobId: string): Promise<ConversionJob> {
-    return (await api.get<ConversionJob>(`/conversions/job/${jobId}`)).data
+  static async getJobDetails(jobId: string): Promise<Job> {
+    return (await api.get<Job>(`/conversions/job/${jobId}`)).data
   }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
-import { formatBytes } from '@/utils'
+import { formatBytes, getExtFromFileName } from '@/utils'
 import RemoveIcon from '../icons/RemoveIcon.vue'
 import IconButton from '../common/IconButton.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
@@ -30,7 +30,7 @@ const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
 const download = async () => {
   if (props.file.outputFileId) {
-    const originalFileName = props.file.file.name;
+    const originalFileName = props.file.file.name
     const newFileName = `${originalFileName.split('.')[0]}.${props.file.targetFormat}`
     await ConverterService.downloadFile(props.file.outputFileId, newFileName)
   } else {
@@ -40,7 +40,9 @@ const download = async () => {
 </script>
 
 <template>
-  <div class="w-full py-2 px-3 flex justify-between border-b-gray-200 border-b">
+  <div
+    class="w-full py-2 px-3 flex flex-col gap-3 md:flex-row md:justify-between border-b-gray-200 border-b"
+  >
     <div class="flex w-full gap-4">
       <input
         :disabled="
@@ -50,22 +52,25 @@ const download = async () => {
         type="checkbox"
         :value="file.id"
       />
-      <div class="max-w-[50%]">
+      <div class="md:max-w-[50%] max-w-[90%]">
         <p class="truncate">{{ file.file.name }}</p>
-        <p class="text-gray-500">{{ formatBytes(file.file.size) }}</p>
+        <p class="text-gray-500">{{ formatBytes(file.file.size) }} • {{ getExtFromFileName(file.file.name).toUpperCase() }}</p>
       </div>
     </div>
 
+    <div class="md:hidden w-full h-px bg-gray-300"></div>
+
     <div
       v-if="file.status === 'pending' || file.status === 'failed'"
-      class="flex items-center gap-3"
+      class="flex items-center gap-3 justify-end"
     >
       <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
       <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
       <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
     </div>
-    <div v-else class="flex items-center gap-3">
+    <div v-else class="flex items-center gap-3 justify-end">
       <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
+      <span v-if="file.status === 'processing'"> {{ file.progress }}% </span>
       <div v-if="file.status === 'completed'" class="flex items-center gap-3">
         <SmallBadge class="bg-blue-100 text-blue-800 ring-blue-300">{{
           file.targetFormat?.toUpperCase()

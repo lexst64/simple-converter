@@ -15,3 +15,9 @@ export function formatBytes(bytes: number, decimals = 2): string {
 
   return `${value.toFixed(digits)} ${units[unitIndex]}`
 }
+
+export function getExtFromFileName(fileName: string) {
+  const dotIndex = fileName.lastIndexOf('.')
+  const ext = dotIndex > 0 ? fileName.slice(dotIndex + 1) : ''
+  return ext
+}

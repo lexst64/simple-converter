@@ -6,7 +6,7 @@ import FileItem from './FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
 import { useAuth } from '@/composables/useAuth.ts'
 import { API_URL } from '@/main.ts'
-import type { ConversionStatus } from '@/types/api.ts'
+import type { JobStatus } from '@/types/api.ts'
 import FormatSelector from './FormatSelector.vue'
 
 const auth = useAuth()
@@ -50,8 +50,10 @@ const onFileChange = (event: Event) => {
 
 const isConvertDisabled = () => {
   return (
-    isConverting.value ||
     numSelectedFiles.value === 0 ||
+    fileStore.files
+      .filter((f) => f.selected)
+      .some((f) => f.status === 'processing' || f.status === 'uploading') ||
     fileStore.files.filter((f) => f.selected).some((f) => !f.targetFormat)
   )
 }
@@ -82,6 +84,8 @@ const convert = async () => {
     const conversionPromises = selectedFiles.map(async (fileHolder) => {
       if (fileHolder.status === 'completed') return
 
+      fileStore.setSelected(fileHolder.id, false)
+
       try {
         let uploadFileId: string
         // if previous convertion failed, skip uploading the same file again
@@ -96,6 +100,7 @@ const convert = async () => {
         const jobId = (
           await ConverterService.createConversionJob(uploadFileId, fileHolder.targetFormat!)
         )._id
+        fileStore.setProgress(fileHolder.id, 0)
 
         await new Promise<void>((resolve, reject) => {
           const eventSource = new EventSource(
@@ -103,9 +108,10 @@ const convert = async () => {
           )
 
           eventSource.onmessage = (event) => {
-            const statusData = JSON.parse(event.data) as { status: ConversionStatus }
+            const statusData = JSON.parse(event.data) as { status: JobStatus; progress: number }
 
             fileStore.setStatus(fileHolder.id, statusData.status)
+            fileStore.setProgress(fileHolder.id, statusData.progress)
 
             if (statusData.status === 'completed') {
               eventSource.close()
@@ -120,6 +126,7 @@ const convert = async () => {
               })
             } else if (statusData.status === 'failed') {
               eventSource.close()
+              fileStore.setSelected(fileHolder.id, true)
               reject(new Error('Conversion failed'))
             }
           }
@@ -131,6 +138,7 @@ const convert = async () => {
           }
         })
       } catch (error) {
+        fileStore.setSelected(fileHolder.id, true)
         console.error(`Failed to convert ${fileHolder.file.name}:`, error)
         fileStore.setStatus(fileHolder.id, 'failed')
       }
