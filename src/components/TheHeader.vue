@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import { useAuth } from '@/composables/useAuth'
-
-const { isAuthenticated, logout } = useAuth()
 </script>
 
 <template>
@@ -57,20 +54,12 @@ const { isAuthenticated, logout } = useAuth()
               History
             </RouterLink>
           </li>
-          <li v-if="isAuthenticated">
-            <button
-              @click="logout"
-              class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100 w-full text-left"
-            >
-              Logout
-            </button>
-          </li>
-          <li v-else>
+          <li>
             <RouterLink
-              to="/auth"
+              to="/profile"
               class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
             >
-              Sign in
+              My profile
             </RouterLink>
           </li>
         </ul>
