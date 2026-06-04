@@ -3,6 +3,8 @@ import App from './App.vue'
 import router from './router'
 import axios from 'axios'
 import { createPinia } from 'pinia'
+import { useFileStore } from './stores/useFileStore.ts'
+import { useAuth } from './composables/useAuth.ts'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -25,3 +27,17 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      const { logout } = useAuth()
+      logout()
+      useFileStore().clearFiles()
+      router.push('/')
+    }
+
+    return Promise.reject(error)
+  },
+)
