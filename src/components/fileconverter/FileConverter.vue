@@ -116,7 +116,7 @@ const convert = async () => {
             if (statusData.status === 'completed') {
               eventSource.close()
               fileStore.setSelected(fileHolder.id, false)
-              ConverterService.getJobDetails(jobId).then((job) => {
+              ConverterService.getJob(jobId).then((job) => {
                 if (job.outputFileId) {
                   fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
                   resolve()

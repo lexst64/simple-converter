@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
+import { ConverterService } from '@/services/converter.service'
+import { JobStatus, type UserFile } from '@/types/api'
 
 export interface HistoryItem {
   id: string
@@ -9,60 +11,13 @@ export interface HistoryItem {
   initialFormat: string
   targetFormat: string
   timestamp: string
+  outputFileId: string
 }
 
 type HistoryCategory = 'today' | 'yesterday' | 'this week' | 'this month' | 'earlier'
 
-const items: HistoryItem[] = [
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-04-29T10:15:00.000Z',
-  },
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music2.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-04-28T16:30:00.000Z',
-  },
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music3.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-04-27T09:45:00.000Z',
-  },
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music3.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-04-27T09:45:00.000Z',
-  },
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music4.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-04-10T11:20:00.000Z',
-  },
-  {
-    id: crypto.randomUUID(),
-    fileName: 'music5.mp3',
-    fileSize: 1231213,
-    initialFormat: 'MP3',
-    targetFormat: 'AAC',
-    timestamp: '2026-03-12T08:05:00.000Z',
-  },
-]
+const isLoading = ref(true)
+const items = ref<HistoryItem[]>([])
 
 const categories: HistoryCategory[] = ['today', 'yesterday', 'this week', 'this month', 'earlier']
 
@@ -71,7 +26,7 @@ const groupedItems = computed(() => {
     categories.map((category) => [category, []]),
   )
 
-  for (const item of items) {
+  for (const item of items.value) {
     buckets.get(getHistoryCategory(item.timestamp))?.push(item)
   }
 
@@ -82,6 +37,25 @@ const groupedItems = computed(() => {
     }))
     .filter((section) => section.items.length > 0)
 })
+
+const openCategory = ref<HistoryCategory | null>(null)
+
+function toggleCategory(category: HistoryCategory) {
+  openCategory.value = category
+}
+
+watch(
+  groupedItems,
+  (sections) => {
+    if (openCategory.value === null && sections.length > 0) {
+      const first = sections[0]
+      if (first) {
+        openCategory.value = first.category
+      }
+    }
+  },
+  { immediate: true },
+)
 
 function getHistoryCategory(timestamp: string): HistoryCategory {
   const itemDate = new Date(timestamp)
@@ -129,19 +103,73 @@ function getStartOfWeek(date: Date): Date {
 
   return start
 }
+
+onMounted(async () => {
+  try {
+    const jobs = (await ConverterService.getJobs()).filter((j) => j.status === JobStatus.COMPLETED)
+    const outputFileDetails: (UserFile | undefined)[] = await Promise.all(
+      jobs.map(async (j) => {
+        if (!j.outputFileId) {
+          return undefined
+        }
+        try {
+          return await ConverterService.getFileDetails(j.outputFileId)
+        } catch {
+          return undefined
+        }
+      }),
+    )
+    items.value = jobs.map((j, i) => {
+      return {
+        id: j._id,
+        fileName: outputFileDetails[i]?.originalFileName || '',
+        fileSize: outputFileDetails[i]?.size || 0,
+        initialFormat: j.inputFormat,
+        targetFormat: j.outputFormat,
+        timestamp: j.completedAt?.toString() || '',
+        outputFileId: j.outputFileId || '',
+      }
+    })
+  } finally {
+    isLoading.value = false
+  }
+})
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-4">
+  <div v-if="isLoading" class="flex justify-center mt-12">Loading...</div>
+  <div v-else-if="items.length === 0" class="flex justify-center mt-12">
+    No previous convertions found
+  </div>
+  <div v-else class="flex flex-col items-center gap-4 w-full">
     <section
       v-for="section in groupedItems"
       :key="section.category"
       class="flex w-full flex-col items-center gap-2"
     >
-      <p class="w-full md:w-200 text-sm font-medium uppercase tracking-wide text-gray-500">
-        {{ section.category }}
-      </p>
-      <HistoryEntity v-for="item in section.items" :key="item.id" :item="item" />
+      <button
+        type="button"
+        class="w-full flex items-center justify-between py-2 px-3 bg-[#f6fafe] rounded-md cursor-pointer"
+        @click="toggleCategory(section.category)"
+        :aria-expanded="openCategory === section.category"
+      >
+        <p class="text-sm font-medium uppercase tracking-wide text-gray-500">
+          {{ section.category }}
+        </p>
+        <span class="text-sm text-gray-400">{{ section.items.length }}</span>
+      </button>
+
+      <div
+        v-show="openCategory === section.category"
+        class="flex flex-col items-center w-full mt-2 gap-2"
+      >
+        <HistoryEntity
+          v-for="item in section.items"
+          :key="item.id"
+          :item="item"
+          class="flex flex-col w-full"
+        />
+      </div>
     </section>
   </div>
 </template>
