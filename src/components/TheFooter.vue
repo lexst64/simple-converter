@@ -17,8 +17,8 @@ import InlineLink from './common/InlineLink.vue'
         <li>
           <InlineLink href="https://github.com/lexst64/simple-converter">Source code</InlineLink>
         </li>
-        <li><InlineLink href="#">FAQ</InlineLink></li>
-        <li><InlineLink href="#">Contact</InlineLink></li>
+        <li><InlineLink href="https://github.com/lexst64/simple-converter#faq">FAQ</InlineLink></li>
+        <li><InlineLink href="https://github.com/lexst64/simple-converter#faq">Contact</InlineLink></li>
       </ul>
     </nav>
   </footer>
