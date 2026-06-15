@@ -134,6 +134,11 @@ onMounted(async () => {
     isLoading.value = false
   }
 })
+
+async function handleDelete(id: string) {
+  await ConverterService.deleteJob(id)
+  items.value = items.value.filter((item) => item.id !== id)
+}
 </script>
 
 <template>
@@ -168,6 +173,7 @@ onMounted(async () => {
           :key="item.id"
           :item="item"
           class="flex flex-col w-full"
+          @delete="handleDelete"
         />
       </div>
     </section>

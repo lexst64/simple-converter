@@ -6,8 +6,13 @@ import SmallBadge from '../common/SmallBadge.vue'
 import ArrowLongRight from '../icons/ArrowLongRight.vue'
 import DownloadIcon from '../icons/DownloadIcon.vue'
 import type { HistoryItem } from './TheHistory.vue'
+import TrashIcon from '../icons/TrashIcon.vue'
 
 const props = defineProps<{ item: HistoryItem }>()
+
+const emit = defineEmits<{
+  (e: 'delete', id: string): void
+}>()
 </script>
 
 <template>
@@ -31,8 +36,14 @@ const props = defineProps<{ item: HistoryItem }>()
           {{ props.item.targetFormat.toUpperCase() }}
         </SmallBadge>
       </div>
-      <IconButton @click="() => ConverterService.downloadFile(item.outputFileId, item.fileName)" aria-label="Download converted file">
+      <IconButton
+        @click="() => ConverterService.downloadFile(item.outputFileId, item.fileName)"
+        aria-label="Download converted file"
+      >
         <DownloadIcon />
+      </IconButton>
+      <IconButton @click="emit('delete', item.id)" aria-label="Delete history item">
+        <TrashIcon />
       </IconButton>
     </div>
   </div>

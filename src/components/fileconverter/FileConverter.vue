@@ -8,6 +8,7 @@ import { useAuth } from '@/composables/useAuth.ts'
 import { API_URL } from '@/main.ts'
 import type { JobStatus } from '@/types/api.ts'
 import FormatSelector from './FormatSelector.vue'
+import InitialFileUploader from '../InitialFileUploader.vue'
 
 const auth = useAuth()
 
@@ -160,7 +161,9 @@ const convert = async () => {
     </div>
 
     <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
+    <InitialFileUploader v-if="fileStore.files.length === 0" />
     <div
+      v-else
       class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-[#5aa8f3] bg-[#e8f3ff]"
     >
       <FileItem

@@ -11,6 +11,9 @@ import { RouterLink } from 'vue-router'
           <RouterLink to="/" class="nav-link text-white no-underline">Home</RouterLink>
         </li>
         <li>
+          <RouterLink to="/converter" class="nav-link text-white no-underline">Converter</RouterLink>
+        </li>
+        <li>
           <RouterLink to="/history" class="nav-link text-white no-underline">History</RouterLink>
         </li>
         <li>
@@ -44,6 +47,14 @@ import { RouterLink } from 'vue-router'
               class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
             >
               Home
+            </RouterLink>
+          </li>
+          <li>
+            <RouterLink
+              to="/converter"
+              class="nav-link block rounded px-2 py-1 text-slate-800 no-underline hover:bg-slate-100"
+            >
+              Converter
             </RouterLink>
           </li>
           <li>

@@ -47,4 +47,8 @@ export class ConverterService {
   static async getFileDetails(fileId: string): Promise<UserFile> {
     return (await api.get(`/files/${fileId}/details`)).data
   }
+
+  static async deleteJob(jobId: string): Promise<void> {
+    return (await api.delete(`/conversions/job/${jobId}`)).data
+  }
 }

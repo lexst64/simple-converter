@@ -4,7 +4,7 @@ import { ref } from 'vue'
 import BaseButton from './common/BaseButton.vue'
 import { useRouter } from 'vue-router'
 
-const { addFiles } = useFileStore()
+const fileStore = useFileStore()
 const router = useRouter()
 const isDragOver = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
@@ -13,7 +13,8 @@ const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
   const files = Array.from(target.files || [])
   if (!files || files.length === 0) return
-  addFiles(files)
+  fileStore.clearFiles()
+  fileStore.addFiles(files)
   // reset value so selecting the same file again still triggers change
   target.value = ''
   router.push('/converter')
@@ -39,14 +40,15 @@ const onDrop = (event: DragEvent) => {
   isDragOver.value = false
   const files = Array.from(event.dataTransfer?.files || [])
   if (!files || files.length == 0) return
-  addFiles(files)
+  fileStore.clearFiles()
+  fileStore.addFiles(files)
   router.push('/converter')
 }
 </script>
 
 <template>
   <div
-    class="flex h-70 w-92 items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[40vw] md:w-auto"
+    class="flex h-70 items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[40vw] md:w-auto"
     :class="isDragOver ? 'border-[#5aa8f3] bg-[#e8f3ff]' : 'border-[#bfdaf4] bg-[#f6fafe]'"
     @dragenter.prevent="onDragEnter"
     @dragover.prevent="onDragOver"

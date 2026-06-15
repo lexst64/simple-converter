@@ -1,4 +1,3 @@
-import { useFileStore } from '@/stores/useFileStore.ts'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -13,11 +12,11 @@ const router = createRouter({
       meta: {
         requiresAuth: true,
       },
-      beforeEnter: () => {
-        const { files } = useFileStore()
-        if (files.length > 0) return '/converter'
-        return true
-      },
+      // beforeEnter: () => {
+      //   const { files } = useFileStore()
+      //   if (files.length > 0) return '/converter'
+      //   return true
+      // },
     },
     {
       path: '/history',
