@@ -1,48 +1,79 @@
-# simple-converter
+# Simple Converter Frontend
 
-This template should help get you started developing with Vue 3 in Vite.
+A modern, fast, and user-friendly file conversion web application built with **Vue 3**, **Vite**, **TypeScript**, and **Tailwind CSS**. The application allows users to upload, convert, and download files of various video, image, and audio formats. It utilizes **Google OAuth** for user authentication and tracks conversion progress in real-time.
 
-## Recommended IDE Setup
+---
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Features
 
-## Recommended Browser Setup
+- **Google Authentication:** Secure and quick sign-in using Google Identity Services.
+- **Batch Processing:** Upload and convert multiple files concurrently.
+- **Wide Format Support:** Convert between popular video, image, and audio formats.
+- **Real-Time Progress:** Tracks conversion status and percentage in real-time via Server-Sent Events (SSE).
+- **Conversion History:** Access and redownload files from past conversion jobs.
+- **User Profiles:** Manage user account settings and active session details.
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+---
 
-## Type Support for `.vue` Imports in TS
+## How to Run the Frontend
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+### Prerequisites
 
-## Customize configuration
+Ensure you have the following installed on your machine:
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- **Node.js:** version `^20.19.0` or `>=22.12.0` (as defined in `package.json`).
+- **npm** (Node Package Manager).
 
-## Project Setup
+### 1. Install Dependencies
 
-```sh
+In the root of the project directory, run:
+
+```bash
 npm install
 ```
 
-### Compile and Hot-Reload for Development
+### 2. Configure the Backend API URL
 
-```sh
+By default, the frontend is configured to communicate with a local backend server running at `http://localhost:3000/api/v1`. If your backend is running elsewhere, you can configure it in `src/main.ts`.
+
+### 3. Start the Development Server
+
+Start Vite's local development server with hot-reload:
+
+```bash
 npm run dev
 ```
 
-### Type-Check, Compile and Minify for Production
+The server will typically start at `http://localhost:5173/`. Open this address in your web browser.
 
-```sh
+### 4. Compile and Minify for Production
+
+To build a production-ready bundle:
+
+```bash
 npm run build
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+This will run TypeScript type checking via `vue-tsc` and compile the files into static assets in the `dist` directory.
 
-```sh
+### 5. Lint and Code Quality Check
+
+To run code quality and styling checks using ESLint and Oxlint:
+
+```bash
 npm run lint
 ```
+
+---
+
+## FAQ
+
+TODO
+
+---
+
+## Contacts
+
+- **Author:** Oleksii Stoliarchuk
+- **GitHub Repository:** [lexst64/simple-converter](https://github.com/lexst64/simple-converter)
+- **Report Issues:** Please open an issue in the [GitHub Issues tracker](https://github.com/lexst64/simple-converter/issues) for bug reports or feature requests.
