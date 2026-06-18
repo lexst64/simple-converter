@@ -104,18 +104,17 @@ const convert = async () => {
         fileStore.setProgress(fileHolder.id, 0)
 
         await new Promise<void>((resolve, reject) => {
-          const eventSource = new EventSource(
-            `${API_URL}/conversions/job/${jobId}/status?token=${auth.token}`,
-          )
+          const wsUrl = `${API_URL}/conversions/job/${jobId}/status`.replace(/^http/, 'ws')
+          const socket = new WebSocket(wsUrl, ['Bearer', auth.token || ''])
 
-          eventSource.onmessage = (event) => {
+          socket.onmessage = (event) => {
             const statusData = JSON.parse(event.data) as { status: JobStatus; progress: number }
 
             fileStore.setStatus(fileHolder.id, statusData.status)
             fileStore.setProgress(fileHolder.id, statusData.progress)
 
             if (statusData.status === 'completed') {
-              eventSource.close()
+              socket.close()
               fileStore.setSelected(fileHolder.id, false)
               ConverterService.getJob(jobId).then((job) => {
                 if (job.outputFileId) {
@@ -126,16 +125,16 @@ const convert = async () => {
                 }
               })
             } else if (statusData.status === 'failed') {
-              eventSource.close()
+              socket.close()
               fileStore.setSelected(fileHolder.id, true)
               reject(new Error('Conversion failed'))
             }
           }
 
-          eventSource.onerror = () => {
+          socket.onerror = () => {
             fileStore.setStatus(fileHolder.id, 'failed')
-            eventSource.close()
-            reject(new Error('EventSource connection failed'))
+            socket.close()
+            reject(new Error('WebSocket connection failed'))
           }
         })
       } catch (error) {
