@@ -110,7 +110,8 @@ const convert = async () => {
           socket.onmessage = (event) => {
             const statusData = JSON.parse(event.data) as { status: JobStatus; progress: number }
 
-            fileStore.setStatus(fileHolder.id, statusData.status)
+            // TODO: handle file status better 
+            fileStore.setStatus(fileHolder.id, statusData.status === 'pending' ? 'processing' : statusData.status)
             fileStore.setProgress(fileHolder.id, statusData.progress)
 
             if (statusData.status === 'completed') {

@@ -42,7 +42,7 @@ const emit = defineEmits<{
       >
         <DownloadIcon />
       </IconButton>
-      <IconButton @click="emit('delete', item.id)" aria-label="Delete history item">
+      <IconButton @click="emit('delete', item.id)" aria-label="Delete history item" class="hover:bg-red-100">
         <TrashIcon />
       </IconButton>
     </div>

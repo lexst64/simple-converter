@@ -54,7 +54,9 @@ const download = async () => {
       />
       <div class="md:max-w-[50%] max-w-[90%]">
         <p class="truncate">{{ file.file.name }}</p>
-        <p class="text-gray-500">{{ formatBytes(file.file.size) }} • {{ getExtFromFileName(file.file.name).toUpperCase() }}</p>
+        <p class="text-gray-500">
+          {{ formatBytes(file.file.size) }} • {{ getExtFromFileName(file.file.name).toUpperCase() }}
+        </p>
       </div>
     </div>
 
@@ -68,9 +70,21 @@ const download = async () => {
       <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
       <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
     </div>
-    <div v-else class="flex items-center gap-3 justify-end">
-      <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
-      <span v-if="file.status === 'processing'"> {{ file.progress }}% </span>
+    <div v-else class="flex items-center gap-3 justify-end w-full md:w-auto">
+      <div v-if="file.status === 'processing'" class="flex items-center gap-3 w-full md:w-48">
+        <div class="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden shadow-inner">
+          <div
+            class="h-full transition-all duration-300 ease-out bg-amber-500"
+            :style="{ width: `${file.progress}%` }"
+          ></div>
+        </div>
+        <span class="text-sm text-gray-600 font-semibold w-11 text-right"
+          >{{ file.progress }}%</span
+        >
+      </div>
+      <SmallBadge :class="getStatusClasses(file.status)" class="capitalize">{{
+        file.status
+      }}</SmallBadge>
       <div v-if="file.status === 'completed'" class="flex items-center gap-3">
         <SmallBadge class="bg-blue-100 text-blue-800 ring-blue-300">{{
           file.targetFormat?.toUpperCase()
