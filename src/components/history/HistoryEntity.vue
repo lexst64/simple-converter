@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ConverterService } from '@/services/converter.service.ts'
 import { formatBytes } from '../../utils'
 import IconButton from '../common/IconButton.vue'
@@ -13,6 +14,39 @@ const props = defineProps<{ item: HistoryItem }>()
 const emit = defineEmits<{
   (e: 'delete', id: string): void
 }>()
+
+const timeAgo = computed(() => {
+  const timestamp = props.item.timestamp
+  if (!timestamp) return ''
+  const diffInSeconds = Math.floor((new Date().getTime() - new Date(timestamp).getTime()) / 1000)
+  
+  if (diffInSeconds < 60) {
+    return 'just now'
+  }
+  
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min ago`
+  }
+  
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`
+  }
+  
+  const diffInDays = Math.floor(diffInHours / 24)
+  if (diffInDays < 30) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`
+  }
+  
+  const diffInMonths = Math.floor(diffInDays / 30)
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`
+  }
+  
+  const diffInYears = Math.floor(diffInMonths / 12)
+  return `${diffInYears} year${diffInYears > 1 ? 's' : ''} ago`
+})
 </script>
 
 <template>
@@ -21,7 +55,9 @@ const emit = defineEmits<{
   >
     <div class="min-w-0 flex-1">
       <p class="font-medium truncate">{{ props.item.fileName }}</p>
-      <p class="text-sm text-gray-500">{{ formatBytes(props.item.fileSize) }}</p>
+      <div class="flex items-center gap-2 text-sm text-gray-500">
+        <p>{{ formatBytes(props.item.fileSize) }} • {{ timeAgo }}</p>
+      </div>
     </div>
 
     <div class="md:hidden w-full h-px bg-gray-300"></div>
