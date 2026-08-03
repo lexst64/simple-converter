@@ -1,11 +1,20 @@
 import { api } from '@/main'
 import type { Job, ConversionJobRequest, FileUploadResponse, UserFile } from '@/types/api'
+import axios from 'axios'
 
 export class ConverterService {
   static async uploadFile(file: File): Promise<string> {
-    const formData = new FormData()
-    formData.append('file', file)
-    return (await api.post<FileUploadResponse>('/files', formData)).data.id
+    const res = await api.post<{ id: string; url: string }>('/files/upload-request', {
+      fileName: file.name,
+      contentType: file.type,
+      size: file.size,
+    })
+
+    const { id, url } = res.data
+
+    await axios.put(url, file, { headers: { 'Content-Type': file.type } })
+
+    return id
   }
 
   static async createConversionJob(uploadedFileId: string, outputFormat: string): Promise<Job> {
@@ -18,11 +27,12 @@ export class ConverterService {
   }
 
   static async downloadFile(fileId: string, desiredFilename: string): Promise<void> {
-    const response = await api.get(`/files/${fileId}`, {
-      responseType: 'blob',
-    })
+    const { data } = await api.get<{ url: string }>(`/files/${fileId}`)
 
-    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const s3Response = await axios.get(data.url, { responseType: 'blob' })
+    const blob = new Blob([s3Response.data])
+
+    const url = window.URL.createObjectURL(blob)
 
     const link = document.createElement('a')
     link.href = url
