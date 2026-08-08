@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { AuthService } from '@/services/auth.service'
+import { config } from '@/config'
 
 const googleBtn = ref<HTMLElement | null>(null)
 const router = useRouter()
@@ -30,7 +31,7 @@ onMounted(() => {
   if (window.google) {
     // @ts-expect-error lol
     window.google.accounts.id.initialize({
-      client_id: '676677719782-6hb2koh5vhpc3mbob4qacm9htojfpc5b.apps.googleusercontent.com',
+      client_id: config.googleClientId,
       callback: handleCredentialResponse,
     })
 

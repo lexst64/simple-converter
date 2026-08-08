@@ -6,6 +6,8 @@ import { createPinia } from 'pinia'
 import { useFileStore } from './stores/useFileStore.ts'
 import { useAuth } from './composables/useAuth.ts'
 
+import { config } from './config'
+
 const app = createApp(App)
 const pinia = createPinia()
 
@@ -14,7 +16,7 @@ app.use(pinia)
 
 app.mount('#app')
 
-export const API_URL = 'http://localhost:3000/api/v1'
+export const API_URL = config.apiUrl
 
 export const api = axios.create({
   baseURL: API_URL,
