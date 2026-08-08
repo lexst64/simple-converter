@@ -136,8 +136,22 @@ onMounted(async () => {
 })
 
 async function handleDelete(id: string) {
-  await ConverterService.deleteJob(id)
-  items.value = items.value.filter((item) => item.id !== id)
+  const index = items.value.findIndex((item) => item.id === id)
+  if (index === -1) return
+
+  const itemToDelete = items.value[index]
+  if (!itemToDelete) return
+
+  // optimistically remove from state immediately
+  items.value.splice(index, 1)
+
+  try {
+    await ConverterService.deleteJob(id)
+  } catch (error) {
+    console.error('Failed to delete history item:', error)
+    // rollback state if server deletion fails
+    items.value.splice(index, 0, itemToDelete)
+  }
 }
 </script>
 
