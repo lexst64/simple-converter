@@ -1,4 +1,9 @@
+import AuthView from '@/views/AuthView.vue'
+import ConverterView from '@/views/ConverterView.vue'
+import HistoryView from '@/views/HistoryView.vue'
+import MyProfileView from '@/views/MyProfileView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
+import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -8,7 +13,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: () => import('../views/HomeView.vue'),
+      component: () => HomeView,
       meta: {
         requiresAuth: true,
       },
@@ -21,7 +26,7 @@ const router = createRouter({
     {
       path: '/history',
       name: 'history',
-      component: () => import('../views/HistoryView.vue'),
+      component: HistoryView,
       meta: {
         requiresAuth: true,
       },
@@ -29,7 +34,7 @@ const router = createRouter({
     {
       path: '/profile',
       name: 'profile',
-      component: () => import('../views/MyProfileView.vue'),
+      component: MyProfileView,
       meta: {
         requiresAuth: true,
       },
@@ -37,12 +42,12 @@ const router = createRouter({
     {
       path: '/auth',
       name: 'auth',
-      component: () => import('../views/AuthView.vue'),
+      component: AuthView,
     },
     {
       path: '/converter',
       name: 'converter',
-      component: () => import('../views/ConverterView.vue'),
+      component: ConverterView,
       meta: {
         requiresAuth: true,
       },
