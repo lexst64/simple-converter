@@ -29,7 +29,7 @@ const dismiss = (id: string) => {
       v-if="toastStore.toasts.length >= 2"
       secondary
       @click="toastStore.clearAll()"
-      class="pointer-events-auto shadow-md !px-3 !py-1 text-xs flex items-center gap-1.5 font-medium"
+      class="pointer-events-auto shadow-md px-3! py-1! text-xs flex items-center gap-1.5 font-medium"
     >
       <span>Clear all ({{ toastStore.toasts.length }})</span>
       <CloseIcon class="w-3.5 h-3.5 opacity-70" />

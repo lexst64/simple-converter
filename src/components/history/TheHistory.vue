@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
-import { ConverterService } from '@/services/converter.service'
-import { JobStatus, type UserFile } from '@/types/api'
-import { useToastStore } from '@/stores/useToastStore'
+import HistorySkeleton from '@/components/history/HistorySkeleton.vue'
+import { useHistoryStore, type HistoryItem } from '@/stores/useHistoryStore'
 
-export interface HistoryItem {
-  id: string
-  fileName: string
-  fileSize: number
-  initialFormat: string
-  targetFormat: string
-  timestamp: string
-  outputFileId: string
-}
+export type { HistoryItem }
 
 type HistoryCategory = 'today' | 'yesterday' | 'this week' | 'this month' | 'earlier'
 
-const isLoading = ref(true)
-const items = ref<HistoryItem[]>([])
+const historyStore = useHistoryStore()
+
+// If we already have cached history from previous visit/session, don't show skeleton
+const isLoading = ref(!historyStore.hasLoadedOnce)
 
 const categories: HistoryCategory[] = ['today', 'yesterday', 'this week', 'this month', 'earlier']
 
@@ -27,7 +20,7 @@ const groupedItems = computed(() => {
     categories.map((category) => [category, []]),
   )
 
-  for (const item of items.value) {
+  for (const item of historyStore.items) {
     buckets.get(getHistoryCategory(item.timestamp))?.push(item)
   }
 
@@ -107,92 +100,69 @@ function getStartOfWeek(date: Date): Date {
 
 onMounted(async () => {
   try {
-    const jobs = (await ConverterService.getJobs()).filter((j) => j.status === JobStatus.COMPLETED)
-    const outputFileDetails: (UserFile | undefined)[] = await Promise.all(
-      jobs.map(async (j) => {
-        if (!j.outputFileId) {
-          return undefined
-        }
-        try {
-          return await ConverterService.getFileDetails(j.outputFileId)
-        } catch {
-          return undefined
-        }
-      }),
-    )
-    items.value = jobs.map((j, i) => {
-      return {
-        id: j._id,
-        fileName: outputFileDetails[i]?.originalFileName || '',
-        fileSize: outputFileDetails[i]?.size || 0,
-        initialFormat: j.inputFormat,
-        targetFormat: j.outputFormat,
-        timestamp: j.completedAt?.toString() || '',
-        outputFileId: j.outputFileId || '',
-      }
-    })
+    await historyStore.fetchHistory()
   } finally {
     isLoading.value = false
   }
 })
 
-const toastStore = useToastStore()
-
-async function handleDelete(id: string) {
-  const index = items.value.findIndex((item) => item.id === id)
-  if (index === -1) return
-
-  const itemToDelete = items.value[index]
-  if (!itemToDelete) return
-
-  // optimistically remove from state immediately
-  items.value.splice(index, 1)
-
-  try {
-    await ConverterService.deleteJob(id)
-  } catch {
-    // rollback state if server deletion fails
-    items.value.splice(index, 0, itemToDelete)
-    toastStore.error(`Failed to delete "${itemToDelete.fileName}".`, 'Deletion Failed')
-  }
+function handleDelete(id: string) {
+  historyStore.deleteItem(id)
 }
 </script>
 
 <template>
-  <div v-if="isLoading" class="flex justify-center mt-12">Loading...</div>
-  <div v-else-if="items.length === 0" class="flex justify-center mt-12">
-    No previous convertions found
-  </div>
-  <div v-else class="flex flex-col items-center gap-4 w-full">
-    <section
-      v-for="section in groupedItems"
-      :key="section.category"
-      class="flex w-full flex-col items-center gap-2"
+  <Transition name="fade" mode="out-in">
+    <HistorySkeleton v-if="isLoading" key="skeleton" />
+    <div
+      v-else-if="historyStore.items.length === 0"
+      key="empty"
+      class="flex justify-center mt-12 text-gray-500"
     >
-      <button
-        type="button"
-        class="w-full flex items-center justify-between py-2 px-3 bg-[#f6fafe] rounded-md cursor-pointer"
-        @click="toggleCategory(section.category)"
-        :aria-expanded="openCategory === section.category"
+      No previous convertions found
+    </div>
+    <div v-else key="content" class="flex flex-col items-center gap-4 w-full">
+      <section
+        v-for="section in groupedItems"
+        :key="section.category"
+        class="flex w-full flex-col items-center gap-2"
       >
-        <p class="text-sm font-medium uppercase tracking-wide text-gray-500">
-          {{ section.category }}
-        </p>
-        <span class="text-sm text-gray-400">{{ section.items.length }}</span>
-      </button>
+        <button
+          type="button"
+          class="w-full flex items-center justify-between py-2 px-3 bg-[#f6fafe] rounded-md cursor-pointer"
+          @click="toggleCategory(section.category)"
+          :aria-expanded="openCategory === section.category"
+        >
+          <p class="text-sm font-medium uppercase tracking-wide text-gray-500">
+            {{ section.category }}
+          </p>
+          <span class="text-sm text-gray-400">{{ section.items.length }}</span>
+        </button>
 
-      <div
-        v-show="openCategory === section.category"
-        class="flex flex-col items-center w-full mt-2 gap-2"
-      >
-        <HistoryEntity
-          v-for="item in section.items"
-          :key="item.id"
-          :item="item"
-          class="flex flex-col w-full"
-          @delete="handleDelete"
-        />
-      </div>
-    </section>
-  </div>
+        <div
+          v-show="openCategory === section.category"
+          class="flex flex-col items-center w-full mt-2 gap-2"
+        >
+          <HistoryEntity
+            v-for="item in section.items"
+            :key="item.id"
+            :item="item"
+            class="flex flex-col w-full"
+            @delete="handleDelete"
+          />
+        </div>
+      </section>
+    </div>
+  </Transition>
 </template>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

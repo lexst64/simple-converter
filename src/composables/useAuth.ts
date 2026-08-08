@@ -24,7 +24,7 @@ export function useAuth(): AuthContextType {
       localStorage.setItem('user', JSON.stringify(user))
       state.value.user = user
       state.value.isAuthenticated = true
-    } catch (error) {
+    } catch {
       toastStore.error('Failed to fetch user.', 'Authentication Error')
       logout()
     }
