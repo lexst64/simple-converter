@@ -32,9 +32,7 @@ const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
 const download = async () => {
   if (props.file.outputFileId) {
-    const originalFileName = props.file.file.name
-    const newFileName = `${originalFileName.split('.')[0]}.${props.file.targetFormat}`
-    await ConverterService.downloadFile(props.file.outputFileId, newFileName)
+    await ConverterService.downloadFile(props.file.outputFileId)
   } else {
     toastStore.error('No outputFileId.', 'File Download Failed')
   }

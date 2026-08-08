@@ -26,23 +26,17 @@ export class ConverterService {
     ).data
   }
 
-  static async downloadFile(fileId: string, desiredFilename: string): Promise<void> {
+  static async downloadFile(fileId: string): Promise<void> {
     const { data } = await api.get<{ url: string }>(`/files/${fileId}`)
 
-    const s3Response = await axios.get(data.url, { responseType: 'blob' })
-    const blob = new Blob([s3Response.data])
-
-    const url = window.URL.createObjectURL(blob)
-
     const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', desiredFilename)
+    link.href = data.url
+    link.rel = 'noopener noreferrer'
     document.body.appendChild(link)
 
     link.click()
 
-    link.parentNode?.removeChild(link)
-    window.URL.revokeObjectURL(url)
+    link.remove()
   }
 
   static async getJob(jobId: string): Promise<Job> {

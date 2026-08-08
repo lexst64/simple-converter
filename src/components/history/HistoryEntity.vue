@@ -82,7 +82,7 @@ const timeAgo = computed(() => {
         </SmallBadge>
       </div>
       <IconButton
-        @click="() => ConverterService.downloadFile(item.outputFileId, item.fileName)"
+        @click="() => ConverterService.downloadFile(item.outputFileId)"
         :disabled="isDeleting"
         aria-label="Download converted file"
       >
