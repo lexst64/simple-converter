@@ -9,6 +9,7 @@ import { API_URL } from '@/main.ts'
 import type { JobStatus } from '@/types/api.ts'
 import FormatSelector from './FormatSelector.vue'
 import InitialFileUploader from '../InitialFileUploader.vue'
+import { useToastStore } from '@/stores/useToastStore'
 
 const auth = useAuth()
 
@@ -74,12 +75,17 @@ const toggleSelectAll = (event: Event) => {
   })
 }
 
+const toastStore = useToastStore()
+
 const convert = async () => {
   if (isConvertDisabled()) return
 
   isConverting.value = true
 
   const selectedFiles = fileStore.files.filter((f) => f.selected)
+  const isBatch = selectedFiles.length > 1
+  let succeededCount = 0
+  let failedCount = 0
 
   try {
     const conversionPromises = selectedFiles.map(async (fileHolder) => {
@@ -110,8 +116,11 @@ const convert = async () => {
           socket.onmessage = (event) => {
             const statusData = JSON.parse(event.data) as { status: JobStatus; progress: number }
 
-            // TODO: handle file status better 
-            fileStore.setStatus(fileHolder.id, statusData.status === 'pending' ? 'processing' : statusData.status)
+            // TODO: handle file status better
+            fileStore.setStatus(
+              fileHolder.id,
+              statusData.status === 'pending' ? 'processing' : statusData.status,
+            )
             fileStore.setProgress(fileHolder.id, statusData.progress)
 
             if (statusData.status === 'completed') {
@@ -120,6 +129,13 @@ const convert = async () => {
               ConverterService.getJob(jobId).then((job) => {
                 if (job.outputFileId) {
                   fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
+                  succeededCount++
+                  if (!isBatch) {
+                    toastStore.success(
+                      `"${fileHolder.file.name}" was converted successfully!`,
+                      'Conversion Completed',
+                    )
+                  }
                   resolve()
                 } else {
                   reject(new Error('Conversion failed'))
@@ -138,14 +154,33 @@ const convert = async () => {
             reject(new Error('WebSocket connection failed'))
           }
         })
-      } catch (error) {
+      } catch {
+        failedCount++
         fileStore.setSelected(fileHolder.id, true)
-        console.error(`Failed to convert ${fileHolder.file.name}:`, error)
         fileStore.setStatus(fileHolder.id, 'failed')
+        if (!isBatch) {
+          toastStore.error(`Failed to convert "${fileHolder.file.name}".`, 'Conversion Failed')
+        }
       }
     })
 
     await Promise.allSettled(conversionPromises)
+
+    if (isBatch) {
+      if (failedCount === 0) {
+        toastStore.success(
+          `${succeededCount} files converted successfully!`,
+          'Batch Conversion Completed',
+        )
+      } else if (succeededCount === 0) {
+        toastStore.error(`Failed to convert ${failedCount} files.`, 'Batch Conversion Failed')
+      } else {
+        toastStore.warning(
+          `${succeededCount} files converted, ${failedCount} failed.`,
+          'Batch Conversion Finished',
+        )
+      }
+    }
   } finally {
     isConverting.value = false
   }

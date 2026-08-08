@@ -1,5 +1,5 @@
 import { api } from '@/main'
-import type { Job, ConversionJobRequest, FileUploadResponse, UserFile } from '@/types/api'
+import type { Job, ConversionJobRequest, UserFile } from '@/types/api'
 import axios from 'axios'
 
 export class ConverterService {

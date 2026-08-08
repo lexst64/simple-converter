@@ -4,10 +4,12 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { AuthService } from '@/services/auth.service'
 import { config } from '@/config'
+import { useToastStore } from '@/stores/useToastStore'
 
 const googleBtn = ref<HTMLElement | null>(null)
 const router = useRouter()
 const { login } = useAuth()
+const toastStore = useToastStore()
 
 // Define the expected structure from Google's callback
 interface CredentialResponse {
@@ -21,8 +23,8 @@ const handleCredentialResponse = async (response: CredentialResponse): Promise<v
     const res = await AuthService.loginWithGoogle(response.credential)
     await login(res.token)
     router.push('/')
-  } catch (error) {
-    console.error('Error connecting to backend server:', error)
+  } catch {
+    toastStore.error('Error connecting to backend server.', 'Authentication Error')
   }
 }
 
@@ -43,7 +45,7 @@ onMounted(() => {
       shape: 'rectangular',
     })
   } else {
-    console.error('Google Identity Services script failed to load.')
+    toastStore.error('Google Identity Services script failed to load.', 'Authentication Error')
   }
 })
 </script>

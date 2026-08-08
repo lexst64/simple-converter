@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
 import { ConverterService } from '@/services/converter.service'
 import { JobStatus, type UserFile } from '@/types/api'
+import { useToastStore } from '@/stores/useToastStore'
 
 export interface HistoryItem {
   id: string
@@ -135,6 +136,8 @@ onMounted(async () => {
   }
 })
 
+const toastStore = useToastStore()
+
 async function handleDelete(id: string) {
   const index = items.value.findIndex((item) => item.id === id)
   if (index === -1) return
@@ -147,10 +150,10 @@ async function handleDelete(id: string) {
 
   try {
     await ConverterService.deleteJob(id)
-  } catch (error) {
-    console.error('Failed to delete history item:', error)
+  } catch {
     // rollback state if server deletion fails
     items.value.splice(index, 0, itemToDelete)
+    toastStore.error(`Failed to delete "${itemToDelete.fileName}".`, 'Deletion Failed')
   }
 }
 </script>

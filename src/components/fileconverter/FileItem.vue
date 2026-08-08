@@ -7,6 +7,7 @@ import DownloadIcon from '../icons/DownloadIcon.vue'
 import SmallBadge from '../common/SmallBadge.vue'
 import FormatSelector from './FormatSelector.vue'
 import { ConverterService } from '@/services/converter.service.ts'
+import { useToastStore } from '@/stores/useToastStore.ts'
 
 const statusClasses = {
   pending: 'bg-slate-100 text-slate-700 ring-slate-200',
@@ -25,6 +26,7 @@ const props = defineProps<{
 const targetFormat = defineModel('targetFormat')
 const selected = defineModel('selected')
 const fileStore = useFileStore()
+const toastStore = useToastStore()
 
 const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
@@ -34,7 +36,7 @@ const download = async () => {
     const newFileName = `${originalFileName.split('.')[0]}.${props.file.targetFormat}`
     await ConverterService.downloadFile(props.file.outputFileId, newFileName)
   } else {
-    console.log('No outputFileId')
+    toastStore.error('No outputFileId.', 'File Download Failed')
   }
 }
 </script>

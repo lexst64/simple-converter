@@ -2,6 +2,7 @@ import { ref, computed } from 'vue'
 import type { AuthState, AuthContextType } from '@/types/auth'
 import { AuthService } from '@/services/auth.service'
 import type { User } from '@/types/user'
+import { useToastStore } from '@/stores/useToastStore'
 
 const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
@@ -13,6 +14,8 @@ const state = ref<AuthState>({
 })
 
 export function useAuth(): AuthContextType {
+  const toastStore = useToastStore();
+
   const login = async (token: string) => {
     localStorage.setItem(TOKEN_KEY, token)
     state.value.token = token
@@ -22,8 +25,7 @@ export function useAuth(): AuthContextType {
       state.value.user = user
       state.value.isAuthenticated = true
     } catch (error) {
-      console.error('Failed to fetch user', error)
-      // Handle error, maybe logout
+      toastStore.error('Failed to fetch user.', 'Authentication Error')
       logout()
     }
   }
