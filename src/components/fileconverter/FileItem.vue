@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref, onUnmounted } from 'vue'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { formatBytes, getExtFromFileName } from '@/utils'
 import RemoveIcon from '@/components/icons/RemoveIcon.vue'
@@ -34,15 +35,32 @@ const selected = defineModel('selected')
 const fileStore = useFileStore()
 const toastStore = useToastStore()
 
+const isDownloadDisabled = ref(false)
+let downloadTimerId: number | null = null
+
 const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
 const download = async () => {
+  if (isDownloadDisabled.value) return
+  isDownloadDisabled.value = true
+
   if (props.file.outputFileId) {
     await ConverterService.downloadFile(props.file.outputFileId)
   } else {
     toastStore.error('No outputFileId.', 'File Download Failed')
   }
+
+  downloadTimerId = setTimeout(() => {
+    isDownloadDisabled.value = false
+    downloadTimerId = null
+  }, 2000)
 }
+
+onUnmounted(() => {
+  if (downloadTimerId) {
+    clearTimeout(downloadTimerId)
+  }
+})
 </script>
 
 <template>
@@ -99,7 +117,9 @@ const download = async () => {
           class="bg-blue-100 text-blue-800 ring-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:ring-blue-800"
           >{{ file.targetFormat?.toUpperCase() }}</SmallBadge
         >
-        <IconButton @click="download"><DownloadIcon></DownloadIcon></IconButton>
+        <IconButton :disabled="isDownloadDisabled" @click="download"
+          ><DownloadIcon></DownloadIcon
+        ></IconButton>
       </div>
     </div>
   </div>
