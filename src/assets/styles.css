@@ -1,2 +1,14 @@
 @import "tailwindcss";
 @import 'tailwind-scrollbar-hide/v4';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
+}
+

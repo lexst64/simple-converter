@@ -17,9 +17,31 @@
     <link href="/src/assets/styles.css" rel="stylesheet" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 
+    <script>
+      (function() {
+        try {
+          const stored = localStorage.getItem('theme-store');
+          let mode = 'auto';
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.themeMode) mode = parsed.themeMode;
+          }
+          const isDark = mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+          } else {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+          }
+          const meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+        } catch (e) {}
+      })();
+    </script>
     <title>Simple Converter | Easy Media Converter</title>
   </head>
-  <body>
+  <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
     <div id="app" class="min-h-screen flex flex-col font-sans"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>

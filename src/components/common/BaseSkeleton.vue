@@ -16,7 +16,7 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <div
-    class="animate-pulse bg-blue-100/70"
+    class="animate-pulse bg-blue-100/70 dark:bg-slate-700/60"
     :class="className"
     :style="{
       width,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useFileStore } from '@/stores/useFileStore'
 import { ref } from 'vue'
-import BaseButton from './common/BaseButton.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { useRouter } from 'vue-router'
 
 const fileStore = useFileStore()
@@ -49,7 +49,7 @@ const onDrop = (event: DragEvent) => {
 <template>
   <div
     class="flex h-70 items-center justify-center rounded-[20px] border-2 border-dashed transition-colors md:min-w-[40vw] md:w-auto"
-    :class="isDragOver ? 'border-[#5aa8f3] bg-[#e8f3ff]' : 'border-[#bfdaf4] bg-[#f6fafe]'"
+    :class="isDragOver ? 'border-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/40 dark:border-indigo-500' : 'border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50'"
     @dragenter.prevent="onDragEnter"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
@@ -58,7 +58,7 @@ const onDrop = (event: DragEvent) => {
     <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
     <div class="flex flex-col items-center gap-2.5">
       <BaseButton @click="openFileSelector">Select files</BaseButton>
-      <div class="text-xs">
+      <div class="text-xs text-slate-500 dark:text-slate-400">
         <span class="hidden md:inline">or drag-and-drop here </span>
         <span>(up to 1.0 GB per file)</span>
       </div>

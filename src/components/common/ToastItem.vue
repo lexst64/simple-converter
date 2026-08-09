@@ -96,7 +96,7 @@ const progressBarClass = computed(() => {
 
 <template>
   <div
-    class="relative group flex items-start gap-3 w-full sm:w-96 p-4 rounded-xl bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xl transition-all duration-300 pointer-events-auto overflow-hidden"
+    class="relative group flex items-start gap-3 w-full sm:w-96 p-4 rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-700/90 shadow-xl transition-all duration-300 pointer-events-auto overflow-hidden"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
     role="alert"
@@ -109,10 +109,10 @@ const progressBarClass = computed(() => {
     </div>
 
     <div class="flex-1 min-w-0 pt-0.5">
-      <h4 v-if="toast.title" class="text-sm font-semibold text-slate-800 leading-tight mb-0.5">
+      <h4 v-if="toast.title" class="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight mb-0.5">
         {{ toast.title }}
       </h4>
-      <p class="text-sm text-slate-600 leading-snug wrap-break-word">
+      <p class="text-sm text-slate-600 dark:text-slate-300 leading-snug wrap-break-word">
         {{ toast.message }}
       </p>
     </div>
@@ -121,7 +121,7 @@ const progressBarClass = computed(() => {
       <CloseIcon />
     </IconButton>
 
-    <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-100 overflow-hidden">
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-slate-100 dark:bg-slate-700 overflow-hidden">
       <div
         :class="['h-full transition-all duration-75 ease-linear', progressBarClass]"
         :style="{ width: `${progress}%` }"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useToastStore } from '@/stores/useToastStore'
-import ToastItem from './ToastItem.vue'
+import ToastItem from '@/components/common/ToastItem.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 

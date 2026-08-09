@@ -14,7 +14,7 @@ withDefaults(defineProps<Props>(), {
   <div class="flex flex-col items-center gap-4 w-full" aria-busy="true" aria-label="Loading history items">
     <section class="flex w-full flex-col items-center gap-2">
       <!-- Category Header Skeleton -->
-      <div class="w-full flex items-center justify-between py-2.5 px-3 bg-[#f6fafe] rounded-md border border-blue-50">
+      <div class="w-full flex items-center justify-between py-2.5 px-3 bg-slate-100 dark:bg-slate-800/60 rounded-md border border-blue-50 dark:border-slate-800">
         <BaseSkeleton width="70px" height="0.875rem" />
         <BaseSkeleton width="20px" height="0.875rem" />
       </div>
@@ -24,7 +24,7 @@ withDefaults(defineProps<Props>(), {
         <div
           v-for="n in count"
           :key="n"
-          class="flex flex-col w-full md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-[#f6fafe] px-4 py-3 md:w-200 md:gap-4 md:px-5"
+          class="flex flex-col w-full md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f6fafe] dark:bg-slate-800/80 px-4 py-3 md:w-200 md:gap-4 md:px-5"
         >
           <!-- Left info side -->
           <div class="min-w-0 flex-1 flex flex-col gap-2">

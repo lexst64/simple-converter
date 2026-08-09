@@ -1,13 +1,13 @@
 import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import App from '@/App.vue'
+import router from '@/router'
 import axios from 'axios'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { useFileStore } from './stores/useFileStore.ts'
-import { useAuth } from './composables/useAuth.ts'
+import { useFileStore } from '@/stores/useFileStore.ts'
+import { useAuth } from '@/composables/useAuth.ts'
 
-import { config } from './config'
+import { config } from '@/config'
 
 const app = createApp(App)
 const pinia = createPinia()

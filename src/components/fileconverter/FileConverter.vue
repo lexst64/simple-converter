@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { useFileStore } from '@/stores/useFileStore'
-import BaseButton from '../common/BaseButton.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 import { computed, ref, watch } from 'vue'
-import FileItem from './FileItem.vue'
+import FileItem from '@/components/fileconverter/FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
 import { useAuth } from '@/composables/useAuth.ts'
 import { API_URL } from '@/main.ts'
 import type { JobStatus } from '@/types/api.ts'
-import FormatSelector from './FormatSelector.vue'
-import InitialFileUploader from '../InitialFileUploader.vue'
+import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
+import InitialFileUploader from '@/components/InitialFileUploader.vue'
 import { useToastStore } from '@/stores/useToastStore'
 
 const auth = useAuth()
@@ -188,8 +188,13 @@ const convert = async () => {
 </script>
 <template>
   <div class="flex flex-col gap-2">
-    <div class="flex gap-2">
-      <input type="checkbox" :checked="allFilesSelected" @change="toggleSelectAll" />
+    <div class="flex gap-2 items-center text-slate-700 dark:text-slate-300">
+      <input
+        type="checkbox"
+        :checked="allFilesSelected"
+        @change="toggleSelectAll"
+        class="h-4 w-4 accent-indigo-600 dark:accent-indigo-500 rounded cursor-pointer"
+      />
       <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
       <p v-else>Selected: {{ numSelectedFiles }}</p>
       <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
@@ -199,7 +204,7 @@ const convert = async () => {
     <InitialFileUploader v-if="fileStore.files.length === 0" />
     <div
       v-else
-      class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-[#5aa8f3] bg-[#e8f3ff]"
+      class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-indigo-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 transition-colors"
     >
       <FileItem
         v-for="file in fileStore.files"

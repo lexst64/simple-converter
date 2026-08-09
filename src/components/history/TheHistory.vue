@@ -117,7 +117,7 @@ function handleDelete(id: string) {
     <div
       v-else-if="historyStore.items.length === 0"
       key="empty"
-      class="flex justify-center mt-12 text-gray-500"
+      class="flex justify-center mt-12 text-slate-500 dark:text-slate-400"
     >
       No previous convertions found
     </div>
@@ -129,14 +129,14 @@ function handleDelete(id: string) {
       >
         <button
           type="button"
-          class="w-full flex items-center justify-between py-2 px-3 bg-[#f6fafe] rounded-md cursor-pointer"
+          class="w-full flex items-center justify-between py-2 px-3 bg-slate-100 dark:bg-slate-800/60 rounded-md cursor-pointer transition-colors"
           @click="toggleCategory(section.category)"
           :aria-expanded="openCategory === section.category"
         >
-          <p class="text-sm font-medium uppercase tracking-wide text-gray-500">
+          <p class="text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
             {{ section.category }}
           </p>
-          <span class="text-sm text-gray-400">{{ section.items.length }}</span>
+          <span class="text-sm text-slate-400 dark:text-slate-500">{{ section.items.length }}</span>
         </button>
 
         <div
