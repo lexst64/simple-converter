@@ -1,17 +1,9 @@
 <script setup lang="ts">
 import InlineLink from '@/components/common/InlineLink.vue'
 import { useAuth } from '@/composables/useAuth'
-import router from '@/router'
-import { useFileStore } from '@/stores/useFileStore'
 import { ref } from 'vue'
 
 const { user, logout } = useAuth()
-
-const handleLogout = () => {
-  logout()
-  useFileStore().clearFiles()
-  router.push('/')
-}
 
 const spoilerEmail = (email: string) => {
   const [name, domain] = email.split('@')
@@ -41,7 +33,7 @@ const toogleHideEmail = () => {
           <InlineLink @click="toogleHideEmail">[{{ hideEmail ? 'show' : 'hide' }}]</InlineLink>
         </p>
 
-        <InlineLink @click="handleLogout">Logout</InlineLink>
+        <InlineLink @click="logout">Logout</InlineLink>
       </div>
     </div>
   </div>

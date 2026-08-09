@@ -14,7 +14,7 @@ const state = ref<AuthState>({
 })
 
 export function useAuth(): AuthContextType {
-  const toastStore = useToastStore();
+  const toastStore = useToastStore()
 
   const login = async (token: string) => {
     localStorage.setItem(TOKEN_KEY, token)
@@ -31,11 +31,13 @@ export function useAuth(): AuthContextType {
   }
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    state.value.user = null
-    state.value.token = null
-    state.value.isAuthenticated = false
+    // TODO: revoke token on logout
+
+    localStorage.clear()
+    sessionStorage.clear()
+
+    // hard navigate using browser api to destroy all JS memory
+    window.location.href = '/auth'
   }
 
   // Auto-login if token exists

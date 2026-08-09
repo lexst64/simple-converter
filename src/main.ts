@@ -4,7 +4,6 @@ import router from '@/router'
 import axios from 'axios'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import { useFileStore } from '@/stores/useFileStore.ts'
 import { useAuth } from '@/composables/useAuth.ts'
 
 import { config } from '@/config'
@@ -36,10 +35,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      const { logout } = useAuth()
-      logout()
-      useFileStore().clearFiles()
-      router.push('/')
+      useAuth().logout()
     }
 
     return Promise.reject(error)
