@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, watch, onUnmounted } from 'vue'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { formatBytes, getExtFromFileName } from '@/utils'
 import RemoveIcon from '@/components/icons/RemoveIcon.vue'
@@ -36,7 +36,35 @@ const fileStore = useFileStore()
 const toastStore = useToastStore()
 
 const isDownloadDisabled = ref(false)
-let downloadTimerId: number | null = null
+let downloadCooldownTimerId: number | null = null
+let statusDelayTimerId: number | null = null
+
+const displayStatus = ref<FileHolder['status']>(props.file.status)
+const displayProgress = ref<number>(props.file.progress)
+
+// show the 100% progress state briefly before transitioning to completed to enhance UX
+watch(
+  () => [props.file.status, props.file.progress] as const,
+  ([newStatus, newProgress]) => {
+    if (newStatus === 'completed' && displayStatus.value !== 'completed') {
+      displayProgress.value = 100
+      if (!statusDelayTimerId) {
+        statusDelayTimerId = setTimeout(() => {
+          displayStatus.value = 'completed'
+          statusDelayTimerId = null
+        }, 600)
+      }
+    } else if (newStatus !== 'completed') {
+      if (statusDelayTimerId) {
+        clearTimeout(statusDelayTimerId)
+        statusDelayTimerId = null
+      }
+      displayStatus.value = newStatus
+      displayProgress.value = newProgress
+    }
+  },
+  { immediate: true },
+)
 
 const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
 
@@ -50,15 +78,18 @@ const download = async () => {
     toastStore.error('No outputFileId.', 'File Download Failed')
   }
 
-  downloadTimerId = setTimeout(() => {
+  downloadCooldownTimerId = setTimeout(() => {
     isDownloadDisabled.value = false
-    downloadTimerId = null
+    downloadCooldownTimerId = null
   }, 2000)
 }
 
 onUnmounted(() => {
-  if (downloadTimerId) {
-    clearTimeout(downloadTimerId)
+  if (downloadCooldownTimerId) {
+    clearTimeout(downloadCooldownTimerId)
+  }
+  if (statusDelayTimerId) {
+    clearTimeout(statusDelayTimerId)
   }
 })
 </script>
@@ -70,7 +101,9 @@ onUnmounted(() => {
     <div class="flex w-full gap-4 items-center">
       <input
         :disabled="
-          file.status === 'uploading' || file.status === 'processing' || file.status === 'completed'
+          displayStatus === 'uploading' ||
+          displayStatus === 'processing' ||
+          displayStatus === 'completed'
         "
         v-model="selected"
         type="checkbox"
@@ -88,31 +121,31 @@ onUnmounted(() => {
     <div class="md:hidden w-full h-px bg-gray-300 dark:bg-slate-700"></div>
 
     <div
-      v-if="file.status === 'pending' || file.status === 'failed'"
+      v-if="displayStatus === 'pending' || displayStatus === 'failed'"
       class="flex items-center gap-3 justify-end"
     >
-      <SmallBadge :class="getStatusClasses(file.status)">{{ file.status }}</SmallBadge>
+      <SmallBadge :class="getStatusClasses(displayStatus)">{{ displayStatus }}</SmallBadge>
       <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
       <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
     </div>
     <div v-else class="flex items-center gap-3 justify-end w-full md:w-auto">
-      <div v-if="file.status === 'processing'" class="flex items-center gap-3 w-full md:w-48">
+      <div v-if="displayStatus === 'processing'" class="flex items-center gap-3 w-full md:w-48">
         <div
           class="flex-1 h-2.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner"
         >
           <div
             class="h-full transition-all duration-300 ease-out bg-amber-500"
-            :style="{ width: `${file.progress}%` }"
+            :style="{ width: `${displayProgress}%` }"
           ></div>
         </div>
         <span class="text-sm text-gray-600 dark:text-slate-300 font-semibold w-11 text-right"
-          >{{ file.progress }}%</span
+          >{{ displayProgress }}%</span
         >
       </div>
-      <SmallBadge :class="getStatusClasses(file.status)" class="capitalize">{{
-        file.status
+      <SmallBadge :class="getStatusClasses(displayStatus)" class="capitalize">{{
+        displayStatus
       }}</SmallBadge>
-      <div v-if="file.status === 'completed'" class="flex items-center gap-3">
+      <div v-if="displayStatus === 'completed'" class="flex items-center gap-3">
         <SmallBadge
           class="bg-blue-100 text-blue-800 ring-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:ring-blue-800"
           >{{ file.targetFormat?.toUpperCase() }}</SmallBadge
