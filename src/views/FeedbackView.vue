@@ -165,7 +165,7 @@ const resetForm = () => {
             id="email"
             v-model="email"
             type="email"
-            placeholder="your.email@example.com"
+            placeholder="email@example.com"
             class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors"
           />
         </div>
