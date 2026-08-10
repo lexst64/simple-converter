@@ -1,5 +1,6 @@
 import AuthView from '@/views/AuthView.vue'
 import ConverterView from '@/views/ConverterView.vue'
+import FeedbackView from '@/views/FeedbackView.vue'
 import HistoryView from '@/views/HistoryView.vue'
 import MyProfileView from '@/views/MyProfileView.vue'
 import { createRouter, createWebHistory } from 'vue-router'
@@ -35,6 +36,14 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: MyProfileView,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/feedback',
+      name: 'feedback',
+      component: FeedbackView,
       meta: {
         requiresAuth: true,
       },

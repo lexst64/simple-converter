@@ -9,8 +9,11 @@ const year = computed(() => new Date().getFullYear())
 <template>
   <footer class="flex justify-between bg-slate-200 dark:bg-slate-800/80 p-2 text-sm text-slate-600 dark:text-slate-300 transition-colors">
     <p>v{{ pkg.version }} &copy; {{ year }} Oleksii Stoliarchuk</p>
-    <nav class="hidden md:block">
+    <nav class="flex gap-3.5">
       <ul class="flex list-none gap-3.5">
+        <li><InlineLink to="/feedback">Send Feedback</InlineLink></li>
+      </ul>
+      <ul class="hidden md:flex list-none gap-3.5">
         <li>
           <InlineLink href="https://github.com/lexst64/simple-converter">Source code</InlineLink>
         </li>
