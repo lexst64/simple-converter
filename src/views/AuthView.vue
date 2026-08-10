@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { AuthService } from '@/services/auth.service'
@@ -11,14 +11,11 @@ const router = useRouter()
 const { login } = useAuth()
 const toastStore = useToastStore()
 
-// Define the expected structure from Google's callback
-interface CredentialResponse {
-  credential: string
-  clientId: string
-  select_by: string
-}
+let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-const handleCredentialResponse = async (response: CredentialResponse): Promise<void> => {
+const handleCredentialResponse = async (
+  response: google.accounts.id.CredentialResponse,
+): Promise<void> => {
   try {
     const res = await AuthService.loginWithGoogle(response.credential)
     await login(res.token)
@@ -28,17 +25,19 @@ const handleCredentialResponse = async (response: CredentialResponse): Promise<v
   }
 }
 
-onMounted(() => {
-  // @ts-expect-error - Bypassing TS error for the globally injected google object
-  if (window.google) {
-    // @ts-expect-error lol
+const renderGoogleButton = () => {
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
+  if (window.google?.accounts?.id && googleBtn.value) {
     window.google.accounts.id.initialize({
       client_id: config.googleClientId,
       callback: handleCredentialResponse,
     })
 
-    // @ts-expect-error lol
-    window.google.accounts.id.renderButton(googleBtn.value!, {
+    window.google.accounts.id.renderButton(googleBtn.value, {
+      type: 'standard',
       theme: 'outline',
       size: 'large',
       text: 'signin_with',
@@ -47,12 +46,58 @@ onMounted(() => {
   } else {
     toastStore.error('Google Identity Services script failed to load.', 'Authentication Error')
   }
+}
+
+const handleSdkLoaded = () => {
+  cleanupListeners()
+  renderGoogleButton()
+}
+
+const handleSdkFailed = () => {
+  cleanupListeners()
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
+  toastStore.error('Google Identity Services script failed to load.', 'Authentication Error')
+}
+
+const cleanupListeners = () => {
+  window.removeEventListener('google-sdk-loaded', handleSdkLoaded)
+  window.removeEventListener('google-sdk-error', handleSdkFailed)
+}
+
+onMounted(() => {
+  if (window.google?.accounts?.id) {
+    renderGoogleButton()
+  } else {
+    window.addEventListener('google-sdk-loaded', handleSdkLoaded)
+    window.addEventListener('google-sdk-error', handleSdkFailed)
+
+    timeoutId = setTimeout(() => {
+      if (window.google?.accounts?.id) {
+        renderGoogleButton()
+      } else {
+        handleSdkFailed()
+      }
+    }, 5000)
+  }
+})
+
+onUnmounted(() => {
+  cleanupListeners()
+  if (timeoutId) {
+    clearTimeout(timeoutId)
+    timeoutId = null
+  }
 })
 </script>
 
 <template>
   <div class="flex flex-col items-center justify-center gap-3">
-    <h3 class="text-slate-800 dark:text-slate-200">Please, sign in to your Google account to use this app!</h3>
-    <div ref="googleBtn"></div>
+    <h3 class="text-slate-800 dark:text-slate-200">
+      Please, sign in to your Google account to use this app!
+    </h3>
+    <div ref="googleBtn" style="color-scheme: light"></div>
   </div>
 </template>

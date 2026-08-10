@@ -15,7 +15,7 @@
     <meta name="theme-color" content="#ffffff" />
 
     <link href="/src/assets/styles.css" rel="stylesheet" />
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://accounts.google.com/gsi/client" async defer onload="window.dispatchEvent(new Event('google-sdk-loaded'))" onerror="window.dispatchEvent(new Event('google-sdk-error'))"></script>
 
     <script>
       (function() {
