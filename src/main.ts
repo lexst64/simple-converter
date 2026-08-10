@@ -3,14 +3,18 @@ import App from '@/App.vue'
 import router from '@/router'
 import axios from 'axios'
 import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { createPersistedState } from 'pinia-plugin-persistedstate'
 import { useAuth } from '@/composables/useAuth.ts'
 
 import { config } from '@/config'
 
 const app = createApp(App)
 const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
+pinia.use(
+  createPersistedState({
+    debug: import.meta.env.DEV,
+  }),
+)
 
 app.use(router)
 app.use(pinia)

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
 
@@ -12,36 +12,55 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Simple Converter - Convert between media formats easily" />
+
+    <meta property="og:title" content="Simple Converter | Easy Media Converter" />
+    <meta
+      property="og:description"
+      content="Simple Converter - Convert between media formats easily"
+    />
+    <meta property="og:type" content="website" />
+
     <meta name="theme-color" content="#ffffff" />
 
     <link href="/src/assets/styles.css" rel="stylesheet" />
-    <script src="https://accounts.google.com/gsi/client" async defer onload="window.dispatchEvent(new Event('google-sdk-loaded'))" onerror="window.dispatchEvent(new Event('google-sdk-error'))"></script>
+    <link rel="preconnect" href="https://accounts.google.com" />
+    <script
+      src="https://accounts.google.com/gsi/client"
+      async
+      defer
+      onload="window.dispatchEvent(new Event('google-sdk-loaded'))"
+      onerror="window.dispatchEvent(new Event('google-sdk-error'))"
+    ></script>
 
     <script>
-      (function() {
+      ;(function () {
         try {
-          const stored = localStorage.getItem('theme-store');
-          let mode = 'auto';
+          const stored = localStorage.getItem('theme-store')
+          let mode = 'auto'
           if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed && parsed.themeMode) mode = parsed.themeMode;
+            const parsed = JSON.parse(stored)
+            if (parsed && parsed.themeMode) mode = parsed.themeMode
           }
-          const isDark = mode === 'dark' || (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          const isDark =
+            mode === 'dark' ||
+            (mode === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches)
           if (isDark) {
-            document.documentElement.classList.add('dark');
-            document.documentElement.style.colorScheme = 'dark';
+            document.documentElement.classList.add('dark')
+            document.documentElement.style.colorScheme = 'dark'
           } else {
-            document.documentElement.classList.remove('dark');
-            document.documentElement.style.colorScheme = 'light';
+            document.documentElement.classList.remove('dark')
+            document.documentElement.style.colorScheme = 'light'
           }
-          const meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', isDark ? '#0f172a' : '#ffffff');
+          const meta = document.querySelector('meta[name="theme-color"]')
+          if (meta) meta.setAttribute('content', isDark ? '#0f172a' : '#ffffff')
         } catch (e) {}
-      })();
+      })()
     </script>
     <title>Simple Converter | Easy Media Converter</title>
   </head>
-  <body class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+  <body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200"
+  >
     <div id="app" class="min-h-screen flex flex-col font-sans"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
