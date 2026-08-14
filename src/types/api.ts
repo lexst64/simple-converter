@@ -56,3 +56,10 @@ export interface UserFile {
   mimeType?: string;
   deletedAt?: Date;
 }
+
+export interface SupportedFormats {
+  video: string[]
+  image: string[]
+  audio: string[]
+}
+

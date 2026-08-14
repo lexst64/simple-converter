@@ -25,10 +25,18 @@ const statusClasses = {
     'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:ring-emerald-800',
 } as const
 
-const props = defineProps<{
-  file: FileHolder
-  allSupportedFormats: string[]
-}>()
+const props = withDefaults(
+  defineProps<{
+    file: FileHolder
+    allSupportedFormats: string[]
+    isLoading?: boolean
+    isError?: boolean
+  }>(),
+  {
+    isLoading: false,
+    isError: false,
+  },
+)
 
 const targetFormat = defineModel('targetFormat')
 const selected = defineModel('selected')
@@ -126,7 +134,12 @@ onUnmounted(() => {
       class="flex items-center gap-3 justify-end"
     >
       <SmallBadge :class="getStatusClasses(displayStatus)">{{ displayStatus }}</SmallBadge>
-      <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
+      <FormatSelector
+        :formats="allSupportedFormats"
+        :is-loading="isLoading"
+        :is-error="isError"
+        v-model:target-format="targetFormat"
+      />
       <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
     </div>
     <div v-else class="flex items-center gap-3 justify-end w-full md:w-auto">

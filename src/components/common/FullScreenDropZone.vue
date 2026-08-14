@@ -4,7 +4,7 @@ import SmallBadge from '@/components/common/SmallBadge.vue'
 import UploadIcon from '@/components/icons/UploadIcon.vue'
 import { formatBytes } from '@/utils'
 import { useToastStore } from '@/stores/useToastStore'
-import { allSupportedFormats } from '@/constants/formats'
+import { useFormatStore } from '@/stores/useFormatStore'
 
 export interface RejectedFile {
   file: File
@@ -22,7 +22,6 @@ const props = withDefaults(
   }>(),
   {
     disabled: false,
-    accept: () => allSupportedFormats,
     multiple: true,
     maxSize: 1073741824,
     customTitle: 'Drop files anywhere',
@@ -54,12 +53,18 @@ const isFileDrag = (event: DragEvent): boolean => {
   return types.includes('Files')
 }
 
-const displayAccept = computed(() => {
-  if (!props.accept) return ''
-  if (Array.isArray(props.accept)) {
-    return props.accept.join(', ')
+const formatStore = useFormatStore()
+
+const activeAccept = computed<string[]>(() => {
+  if (props.accept !== undefined) {
+    return Array.isArray(props.accept) ? props.accept : props.accept.split(',').map((s) => s.trim())
   }
-  return props.accept
+  return formatStore.allSupportedFormats
+})
+
+const displayAccept = computed(() => {
+  if (formatStore.isLoading) return 'Loading...'
+  return activeAccept.value.join(', ')
 })
 
 const parseAcceptExtensions = (acceptInput?: string | string[]): string[] => {
@@ -90,7 +95,7 @@ const validateFiles = (fileList: File[]): { valid: File[]; invalid: RejectedFile
     }
   }
 
-  const acceptRules = parseAcceptExtensions(props.accept)
+  const acceptRules = parseAcceptExtensions(activeAccept.value)
 
   for (const file of filesToProcess) {
     let isValid = true

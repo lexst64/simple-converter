@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import TheHeader from '@/components/TheHeader.vue'
 import TheFooter from '@/components/TheFooter.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
+import { useFormatStore } from '@/stores/useFormatStore'
+
+onMounted(() => {
+  useFormatStore().fetchFormats()
+})
 </script>
 
 <template>
@@ -13,4 +19,3 @@ import ToastContainer from '@/components/common/ToastContainer.vue'
   </main>
   <TheFooter />
 </template>
-

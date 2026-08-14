@@ -11,7 +11,7 @@ import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
 import { useToastStore } from '@/stores/useToastStore'
 import FullScreenDropZone from '@/components/common/FullScreenDropZone.vue'
 import FileUploader from '../FileUploader.vue'
-import { allSupportedFormats } from '@/constants/formats'
+import { useFormatStore } from '@/stores/useFormatStore'
 
 const handleFilesDropped = (files: File[]) => {
   fileStore.addFiles(files)
@@ -20,6 +20,7 @@ const handleFilesDropped = (files: File[]) => {
 const auth = useAuth()
 
 const fileStore = useFileStore()
+const formatStore = useFormatStore()
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isConverting = ref(false)
 // target format chosen in the top-level selector; applied to all selected files
@@ -193,7 +194,12 @@ const convert = async () => {
         />
         <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
         <p v-else>Selected: {{ numSelectedFiles }}</p>
-        <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
+        <FormatSelector
+          :formats="formatStore.allSupportedFormats"
+          :is-loading="formatStore.allSupportedFormats.length === 0 ? formatStore.isLoading : false"
+          :is-error="formatStore.isError"
+          v-model:target-format="targetFormat"
+        />
       </div>
 
       <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
@@ -205,7 +211,9 @@ const convert = async () => {
         <FileItem
           v-for="file in fileStore.files"
           :file="file"
-          :allSupportedFormats="allSupportedFormats"
+          :allSupportedFormats="formatStore.allSupportedFormats"
+          :is-loading="formatStore.isLoading"
+          :is-error="formatStore.isError"
           :key="file.id"
           v-model:target-format="file.targetFormat"
           v-model:selected="file.selected"

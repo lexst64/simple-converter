@@ -8,18 +8,12 @@ import { useAuth } from '@/composables/useAuth.ts'
 
 import { config } from '@/config'
 
-const app = createApp(App)
 const pinia = createPinia()
 pinia.use(
   createPersistedState({
     debug: import.meta.env.DEV,
   }),
 )
-
-app.use(router)
-app.use(pinia)
-
-app.mount('#app')
 
 export const API_URL = config.apiUrl
 
@@ -45,3 +39,10 @@ api.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+const app = createApp(App)
+
+app.use(router)
+app.use(pinia)
+
+app.mount('#app')

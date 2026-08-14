@@ -1,8 +1,12 @@
 import { api } from '@/main'
-import type { Job, ConversionJobRequest, UserFile } from '@/types/api'
+import type { Job, ConversionJobRequest, UserFile, SupportedFormats } from '@/types/api'
 import axios from 'axios'
 
 export class ConverterService {
+  static async getSupportedFormats(): Promise<SupportedFormats> {
+    return (await api.get<SupportedFormats>('/formats')).data
+  }
+
   static async uploadFile(file: File): Promise<string> {
     const res = await api.post<{ id: string; url: string }>('/files/upload-request', {
       fileName: file.name,
