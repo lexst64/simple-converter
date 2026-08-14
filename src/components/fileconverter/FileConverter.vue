@@ -8,8 +8,14 @@ import { useAuth } from '@/composables/useAuth.ts'
 import { API_URL } from '@/main.ts'
 import type { JobStatus } from '@/types/api.ts'
 import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
-import InitialFileUploader from '@/components/InitialFileUploader.vue'
 import { useToastStore } from '@/stores/useToastStore'
+import FullScreenDropZone from '@/components/common/FullScreenDropZone.vue'
+import FileUploader from '../FileUploader.vue'
+import { allSupportedFormats } from '@/constants/formats'
+
+const handleFilesDropped = (files: File[]) => {
+  fileStore.addFiles(files)
+}
 
 const auth = useAuth()
 
@@ -25,17 +31,6 @@ watch(targetFormat, (val) => {
     if (f.selected) f.targetFormat = val
   })
 })
-
-const supportedFormats = {
-  video: ['mp4', 'avi', 'mov', 'mkv', 'webm', 'flv', 'wmv'],
-  image: ['jpeg', 'jpg', 'png', 'gif', 'bmp', 'tiff', 'heic', 'webp'],
-  audio: ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a'],
-}
-const allSupportedFormats = [
-  ...supportedFormats.audio,
-  ...supportedFormats.video,
-  ...supportedFormats.image,
-]
 
 const openFileSelector = () => {
   fileInputRef.value?.click()
@@ -187,35 +182,39 @@ const convert = async () => {
 }
 </script>
 <template>
-  <div class="flex flex-col gap-2">
-    <div class="flex gap-2 items-center text-slate-700 dark:text-slate-300">
-      <input
-        type="checkbox"
-        :checked="allFilesSelected"
-        @change="toggleSelectAll"
-        class="h-4 w-4 accent-indigo-600 dark:accent-indigo-500 rounded cursor-pointer"
-      />
-      <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
-      <p v-else>Selected: {{ numSelectedFiles }}</p>
-      <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
-    </div>
+  <FullScreenDropZone @files-dropped="handleFilesDropped">
+    <div class="flex flex-col gap-2">
+      <div class="flex gap-2 items-center text-slate-700 dark:text-slate-300">
+        <input
+          type="checkbox"
+          :checked="allFilesSelected"
+          @change="toggleSelectAll"
+          class="h-4 w-4 accent-indigo-600 dark:accent-indigo-500 rounded cursor-pointer"
+        />
+        <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
+        <p v-else>Selected: {{ numSelectedFiles }}</p>
+        <FormatSelector :formats="allSupportedFormats" v-model:target-format="targetFormat" />
+      </div>
 
-    <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
-    <InitialFileUploader v-if="fileStore.files.length === 0" />
-    <div
-      v-else
-      class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-indigo-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 transition-colors"
-    >
-      <FileItem
-        v-for="file in fileStore.files"
-        :file="file"
-        :allSupportedFormats="allSupportedFormats"
-        :key="file.id"
-        v-model:target-format="file.targetFormat"
-        v-model:selected="file.selected"
-      />
+      <input ref="fileInputRef" type="file" class="hidden" multiple @change="onFileChange" />
+      <FileUploader v-if="fileStore.files.length === 0" />
+      <div
+        v-else
+        class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-indigo-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 transition-colors"
+      >
+        <FileItem
+          v-for="file in fileStore.files"
+          :file="file"
+          :allSupportedFormats="allSupportedFormats"
+          :key="file.id"
+          v-model:target-format="file.targetFormat"
+          v-model:selected="file.selected"
+        />
+      </div>
+      <BaseButton secondary @click="openFileSelector" class="w-full">Add more files</BaseButton>
+      <BaseButton :disabled="isConvertDisabled()" @click="convert" class="w-full"
+        >Convert</BaseButton
+      >
     </div>
-    <BaseButton secondary @click="openFileSelector" class="w-full">Add more files</BaseButton>
-    <BaseButton :disabled="isConvertDisabled()" @click="convert" class="w-full">Convert</BaseButton>
-  </div>
+  </FullScreenDropZone>
 </template>

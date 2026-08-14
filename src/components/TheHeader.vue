@@ -31,7 +31,7 @@ const links = [
   >
     <a
       href="/"
-      class="text-indigo-600 dark:text-indigo-400 font-bold text-xl tracking-tight no-underline"
+      class="text-indigo-600 dark:text-indigo-400 font-bold text-xl tracking-tight no-underline select-none"  
       >Simple Converter</a
     >
 

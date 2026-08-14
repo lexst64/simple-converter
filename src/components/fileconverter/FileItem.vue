@@ -113,7 +113,8 @@ onUnmounted(() => {
       <div class="md:max-w-[50%] max-w-[90%]">
         <p class="truncate font-medium">{{ file.file.name }}</p>
         <p class="text-gray-500 dark:text-slate-400 text-xs">
-          {{ formatBytes(file.file.size) }} • {{ getExtFromFileName(file.file.name).toUpperCase() }}
+          {{ formatBytes(file.file.size) }} •
+          {{ getExtFromFileName(file.file.name).toUpperCase() || 'no extension' }}
         </p>
       </div>
     </div>

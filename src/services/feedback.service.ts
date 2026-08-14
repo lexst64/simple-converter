@@ -1,5 +1,6 @@
 import axios from 'axios'
 import config from '@/config'
+import pkg from '../../package.json'
 
 export interface FeedbackPayload {
   email?: string
@@ -24,6 +25,7 @@ export class FeedbackService {
       message: payload.message,
       subject: 'New Feedback - Simple Converter',
       from_name: 'Simple Converter Web App',
+      version: pkg.version,
       botcheck: payload.botcheck,
     })
 
