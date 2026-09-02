@@ -14,7 +14,7 @@ onMounted(() => {
 <template>
   <TheHeader />
   <ToastContainer />
-  <main class="flex-1 w-full max-w-[1100px] mx-auto px-4 py-8">
+  <main class="flex-1 w-full max-w-275 mx-auto px-4 py-8">
     <RouterView />
   </main>
   <TheFooter />
