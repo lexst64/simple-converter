@@ -26,6 +26,7 @@
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
     "@types/google.accounts": "^0.0.18",
+    "@types/node": "^26.6.2",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.9.1",
