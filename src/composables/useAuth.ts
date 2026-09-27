@@ -33,7 +33,8 @@ export function useAuth(): AuthContextType {
   const logout = () => {
     // TODO: revoke token on logout
 
-    localStorage.clear()
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
     sessionStorage.clear()
 
     // hard navigate using browser api to destroy all JS memory
