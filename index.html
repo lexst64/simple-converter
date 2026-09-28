@@ -61,7 +61,10 @@
   <body
     class="font-sans bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors duration-200"
   >
-    <div id="app" class="min-h-screen flex flex-col"></div>
+    <noscript>
+      <p class="p-8 text-center">This app requires JavaScript to be enabled.</p>
+    </noscript>
+    <div id="app" class="min-h-screen flex flex-col noscript:hidden"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
