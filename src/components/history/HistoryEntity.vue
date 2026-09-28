@@ -86,7 +86,7 @@ const timeAgo = computed(() => {
       <p class="font-medium truncate text-slate-800 dark:text-slate-100">
         {{ props.item.fileName }}
       </p>
-      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
+      <div class="font-mono flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400">
         <p>{{ formatBytes(props.item.fileSize) }} • {{ timeAgo }}</p>
       </div>
     </div>
