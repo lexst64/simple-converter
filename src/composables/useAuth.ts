@@ -49,6 +49,10 @@ export function useAuth(): AuthContextType {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
     sessionStorage.clear()
+    state.value = { user: null, token: null, isAuthenticated: false }
+
+    // already on the sign-in page: navigating again would reload it in a loop on repeated 401s
+    if (window.location.pathname === '/auth') return
 
     // hard navigate using browser api to destroy all JS memory
     window.location.href = '/auth'

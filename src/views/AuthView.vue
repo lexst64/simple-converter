@@ -76,7 +76,7 @@ onMounted(() => {
 
     timeoutId = setTimeout(() => {
       if (window.google?.accounts?.id) {
-        renderGoogleButton()
+        handleSdkLoaded()
       } else {
         handleSdkFailed()
       }

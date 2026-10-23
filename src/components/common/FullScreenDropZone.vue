@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, useAttrs } from 'vue'
+import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import SmallBadge from '@/components/common/SmallBadge.vue'
 import UploadIcon from '@/components/icons/UploadIcon.vue'
 import { formatBytes } from '@/utils'
@@ -35,7 +35,10 @@ const emit = defineEmits<{
 }>()
 
 const toastStore = useToastStore()
-const attrs = useAttrs()
+// listeners for declared emits never reach $attrs, so read them from the vnode props
+const vnodeProps = getCurrentInstance()?.vnode.props
+const hasInvalidFilesListener = () =>
+  !!(vnodeProps?.onInvalidFiles || vnodeProps?.['onInvalid-files'])
 
 const handleInvalidFiles = (invalidFiles: RejectedFile[]) => {
   toastStore.error(
@@ -200,7 +203,7 @@ const onDrop = (event: DragEvent) => {
 
   if (invalid.length > 0) {
     emit('invalid-files', invalid)
-    if (!attrs.onInvalidFiles && !attrs['onInvalid-files']) {
+    if (!hasInvalidFilesListener()) {
       handleInvalidFiles(invalid)
     }
   }

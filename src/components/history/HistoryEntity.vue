@@ -8,8 +8,10 @@ import ArrowLongRight from '@/components/icons/ArrowLongRight.vue'
 import DownloadIcon from '@/components/icons/DownloadIcon.vue'
 import type { HistoryItem } from '@/components/history/TheHistory.vue'
 import TrashIcon from '@/components/icons/TrashIcon.vue'
+import { useToastStore } from '@/stores/useToastStore'
 
 const props = defineProps<{ item: HistoryItem }>()
+const toastStore = useToastStore()
 
 const emit = defineEmits<{
   (e: 'delete', id: string): void
@@ -29,12 +31,16 @@ const handleDownload = async () => {
   if (isDownloadDisabled.value || isDeleting.value) return
   isDownloadDisabled.value = true
 
-  await ConverterService.downloadFile(props.item.outputFileId)
-
-  downloadTimer = setTimeout(() => {
-    isDownloadDisabled.value = false
-    downloadTimer = null
-  }, 2000)
+  try {
+    await ConverterService.downloadFile(props.item.outputFileId)
+  } catch {
+    toastStore.error(`Failed to download "${props.item.fileName}".`, 'File Download Failed')
+  } finally {
+    downloadTimer = setTimeout(() => {
+      isDownloadDisabled.value = false
+      downloadTimer = null
+    }, 2000)
+  }
 }
 
 onUnmounted(() => {

@@ -74,6 +74,7 @@ export const useHistoryStore = defineStore(
 
       const itemToDelete = items.value[index]
       if (!itemToDelete) return
+      const nextId = items.value[index + 1]?.id
 
       // Optimistically remove from state immediately
       items.value.splice(index, 1)
@@ -81,8 +82,11 @@ export const useHistoryStore = defineStore(
       try {
         await ConverterService.deleteJob(id)
       } catch {
-        // Rollback state if deletion fails
-        items.value.splice(index, 0, itemToDelete)
+        // Rollback state if deletion fails; other items may have been removed meanwhile,
+        // so re-insert before the item that originally followed instead of at the old index
+        const nextIndex = nextId ? items.value.findIndex((item) => item.id === nextId) : -1
+        const insertAt = nextIndex === -1 ? Math.min(index, items.value.length) : nextIndex
+        items.value.splice(insertAt, 0, itemToDelete)
         toastStore.error(`Failed to delete "${itemToDelete.fileName}".`, 'Deletion Failed')
       }
     }

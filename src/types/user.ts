@@ -1,6 +1,6 @@
 export interface User {
-  googleId: number
+  googleId: string
   name: string
   email: string
-  picture: string;
+  picture: string
 }

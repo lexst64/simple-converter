@@ -1,14 +1,23 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { watch } from 'vue'
 import { RouterView } from 'vue-router'
 import TheHeader from '@/components/TheHeader.vue'
 import TheFooter from '@/components/TheFooter.vue'
 import ToastContainer from '@/components/common/ToastContainer.vue'
 import { useFormatStore } from '@/stores/useFormatStore'
+import { useAuth } from '@/composables/useAuth'
 
-onMounted(() => {
-  useFormatStore().fetchFormats()
-})
+const { isAuthenticated } = useAuth()
+const formatStore = useFormatStore()
+
+// formats need an authenticated request, so wait for sign-in instead of fetching on /auth
+watch(
+  isAuthenticated,
+  (authenticated) => {
+    if (authenticated) formatStore.fetchFormats()
+  },
+  { immediate: true },
+)
 </script>
 
 <template>

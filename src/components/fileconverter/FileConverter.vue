@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useFileStore } from '@/stores/useFileStore'
+import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { computed, ref, watch } from 'vue'
 import FileItem from '@/components/fileconverter/FileItem.vue'
@@ -58,15 +58,19 @@ const isConvertDisabled = () => {
 
 const numSelectedFiles = computed(() => fileStore.files.filter((f) => f.selected).length)
 
-const allFilesSelected = computed(
-  () => fileStore.files.length > 0 && fileStore.files.every((f) => f.selected),
-)
+const isSelectable = (file: FileHolder) =>
+  file.status !== 'uploading' && file.status !== 'processing' && file.status !== 'completed'
+
+// only files that can be selected count towards "all selected"
+const allFilesSelected = computed(() => {
+  const selectable = fileStore.files.filter(isSelectable)
+  return selectable.length > 0 && selectable.every((f) => f.selected)
+})
 
 const toggleSelectAll = (event: Event) => {
   const target = event.target as HTMLInputElement
   fileStore.files.forEach((file) => {
-    if (file.status === 'uploading' || file.status === 'processing' || file.status === 'completed')
-      return
+    if (!isSelectable(file)) return
     file.selected = target.checked
   })
 }
