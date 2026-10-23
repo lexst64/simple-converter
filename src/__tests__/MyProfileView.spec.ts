@@ -30,7 +30,7 @@ describe('MyProfileView', () => {
   beforeEach(() => {
     auth.logout.mockClear()
     auth.user = {
-      googleId: 1,
+      googleId: '1',
       name: 'Alice',
       email: 'alice@example.com',
       picture: 'https://img/a.png',

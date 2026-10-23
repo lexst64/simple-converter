@@ -238,6 +238,20 @@ describe('useHistoryStore', () => {
       })
     })
 
+    it('rolls back to the end when the following item was removed meanwhile', async () => {
+      const deleteB = deferred()
+      deleteJob.mockImplementation((id) => (id === 'b' ? deleteB.promise : Promise.resolve()))
+      const store = useHistoryStore()
+      store.items = [makeItem('a'), makeItem('b'), makeItem('c')]
+
+      const pendingB = store.deleteItem('b')
+      await store.deleteItem('c')
+      deleteB.reject(new Error('500'))
+      await pendingB
+
+      expect(store.items.map((i) => i.id)).toEqual(['a', 'b'])
+    })
+
     it('does nothing for an unknown id', async () => {
       const store = useHistoryStore()
       store.items = [makeItem('a')]
@@ -248,10 +262,7 @@ describe('useHistoryStore', () => {
       expect(store.items.map((i) => i.id)).toEqual(['a'])
     })
 
-    // Known issue (.claude/ANALYSIS.md, Design issues -> "History"): the rollback
-    // re-inserts at the index captured before the request. If another item is removed
-    // in the meantime, the index is stale and the item comes back in the wrong place.
-    it.fails('rolls back to the correct position when another delete finished first', async () => {
+    it('rolls back to the correct position when another delete finished first', async () => {
       const deleteB = deferred()
       deleteJob.mockImplementation((id) => (id === 'b' ? deleteB.promise : Promise.resolve()))
       const store = useHistoryStore()

@@ -147,10 +147,7 @@ describe('FileConverter', () => {
       expect((headerCheckbox(wrapper).element as HTMLInputElement).checked).toBe(true)
     })
 
-    // Known bug #7 (.claude/ANALYSIS.md): allFilesSelected uses every() over all files,
-    // but completed files can never be selected, so the header checkbox stays unchecked
-    // even though every selectable file is selected.
-    it.fails('header checkbox is checked when all selectable files are selected', async () => {
+    it('header checkbox is checked when all selectable files are selected', async () => {
       seedFiles(['a.mp4', 'b.mp4'], [{}, { status: 'completed' }])
       const wrapper = mountConverter()
       await itemCheckboxes(wrapper)[0]!.setValue(true)

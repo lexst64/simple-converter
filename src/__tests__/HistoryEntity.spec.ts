@@ -3,6 +3,8 @@ import { flushPromises, mount } from '@vue/test-utils'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
 import { ConverterService } from '@/services/converter.service'
 import type { HistoryItem } from '@/stores/useHistoryStore'
+import { useToastStore } from '@/stores/useToastStore'
+import { createPinia, setActivePinia } from 'pinia'
 
 vi.mock('@/services/converter.service', () => ({
   ConverterService: { downloadFile: vi.fn() },
@@ -35,6 +37,7 @@ describe('HistoryEntity', () => {
     vi.useFakeTimers()
     vi.setSystemTime(NOW)
     vi.clearAllMocks()
+    setActivePinia(createPinia())
     downloadFile.mockResolvedValue(undefined)
   })
 
@@ -102,23 +105,18 @@ describe('HistoryEntity', () => {
     expect(wrapper.classes()).toContain('opacity-50')
   })
 
-  // Same pattern as known bug #4 in FileItem (.claude/ANALYSIS.md), but not listed for
-  // HistoryEntity: if downloadFile throws, the cooldown is never started and the
-  // download button stays disabled for good.
-  it.fails(
-    're-enables the download button after the cooldown even when download throws',
-    async () => {
-      downloadFile.mockRejectedValue(new Error('network'))
-      const wrapper = mount(HistoryEntity, {
-        props: { item: makeItem() },
-        global: { config: { errorHandler: () => {} } },
-      })
+  it('re-enables the download button after the cooldown even when download throws', async () => {
+    downloadFile.mockRejectedValue(new Error('network'))
+    const wrapper = mount(HistoryEntity, { props: { item: makeItem() } })
 
-      await downloadButton(wrapper).trigger('click')
-      await flushPromises()
-      await vi.advanceTimersByTimeAsync(2000)
+    await downloadButton(wrapper).trigger('click')
+    await flushPromises()
+    expect(useToastStore().toasts).toMatchObject([
+      { type: 'error', title: 'File Download Failed', message: 'Failed to download "song.mp3".' },
+    ])
 
-      expect(downloadButton(wrapper).attributes('disabled')).toBeUndefined()
-    },
-  )
+    await vi.advanceTimersByTimeAsync(2000)
+
+    expect(downloadButton(wrapper).attributes('disabled')).toBeUndefined()
+  })
 })

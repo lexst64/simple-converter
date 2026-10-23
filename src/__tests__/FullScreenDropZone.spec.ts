@@ -184,11 +184,7 @@ describe('FullScreenDropZone', () => {
     ])
   })
 
-  // New bug (not in .claude/ANALYSIS.md): the component only shows its own toast when the
-  // parent has no `invalid-files` listener, checked via useAttrs(). But `invalid-files` is
-  // declared in defineEmits, and Vue never puts listeners for declared emits into $attrs,
-  // so the check is always false and the toast is shown even when the parent handles it.
-  it.fails('does not show its own toast when the parent listens to invalid-files', async () => {
+  it('does not show its own toast when the parent listens to invalid-files', async () => {
     const onInvalidFiles = vi.fn()
     mountZone({ props: { accept: '.mp4' }, attrs: { onInvalidFiles } })
     await fire('drop', { files: [makeFile('a.txt')] })
