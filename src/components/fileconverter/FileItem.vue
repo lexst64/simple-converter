@@ -80,16 +80,20 @@ const download = async () => {
   if (isDownloadDisabled.value) return
   isDownloadDisabled.value = true
 
-  if (props.file.outputFileId) {
-    await ConverterService.downloadFile(props.file.outputFileId)
-  } else {
-    toastStore.error('No outputFileId.', 'File Download Failed')
+  try {
+    if (props.file.outputFileId) {
+      await ConverterService.downloadFile(props.file.outputFileId)
+    } else {
+      toastStore.error('No outputFileId.', 'File Download Failed')
+    }
+  } catch {
+    toastStore.error(`Failed to download "${props.file.file.name}".`, 'File Download Failed')
+  } finally {
+    downloadCooldownTimerId = setTimeout(() => {
+      isDownloadDisabled.value = false
+      downloadCooldownTimerId = null
+    }, 2000)
   }
-
-  downloadCooldownTimerId = setTimeout(() => {
-    isDownloadDisabled.value = false
-    downloadCooldownTimerId = null
-  }, 2000)
 }
 
 onUnmounted(() => {

@@ -1,3 +1,4 @@
+import type { ComputedRef } from 'vue'
 import type { User } from '@/types/user'
 
 export interface AuthState {
@@ -6,7 +7,10 @@ export interface AuthState {
   isAuthenticated: boolean
 }
 
-export interface AuthContextType extends AuthState {
+export interface AuthContextType {
+  user: ComputedRef<User | null>
+  token: ComputedRef<string | null>
+  isAuthenticated: ComputedRef<boolean>
   login: (token: string) => Promise<void>
   logout: () => void
 }

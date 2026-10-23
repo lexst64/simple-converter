@@ -107,10 +107,28 @@ const convert = async () => {
 
         await new Promise<void>((resolve, reject) => {
           const wsUrl = `${API_URL}/conversions/job/${jobId}/status`.replace(/^http/, 'ws')
-          const socket = new WebSocket(wsUrl, ['Bearer', auth.token || ''])
+          const socket = new WebSocket(wsUrl, ['Bearer', auth.token.value || ''])
+          // guards against settling more than once and against reacting to our own close()
+          let settled = false
+          let finished = false
+
+          const settle = (err?: Error) => {
+            if (settled) return
+            settled = true
+            if (err) reject(err)
+            else resolve()
+          }
 
           socket.onmessage = (event) => {
-            const statusData = JSON.parse(event.data) as { status: JobStatus; progress: number }
+            let statusData: { status: JobStatus; progress: number }
+            try {
+              statusData = JSON.parse(event.data)
+            } catch {
+              finished = true
+              socket.close()
+              settle(new Error('Invalid status message'))
+              return
+            }
 
             // TODO: handle file status better
             fileStore.setStatus(
@@ -120,34 +138,42 @@ const convert = async () => {
             fileStore.setProgress(fileHolder.id, statusData.progress)
 
             if (statusData.status === 'completed') {
+              finished = true
               socket.close()
               fileStore.setSelected(fileHolder.id, false)
-              ConverterService.getJob(jobId).then((job) => {
-                if (job.outputFileId) {
-                  fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
-                  succeededCount++
-                  if (!isBatch) {
-                    toastStore.success(
-                      `"${fileHolder.file.name}" was converted successfully!`,
-                      'Conversion Completed',
-                    )
+              ConverterService.getJob(jobId)
+                .then((job) => {
+                  if (job.outputFileId) {
+                    fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
+                    succeededCount++
+                    if (!isBatch) {
+                      toastStore.success(
+                        `"${fileHolder.file.name}" was converted successfully!`,
+                        'Conversion Completed',
+                      )
+                    }
+                    settle()
+                  } else {
+                    settle(new Error('Conversion failed'))
                   }
-                  resolve()
-                } else {
-                  reject(new Error('Conversion failed'))
-                }
-              })
+                })
+                .catch(() => settle(new Error('Failed to fetch conversion job')))
             } else if (statusData.status === 'failed') {
+              finished = true
               socket.close()
               fileStore.setSelected(fileHolder.id, true)
-              reject(new Error('Conversion failed'))
+              settle(new Error('Conversion failed'))
             }
           }
 
           socket.onerror = () => {
             fileStore.setStatus(fileHolder.id, 'failed')
             socket.close()
-            reject(new Error('WebSocket connection failed'))
+            settle(new Error('WebSocket connection failed'))
+          }
+
+          socket.onclose = () => {
+            if (!finished) settle(new Error('WebSocket closed unexpectedly'))
           }
         })
       } catch {

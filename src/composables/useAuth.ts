@@ -7,11 +7,24 @@ import { useToastStore } from '@/stores/useToastStore'
 const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
 
+const readStoredUser = (): User | null => {
+  const stored = localStorage.getItem(USER_KEY)
+  if (!stored) return null
+  try {
+    return JSON.parse(stored) as User
+  } catch {
+    return null
+  }
+}
+
 const state = ref<AuthState>({
-  user: JSON.parse(localStorage.getItem(USER_KEY) || '{}') as User,
+  user: readStoredUser(),
   token: localStorage.getItem(TOKEN_KEY),
   isAuthenticated: !!localStorage.getItem(TOKEN_KEY),
 })
+
+// auto-login must run at most once, not on every useAuth() call
+let autoLoginAttempted = false
 
 export function useAuth(): AuthContextType {
   const toastStore = useToastStore()
@@ -42,15 +55,15 @@ export function useAuth(): AuthContextType {
   }
 
   // Auto-login if token exists
-  if (state.value.token && !state.value.user) {
+  if (!autoLoginAttempted && state.value.token && !state.value.user) {
+    autoLoginAttempted = true
     login(state.value.token)
   }
 
   return {
-    ...state.value,
-    user: computed(() => state.value.user).value,
-    token: computed(() => state.value.token).value,
-    isAuthenticated: computed(() => state.value.isAuthenticated).value,
+    user: computed(() => state.value.user),
+    token: computed(() => state.value.token),
+    isAuthenticated: computed(() => state.value.isAuthenticated),
     login,
     logout,
   }

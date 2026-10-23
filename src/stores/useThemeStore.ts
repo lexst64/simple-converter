@@ -8,10 +8,10 @@ export const useThemeStore = defineStore(
   () => {
     const themeMode = ref<ThemeMode>('auto')
 
-    const systemIsDark = computed(() => {
-      if (typeof window === 'undefined') return false
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-    })
+    // matchMedia isn't reactive, so keep it in a ref updated by the change listener
+    const systemIsDark = ref(
+      typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
+    )
 
     const effectiveTheme = computed<'light' | 'dark'>(() => {
       if (themeMode.value === 'auto') {
@@ -58,7 +58,8 @@ export const useThemeStore = defineStore(
         mediaQuery.removeEventListener('change', mediaQueryListener)
       }
 
-      mediaQueryListener = () => {
+      mediaQueryListener = (e) => {
+        systemIsDark.value = e.matches
         if (themeMode.value === 'auto') {
           applyTheme()
         }

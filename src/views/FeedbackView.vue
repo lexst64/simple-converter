@@ -82,10 +82,10 @@ const handleSubmit = async () => {
     }
   } catch (err: unknown) {
     const errorMessage =
-      err instanceof Error
-        ? err.message
-        : axios.isAxiosError(err) && err.response?.data?.message
-          ? err.response.data.message
+      axios.isAxiosError(err) && err.response?.data?.message
+        ? err.response.data.message
+        : err instanceof Error
+          ? err.message
           : 'An error occurred while sending your feedback. Please try again later.'
     toastStore.error(errorMessage, 'Submission Error')
   } finally {
