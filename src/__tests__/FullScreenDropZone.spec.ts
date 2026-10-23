@@ -193,11 +193,17 @@ describe('FullScreenDropZone', () => {
     expect(useToastStore().toasts).toEqual([])
   })
 
-  it('stops listening to window events after unmount', async () => {
+  // Vue drops emits from unmounted components, so check the handlers themselves are gone:
+  // a still-attached handler would preventDefault the event.
+  it('stops listening to window events after unmount', () => {
     const w = mountZone()
     w.unmount()
-    window.dispatchEvent(makeDragEvent('dragenter'))
-    expect(w.emitted('drag-change')).toBeUndefined()
     wrapper = undefined
+
+    for (const type of ['dragenter', 'dragover', 'dragleave', 'drop'] as const) {
+      const event = makeDragEvent(type, { files: [makeFile('a.mp4')] })
+      window.dispatchEvent(event)
+      expect(event.defaultPrevented, type).toBe(false)
+    }
   })
 })

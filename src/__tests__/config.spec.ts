@@ -26,10 +26,10 @@ describe('config', () => {
     })
   })
 
-  it('falls back to empty strings when variables are empty', async () => {
-    vi.stubEnv('VITE_API_URL', '')
-    vi.stubEnv('VITE_GOOGLE_CLIENT_ID', '')
-    vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', '')
+  it('falls back to empty strings when variables are not set', async () => {
+    vi.stubEnv('VITE_API_URL', undefined)
+    vi.stubEnv('VITE_GOOGLE_CLIENT_ID', undefined)
+    vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', undefined)
 
     const config = await loadConfig()
 
