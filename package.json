@@ -9,6 +9,8 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "test:unit": "vitest",
+    "test": "vitest run",
+    "prepare": "git config core.hooksPath .githooks",
     "type-check": "vue-tsc --build",
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",

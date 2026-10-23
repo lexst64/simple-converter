@@ -1,0 +1,8 @@
+#!/bin/sh
+# Runs the unit and component tests before every commit; skip with `git commit --no-verify`.
+
+echo "pre-commit: running unit and component tests..."
+npm test --silent || {
+  echo "pre-commit: tests failed, commit aborted." >&2
+  exit 1
+}
