@@ -18,13 +18,10 @@ const downloadFile = vi.mocked(ConverterService.downloadFile)
 
 let pinia: Pinia
 
-const mountItem = (file: FileHolder, options: { errorHandler?: () => void } = {}) =>
+const mountItem = (file: FileHolder) =>
   mount(FileItem, {
     props: { file, allSupportedFormats: ['mp3', 'mp4'] },
-    global: {
-      plugins: [pinia],
-      config: options.errorHandler ? { errorHandler: options.errorHandler } : {},
-    },
+    global: { plugins: [pinia] },
   })
 
 describe('FileItem', () => {
@@ -208,13 +205,13 @@ describe('FileItem', () => {
     it('re-enables the button after the cooldown even when the download throws', async () => {
       vi.useFakeTimers()
       downloadFile.mockRejectedValue(new Error('network'))
-      const wrapper = mountItem(completed(), { errorHandler: () => {} })
+      const wrapper = mountItem(completed())
       const button = wrapper.find('button')
 
       await button.trigger('click')
       await flushPromises()
       expect(useToastStore().toasts).toMatchObject([
-        { type: 'error', title: 'File Download Failed' },
+        { type: 'error', title: 'File Download Failed', message: 'Failed to download "video.mp4".' },
       ])
 
       await vi.advanceTimersByTimeAsync(2000)
