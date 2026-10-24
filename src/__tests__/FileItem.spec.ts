@@ -4,6 +4,7 @@ import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import Select from 'primevue/select'
 import FileItem from '@/components/fileconverter/FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
+import { useConversionStore } from '@/stores/useConversionStore'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { useToastStore } from '@/stores/useToastStore'
 import { makeFile, makeHolder } from './component-helpers'
@@ -49,7 +50,7 @@ describe('FileItem', () => {
     expect(wrapper.text()).toContain('no extension')
   })
 
-  describe.each(['pending', 'failed'] as const)('status %s', (status) => {
+  describe.each(['pending', 'failed', 'cancelled'] as const)('status %s', (status) => {
     it('shows the badge, format selector and remove button but no progress or download', () => {
       const wrapper = mountItem(makeHolder({ status }))
       expect(wrapper.text()).toContain(status)
@@ -60,21 +61,36 @@ describe('FileItem', () => {
     })
   })
 
-  it('processing: shows the progress bar and percentage, hides selector and buttons', () => {
-    const wrapper = mountItem(makeHolder({ status: 'processing', progress: 42 }))
-    expect(wrapper.text()).toContain('processing')
-    expect(wrapper.text()).toContain('42%')
-    expect(wrapper.find('[style*="width: 42%"]').exists()).toBe(true)
+  it.each(['uploading', 'processing'] as const)(
+    '%s: shows the progress bar, percentage and cancel button, hides selector',
+    (status) => {
+      const wrapper = mountItem(makeHolder({ status, progress: 42 }))
+      expect(wrapper.text()).toContain(status)
+      expect(wrapper.text()).toContain('42%')
+      expect(wrapper.find('[style*="width: 42%"]').exists()).toBe(true)
+      expect(wrapper.findComponent(Select).exists()).toBe(false)
+      expect(wrapper.findAll('button').map((b) => b.attributes('aria-label'))).toEqual([
+        'Cancel conversion',
+      ])
+    },
+  )
+
+  it('queued: shows the badge and cancel button but no progress or selector', () => {
+    const wrapper = mountItem(makeHolder({ status: 'queued' }))
+    expect(wrapper.text()).toContain('queued')
     expect(wrapper.findComponent(Select).exists()).toBe(false)
-    expect(wrapper.find('button').exists()).toBe(false)
+    expect(wrapper.find('[style*="width"]').exists()).toBe(false)
+    expect(wrapper.text()).not.toContain('%')
+    expect(wrapper.find('button[aria-label="Cancel conversion"]').exists()).toBe(true)
   })
 
-  it('uploading: shows only the badge', () => {
-    const wrapper = mountItem(makeHolder({ status: 'uploading' }))
-    expect(wrapper.text()).toContain('uploading')
-    expect(wrapper.findComponent(Select).exists()).toBe(false)
-    expect(wrapper.find('button').exists()).toBe(false)
-    expect(wrapper.text()).not.toContain('%')
+  it('cancels the conversion of this file when the cancel button is clicked', async () => {
+    const cancelFile = vi.spyOn(useConversionStore(), 'cancelFile').mockImplementation(() => {})
+    const wrapper = mountItem(makeHolder({ id: 'f-7', status: 'uploading' }))
+
+    await wrapper.find('button[aria-label="Cancel conversion"]').trigger('click')
+
+    expect(cancelFile).toHaveBeenCalledExactlyOnceWith('f-7')
   })
 
   it('completed: shows the target format and download button, no selector or progress', () => {
@@ -132,12 +148,15 @@ describe('FileItem', () => {
   })
 
   describe('checkbox', () => {
-    it.each(['uploading', 'processing', 'completed'] as const)('is disabled when %s', (status) => {
-      const wrapper = mountItem(makeHolder({ status }))
-      expect(wrapper.find('input[type="checkbox"]').attributes('disabled')).toBeDefined()
-    })
+    it.each(['queued', 'uploading', 'processing', 'completed'] as const)(
+      'is disabled when %s',
+      (status) => {
+        const wrapper = mountItem(makeHolder({ status }))
+        expect(wrapper.find('input[type="checkbox"]').attributes('disabled')).toBeDefined()
+      },
+    )
 
-    it.each(['pending', 'failed'] as const)('is enabled when %s', (status) => {
+    it.each(['pending', 'failed', 'cancelled'] as const)('is enabled when %s', (status) => {
       const wrapper = mountItem(makeHolder({ status }))
       expect(wrapper.find('input[type="checkbox"]').attributes('disabled')).toBeUndefined()
     })

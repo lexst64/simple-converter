@@ -1,7 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-type FileStatus = 'pending' | 'uploading' | 'processing' | 'failed' | 'cancelled' | 'completed'
+type FileStatus =
+  | 'pending'
+  | 'queued'
+  | 'uploading'
+  | 'processing'
+  | 'failed'
+  | 'cancelled'
+  | 'completed'
 
 export interface FileHolder {
   id: string
