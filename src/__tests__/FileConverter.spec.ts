@@ -10,8 +10,8 @@ import { useToastStore } from '@/stores/useToastStore'
 import { JobStatus, type Job } from '@/types/api'
 import { FakeWebSocket, makeFile } from './component-helpers'
 
-// FileConverter imports API_URL from @/main, which would mount the whole app.
-vi.mock('@/main', () => ({ API_URL: 'http://api.test', api: {} }))
+// Keep the real axios client (and its interceptors) out of component tests.
+vi.mock('@/api/client', () => ({ API_URL: 'http://api.test', api: {} }))
 
 vi.mock('@/composables/useAuth', () => ({
   useAuth: () => ({
