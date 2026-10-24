@@ -56,10 +56,10 @@ const makeJob = (overrides: Partial<Job> = {}): Job => ({
 let pinia: Pinia
 
 /** Adds files to the store; `overrides[i]` is merged into the i-th holder. */
-const seedFiles = (names: string[], overrides: Partial<FileHolder>[] = []) => {
+const seedFiles = (names: string[], overrides: Partial<Omit<FileHolder, 'id' | 'file'>>[] = []) => {
   const store = useFileStore()
   store.addFiles(names.map((n) => makeFile(n, 100)))
-  store.files.forEach((f, i) => Object.assign(f, overrides[i] ?? {}))
+  store.files.forEach((f, i) => store.updateFile(f.id, overrides[i] ?? {}))
   return store
 }
 
@@ -154,6 +154,19 @@ describe('FileConverter', () => {
       await itemCheckboxes(wrapper)[0]!.setValue(true)
       expect((headerCheckbox(wrapper).element as HTMLInputElement).checked).toBe(true)
     })
+
+    it('toggling a file replaces its holder in the store instead of mutating it', async () => {
+      const store = seedFiles(['a.mp4', 'b.mp4'])
+      const [original, other] = store.files
+      const wrapper = mountConverter()
+
+      await itemCheckboxes(wrapper)[0]!.setValue(true)
+
+      expect(store.files[0]).not.toBe(original)
+      expect(original!.selected).toBe(false)
+      expect(store.files.map((f) => f.selected)).toEqual([true, false])
+      expect(store.files[1]).toBe(other)
+    })
   })
 
   describe('convert button', () => {
@@ -196,6 +209,19 @@ describe('FileConverter', () => {
 
       expect(useFileStore().files.map((f) => f.targetFormat)).toEqual(['mp3', undefined])
       expect(convertButton(wrapper).attributes('disabled')).toBeUndefined()
+    })
+
+    it("a per-file format selector sets that file's format through the store", async () => {
+      const store = seedFiles(['a.mp4', 'b.mp4'])
+      const original = store.files[1]
+      const wrapper = mountConverter()
+
+      // index 0 is the top-level selector, then one per file
+      await wrapper.findAllComponents(Select)[2]!.setValue('mp3')
+
+      expect(store.files.map((f) => f.targetFormat)).toEqual([undefined, 'mp3'])
+      expect(store.files[1]).not.toBe(original)
+      expect(original!.targetFormat).toBeUndefined()
     })
   })
 

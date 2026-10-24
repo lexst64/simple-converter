@@ -36,7 +36,7 @@ export const useFileStore = defineStore('fileStore', () => {
     files.value = files.value.filter((file) => !ids.includes(file.id))
   }
 
-  const setTargetFormat = (id: string, targetFormat: string) => {
+  const updateFile = (id: string, patch: Partial<Omit<FileHolder, 'id' | 'file'>>) => {
     const idx = files.value.findIndex((f) => f.id === id)
 
     if (idx === -1) return
@@ -44,67 +44,7 @@ export const useFileStore = defineStore('fileStore', () => {
     const existing = files.value[idx]!
     files.value[idx] = {
       ...existing,
-      targetFormat,
-    }
-  }
-
-  const setStatus = (id: string, status: FileStatus) => {
-    const idx = files.value.findIndex((f) => f.id === id)
-
-    if (idx === -1) return
-
-    const existing = files.value[idx]!
-    files.value[idx] = {
-      ...existing,
-      status,
-    }
-  }
-
-  const setSelected = (id: string, selected: boolean) => {
-    const idx = files.value.findIndex((f) => f.id === id)
-
-    if (idx === -1) return
-
-    const existing = files.value[idx]!
-    files.value[idx] = {
-      ...existing,
-      selected,
-    }
-  }
-
-  const setOutputFileId = (id: string, outputFileId: string) => {
-    const idx = files.value.findIndex((f) => f.id === id)
-
-    if (idx === -1) return
-
-    const existing = files.value[idx]!
-    files.value[idx] = {
-      ...existing,
-      outputFileId,
-    }
-  }
-
-  const setUploadFileId = (id: string, uploadFileId: string) => {
-    const idx = files.value.findIndex((f) => f.id === id)
-
-    if (idx === -1) return
-
-    const existing = files.value[idx]!
-    files.value[idx] = {
-      ...existing,
-      uploadFileId,
-    }
-  }
-
-  const setProgress = (id: string, progress: number) => {
-    const idx = files.value.findIndex((f) => f.id === id)
-
-    if (idx === -1) return
-
-    const existing = files.value[idx]!
-    files.value[idx] = {
-      ...existing,
-      progress,
+      ...patch,
     }
   }
 
@@ -113,11 +53,6 @@ export const useFileStore = defineStore('fileStore', () => {
     addFiles,
     clearFiles,
     removeFiles,
-    setTargetFormat,
-    setStatus,
-    setSelected,
-    setOutputFileId,
-    setUploadFileId,
-    setProgress,
+    updateFile,
   }
 })

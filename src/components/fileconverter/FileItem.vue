@@ -32,8 +32,8 @@ const props = withDefaults(
   },
 )
 
-const targetFormat = defineModel('targetFormat')
-const selected = defineModel('selected')
+const targetFormat = defineModel<string>('targetFormat')
+const selected = defineModel<boolean>('selected')
 const fileStore = useFileStore()
 const toastStore = useToastStore()
 

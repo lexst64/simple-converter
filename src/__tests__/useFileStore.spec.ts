@@ -1,55 +1,23 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useFileStore, type FileHolder } from '@/stores/useFileStore'
+import { useFileStore } from '@/stores/useFileStore'
 
 const makeFile = (name: string) => new File(['content'], name, { type: 'text/plain' })
 
-type Store = ReturnType<typeof useFileStore>
+type Patch = Parameters<ReturnType<typeof useFileStore>['updateFile']>[1]
 
-interface SetterCase {
-  name: string
-  field: keyof FileHolder
-  value: unknown
-  apply: (store: Store, id: string) => void
+interface PatchCase {
+  field: keyof Patch
+  value: Patch[keyof Patch]
 }
 
-const setterCases: SetterCase[] = [
-  {
-    name: 'setTargetFormat',
-    field: 'targetFormat',
-    value: 'mp3',
-    apply: (s, id) => s.setTargetFormat(id, 'mp3'),
-  },
-  {
-    name: 'setStatus',
-    field: 'status',
-    value: 'processing',
-    apply: (s, id) => s.setStatus(id, 'processing'),
-  },
-  {
-    name: 'setSelected',
-    field: 'selected',
-    value: true,
-    apply: (s, id) => s.setSelected(id, true),
-  },
-  {
-    name: 'setOutputFileId',
-    field: 'outputFileId',
-    value: 'out-1',
-    apply: (s, id) => s.setOutputFileId(id, 'out-1'),
-  },
-  {
-    name: 'setUploadFileId',
-    field: 'uploadFileId',
-    value: 'up-1',
-    apply: (s, id) => s.setUploadFileId(id, 'up-1'),
-  },
-  {
-    name: 'setProgress',
-    field: 'progress',
-    value: 42,
-    apply: (s, id) => s.setProgress(id, 42),
-  },
+const patchCases: PatchCase[] = [
+  { field: 'targetFormat', value: 'mp3' },
+  { field: 'status', value: 'processing' },
+  { field: 'selected', value: true },
+  { field: 'outputFileId', value: 'out-1' },
+  { field: 'uploadFileId', value: 'up-1' },
+  { field: 'progress', value: 42 },
 ]
 
 describe('useFileStore', () => {
@@ -114,43 +82,60 @@ describe('useFileStore', () => {
     expect(store.files).toEqual([])
   })
 
-  describe.each(setterCases)('$name', ({ field, value, apply }) => {
-    it(`updates ${field} on the matching file only`, () => {
-      const store = useFileStore()
-      store.addFiles([makeFile('a.txt'), makeFile('b.txt')])
-      const first = store.files[0]!
-      const secondBefore = { ...store.files[1]! }
+  describe('updateFile', () => {
+    describe.each(patchCases)('patching $field', ({ field, value }) => {
+      it(`updates ${field} on the matching file only`, () => {
+        const store = useFileStore()
+        store.addFiles([makeFile('a.txt'), makeFile('b.txt')])
+        const first = store.files[0]!
+        const secondBefore = { ...store.files[1]! }
 
-      apply(store, first.id)
+        store.updateFile(first.id, { [field]: value })
 
-      expect(store.files[0]![field]).toBe(value)
-      expect(store.files[0]!.id).toBe(first.id)
-      expect(store.files[0]!.file).toBe(first.file)
-      expect(store.files[1]).toEqual(secondBefore)
+        expect(store.files[0]![field]).toBe(value)
+        expect(store.files[0]!.id).toBe(first.id)
+        expect(store.files[0]!.file).toBe(first.file)
+        expect(store.files[1]).toEqual(secondBefore)
+      })
+
+      it('replaces the holder object instead of mutating it', () => {
+        const store = useFileStore()
+        store.addFiles([makeFile('a.txt')])
+        const original = store.files[0]!
+        const originalValue = original[field]
+
+        store.updateFile(original.id, { [field]: value })
+
+        expect(store.files[0]).not.toBe(original)
+        expect(original[field]).toBe(originalValue)
+      })
+
+      it('is a no-op when the id is unknown', () => {
+        const store = useFileStore()
+        store.addFiles([makeFile('a.txt')])
+        const snapshot = store.files.map((f) => ({ ...f }))
+        const originalRef = store.files[0]
+
+        store.updateFile('does-not-exist', { [field]: value })
+
+        expect(store.files).toEqual(snapshot)
+        expect(store.files[0]).toBe(originalRef)
+      })
     })
 
-    it('replaces the holder object instead of mutating it', () => {
+    it('applies several fields at once and leaves the rest intact', () => {
       const store = useFileStore()
       store.addFiles([makeFile('a.txt')])
-      const original = store.files[0]!
-      const originalValue = original[field]
+      const original = { ...store.files[0]! }
 
-      apply(store, original.id)
+      store.updateFile(original.id, { status: 'failed', selected: true, progress: 10 })
 
-      expect(store.files[0]).not.toBe(original)
-      expect(original[field]).toBe(originalValue)
-    })
-
-    it('is a no-op when the id is unknown', () => {
-      const store = useFileStore()
-      store.addFiles([makeFile('a.txt')])
-      const snapshot = store.files.map((f) => ({ ...f }))
-      const originalRef = store.files[0]
-
-      apply(store, 'does-not-exist')
-
-      expect(store.files).toEqual(snapshot)
-      expect(store.files[0]).toBe(originalRef)
+      expect(store.files[0]).toEqual({
+        ...original,
+        status: 'failed',
+        selected: true,
+        progress: 10,
+      })
     })
   })
 })
