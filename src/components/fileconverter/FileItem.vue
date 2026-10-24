@@ -2,28 +2,22 @@
 import { ref, watch, onUnmounted } from 'vue'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { formatBytes, getExtFromFileName } from '@/utils'
-import RemoveIcon from '@/components/icons/RemoveIcon.vue'
-import IconButton from '@/components/common/IconButton.vue'
-import DownloadIcon from '@/components/icons/DownloadIcon.vue'
-import SmallBadge from '@/components/common/SmallBadge.vue'
+import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
+import ProgressBar from 'primevue/progressbar'
+import Tag, { type TagProps } from 'primevue/tag'
 import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
 import { ConverterService } from '@/services/converter.service.ts'
 import { useToastStore } from '@/stores/useToastStore.ts'
 
-const statusClasses = {
-  pending:
-    'bg-slate-100 text-slate-700 ring-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:ring-slate-700',
-  uploading:
-    'bg-sky-100 text-sky-700 ring-sky-200 dark:bg-sky-950/80 dark:text-sky-300 dark:ring-sky-800',
-  processing:
-    'bg-amber-100 text-amber-800 ring-amber-200 dark:bg-amber-950/80 dark:text-amber-300 dark:ring-amber-800',
-  failed:
-    'bg-rose-100 text-rose-700 ring-rose-200 dark:bg-rose-950/80 dark:text-rose-300 dark:ring-rose-800',
-  cancelled:
-    'bg-gray-100 text-gray-700 ring-gray-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700',
-  completed:
-    'bg-emerald-100 text-emerald-700 ring-emerald-200 dark:bg-emerald-950/80 dark:text-emerald-300 dark:ring-emerald-800',
-} as const
+const statusSeverities: Record<FileHolder['status'], TagProps['severity']> = {
+  pending: 'secondary',
+  uploading: 'info',
+  processing: 'warn',
+  failed: 'danger',
+  cancelled: 'secondary',
+  completed: 'success',
+}
 
 const props = withDefaults(
   defineProps<{
@@ -74,7 +68,7 @@ watch(
   { immediate: true },
 )
 
-const getStatusClasses = (status: FileHolder['status']) => statusClasses[status]
+const getStatusSeverity = (status: FileHolder['status']) => statusSeverities[status]
 
 const download = async () => {
   if (isDownloadDisabled.value) return
@@ -108,69 +102,76 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="w-full py-2 px-3 flex flex-col gap-3 md:flex-row md:justify-between border-b-gray-200 dark:border-b-slate-700/60 border-b text-slate-800 dark:text-slate-200 transition-colors"
+    class="w-full py-2 px-3 flex flex-col gap-3 md:flex-row md:justify-between border-b border-surface text-color transition-colors"
   >
     <div class="flex w-full gap-4 items-center">
-      <input
+      <Checkbox
+        v-model="selected"
+        binary
         :disabled="
           displayStatus === 'uploading' ||
           displayStatus === 'processing' ||
           displayStatus === 'completed'
         "
-        v-model="selected"
-        type="checkbox"
-        :value="file.id"
-        class="h-4 w-4 accent-indigo-600 dark:accent-indigo-500 rounded cursor-pointer disabled:cursor-not-allowed"
+        :aria-label="`Select ${file.file.name}`"
       />
       <div class="md:max-w-[50%] max-w-[90%]">
         <p class="truncate font-medium">{{ file.file.name }}</p>
-        <p class="font-mono text-gray-500 dark:text-slate-400 text-xs">
+        <p class="font-mono text-muted-color text-xs">
           {{ formatBytes(file.file.size) }} ▪
           {{ getExtFromFileName(file.file.name).toUpperCase() || 'no extension' }}
         </p>
       </div>
     </div>
 
-    <div class="md:hidden w-full h-px bg-gray-300 dark:bg-slate-700"></div>
+    <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
     <div
       v-if="displayStatus === 'pending' || displayStatus === 'failed'"
       class="flex items-center gap-3 justify-end"
     >
-      <SmallBadge :class="getStatusClasses(displayStatus)">{{ displayStatus }}</SmallBadge>
+      <Tag rounded :severity="getStatusSeverity(displayStatus)" :value="displayStatus" />
       <FormatSelector
         :formats="allSupportedFormats"
         :is-loading="isLoading"
         :is-error="isError"
         v-model:target-format="targetFormat"
       />
-      <IconButton @click="() => fileStore.removeFiles([file.id])"><RemoveIcon /></IconButton>
+      <Button
+        icon="pi pi-times"
+        text
+        rounded
+        severity="secondary"
+        size="small"
+        aria-label="Remove file"
+        @click="() => fileStore.removeFiles([file.id])"
+      />
     </div>
     <div v-else class="flex items-center gap-3 justify-end w-full md:w-auto">
       <div v-if="displayStatus === 'processing'" class="flex items-center gap-3 w-full md:w-48">
-        <div
-          class="flex-1 h-2.5 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden shadow-inner"
-        >
-          <div
-            class="h-full transition-all duration-300 ease-out bg-amber-500"
-            :style="{ width: `${displayProgress}%` }"
-          ></div>
-        </div>
-        <span class="text-sm text-gray-600 dark:text-slate-300 font-semibold w-11 text-right"
+        <ProgressBar :value="displayProgress" :show-value="false" class="flex-1 h-2.5!" />
+        <span class="text-sm text-muted-color font-semibold w-11 text-right"
           >{{ displayProgress }}%</span
         >
       </div>
-      <SmallBadge :class="getStatusClasses(displayStatus)" class="capitalize">{{
-        displayStatus
-      }}</SmallBadge>
+      <Tag
+        rounded
+        :severity="getStatusSeverity(displayStatus)"
+        :value="displayStatus"
+        class="capitalize"
+      />
       <div v-if="displayStatus === 'completed'" class="flex items-center gap-3">
-        <SmallBadge
-          class="bg-blue-100 text-blue-800 ring-blue-300 dark:bg-blue-950/80 dark:text-blue-300 dark:ring-blue-800"
-          >{{ file.targetFormat?.toUpperCase() }}</SmallBadge
-        >
-        <IconButton :disabled="isDownloadDisabled" @click="download"
-          ><DownloadIcon></DownloadIcon
-        ></IconButton>
+        <Tag rounded :value="file.targetFormat?.toUpperCase()" />
+        <Button
+          icon="pi pi-download"
+          text
+          rounded
+          severity="secondary"
+          size="small"
+          aria-label="Download converted file"
+          :disabled="isDownloadDisabled"
+          @click="download"
+        />
       </div>
     </div>
   </div>

@@ -49,14 +49,17 @@ let pinia: Pinia
 
 const mountHistory = () => mount(TheHistory, { global: { plugins: [pinia] } })
 
+const panels = (w: ReturnType<typeof mountHistory>) =>
+  w.findAll('[data-pc-name="accordionpanel"]')
+
 const sections = (w: ReturnType<typeof mountHistory>) =>
-  w.findAll('section').map((s) => {
+  panels(w).map((s) => {
     const header = s.find('button[aria-expanded]')
     return {
-      title: header.find('p').text(),
-      count: header.find('span').text(),
+      title: header.find('span').text(),
+      count: header.find('[data-pc-name="badge"]').text(),
       open: header.attributes('aria-expanded') === 'true',
-      visible: (s.find('div').element as HTMLElement).style.display !== 'none',
+      visible: (s.find('[role="region"]').element as HTMLElement).style.display !== 'none',
       files: s.findAll('.font-medium.truncate').map((p) => p.text()),
     }
   })
@@ -157,10 +160,19 @@ describe('TheHistory', () => {
     const wrapper = mountHistory()
     await flushPromises()
 
-    await wrapper.findAll('section')[3]!.find('button[aria-expanded]').trigger('click')
+    await panels(wrapper)[3]!.find('button[aria-expanded]').trigger('click')
 
     expect(sections(wrapper).map((s) => s.open)).toEqual([false, false, false, true, false])
     expect(sections(wrapper).map((s) => s.visible)).toEqual([false, false, false, true, false])
+  })
+
+  it('collapses the open category when its header is clicked again', async () => {
+    const wrapper = mountHistory()
+    await flushPromises()
+
+    await panels(wrapper)[0]!.find('button[aria-expanded]').trigger('click')
+
+    expect(sections(wrapper).map((s) => s.open)).toEqual([false, false, false, false, false])
   })
 
   it('deletes an item through the store when its delete button is clicked', async () => {

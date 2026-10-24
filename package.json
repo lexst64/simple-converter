@@ -17,12 +17,16 @@
     "lint:eslint": "eslint . --fix --cache"
   },
   "dependencies": {
+    "@primeuix/themes": "^3.1.0",
     "@tailwindcss/vite": "^4.2.4",
     "axios": "^1.16.1",
     "pinia": "^3.0.4",
     "pinia-plugin-persistedstate": "^4.7.1",
+    "primeicons": "^8.0.2",
+    "primevue": "^5.0.4",
     "tailwind-scrollbar-hide": "^4.0.0",
     "tailwindcss": "^4.2.4",
+    "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },

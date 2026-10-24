@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
+import Select from 'primevue/select'
 import FileItem from '@/components/fileconverter/FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
@@ -52,7 +53,7 @@ describe('FileItem', () => {
     it('shows the badge, format selector and remove button but no progress or download', () => {
       const wrapper = mountItem(makeHolder({ status }))
       expect(wrapper.text()).toContain(status)
-      expect(wrapper.find('select').exists()).toBe(true)
+      expect(wrapper.findComponent(Select).exists()).toBe(true)
       expect(wrapper.findAll('button')).toHaveLength(1)
       expect(wrapper.find('[style*="width"]').exists()).toBe(false)
       expect(wrapper.text()).not.toContain('%')
@@ -64,14 +65,14 @@ describe('FileItem', () => {
     expect(wrapper.text()).toContain('processing')
     expect(wrapper.text()).toContain('42%')
     expect(wrapper.find('[style*="width: 42%"]').exists()).toBe(true)
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(wrapper.findComponent(Select).exists()).toBe(false)
     expect(wrapper.find('button').exists()).toBe(false)
   })
 
   it('uploading: shows only the badge', () => {
     const wrapper = mountItem(makeHolder({ status: 'uploading' }))
     expect(wrapper.text()).toContain('uploading')
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(wrapper.findComponent(Select).exists()).toBe(false)
     expect(wrapper.find('button').exists()).toBe(false)
     expect(wrapper.text()).not.toContain('%')
   })
@@ -82,7 +83,7 @@ describe('FileItem', () => {
     )
     expect(wrapper.text()).toContain('completed')
     expect(wrapper.text()).toContain('MP3')
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(wrapper.findComponent(Select).exists()).toBe(false)
     expect(wrapper.find('[style*="width"]').exists()).toBe(false)
     expect(wrapper.findAll('button')).toHaveLength(1)
   })
@@ -126,7 +127,7 @@ describe('FileItem', () => {
 
       expect(wrapper.text()).toContain('failed')
       expect(wrapper.text()).not.toContain('completed')
-      expect(wrapper.find('select').exists()).toBe(true)
+      expect(wrapper.findComponent(Select).exists()).toBe(true)
     })
   })
 
@@ -150,7 +151,7 @@ describe('FileItem', () => {
 
   it('emits update:targetFormat when a format is chosen', async () => {
     const wrapper = mountItem(makeHolder())
-    await wrapper.find('select').setValue('mp4')
+    await wrapper.findComponent(Select).setValue('mp4')
     expect(wrapper.emitted('update:targetFormat')).toEqual([['mp4']])
   })
 

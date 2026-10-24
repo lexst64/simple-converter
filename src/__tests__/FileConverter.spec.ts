@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
+import Select from 'primevue/select'
 import FileConverter from '@/components/fileconverter/FileConverter.vue'
 import { ConverterService } from '@/services/converter.service'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
@@ -190,7 +191,8 @@ describe('FileConverter', () => {
       const wrapper = mountConverter()
       expect(convertButton(wrapper).attributes('disabled')).toBeDefined()
 
-      await wrapper.find('select').setValue('mp3')
+      // the first selector is the top-level one, before the per-file selectors
+      await wrapper.findComponent(Select).setValue('mp3')
 
       expect(useFileStore().files.map((f) => f.targetFormat)).toEqual(['mp3', undefined])
       expect(convertButton(wrapper).attributes('disabled')).toBeUndefined()

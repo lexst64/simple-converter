@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import SmallBadge from '@/components/common/SmallBadge.vue'
-import UploadIcon from '@/components/icons/UploadIcon.vue'
+import Tag from 'primevue/tag'
 import { formatBytes } from '@/utils'
 import { useToastStore } from '@/stores/useToastStore'
 import { useFormatStore } from '@/stores/useFormatStore'
@@ -244,7 +243,7 @@ onUnmounted(() => {
       >
         <div
           v-if="isDragging && !disabled"
-          class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-slate-950/75 dark:bg-slate-950/85 backdrop-blur-md select-none"
+          class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-surface-950/75 dark:bg-surface-950/85 backdrop-blur-md select-none"
           @dragenter.prevent.stop="onDragEnter"
           @dragover.prevent.stop="onDragOver"
           @dragleave.prevent.stop="onDragLeave"
@@ -253,9 +252,9 @@ onUnmounted(() => {
           <slot name="overlay" :is-dragging="isDragging">
             <div class="relative flex flex-col items-center justify-center">
               <div
-                class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-indigo-600 text-white"
+                class="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-contrast"
               >
-                <UploadIcon class="h-12 w-12" />
+                <i class="pi pi-upload text-5xl!" aria-hidden="true" />
               </div>
 
               <!-- Title & Subtitle -->
@@ -264,31 +263,16 @@ onUnmounted(() => {
               </h2>
               <p
                 v-if="customSubtitle"
-                class="mt-2 text-sm md:text-base text-indigo-200 dark:text-indigo-300 text-center max-w-md"
+                class="mt-2 text-sm md:text-base text-primary-200 text-center max-w-md"
               >
                 {{ customSubtitle }}
               </p>
 
               <!-- Badges for constraints -->
               <div class="mt-6 flex flex-wrap gap-2 justify-center">
-                <SmallBadge
-                  v-if="displayAccept"
-                  class="bg-indigo-500/30 text-indigo-100 ring-indigo-400/30 font-semibold"
-                >
-                  Formats: {{ displayAccept }}
-                </SmallBadge>
-                <SmallBadge
-                  v-if="maxSize"
-                  class="bg-indigo-500/30 text-indigo-100 ring-indigo-400/30 font-semibold"
-                >
-                  Max size: {{ formatBytes(maxSize) }}
-                </SmallBadge>
-                <SmallBadge
-                  v-if="!multiple"
-                  class="bg-amber-500/30 text-amber-100 ring-amber-400/30 font-semibold"
-                >
-                  Single file mode
-                </SmallBadge>
+                <Tag v-if="displayAccept" rounded :value="`Formats: ${displayAccept}`" />
+                <Tag v-if="maxSize" rounded :value="`Max size: ${formatBytes(maxSize)}`" />
+                <Tag v-if="!multiple" rounded severity="warn" value="Single file mode" />
               </div>
             </div>
           </slot>

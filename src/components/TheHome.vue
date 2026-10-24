@@ -17,7 +17,7 @@ const handleFilesDropped = (files: File[]) => {
 <template>
   <FullScreenDropZone @files-dropped="handleFilesDropped">
     <div class="flex flex-col items-center gap-12.5 md:mt-10">
-      <h1 class="text-2xl md:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-200">
+      <h1 class="text-2xl md:text-4xl font-bold tracking-tight text-color">
         Image, Audio & Video Converter
       </h1>
       <FileUploader class="w-90" />

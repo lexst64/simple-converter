@@ -4,6 +4,9 @@ import router from '@/router'
 import axios from 'axios'
 import { createPinia } from 'pinia'
 import { createPersistedState } from 'pinia-plugin-persistedstate'
+import PrimeVue from 'primevue/config'
+import 'primeicons/primeicons.css'
+import { primeVueOptions } from '@/theme'
 import { useAuth } from '@/composables/useAuth.ts'
 
 import { config } from '@/config'
@@ -44,5 +47,6 @@ const app = createApp(App)
 
 app.use(router)
 app.use(pinia)
+app.use(PrimeVue, primeVueOptions)
 
 app.mount('#app')

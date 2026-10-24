@@ -7,7 +7,7 @@ const year = computed(() => new Date().getFullYear())
 </script>
 
 <template>
-  <footer class="flex justify-between bg-slate-200 dark:bg-slate-800/80 p-2 text-sm text-slate-600 dark:text-slate-300 transition-colors">
+  <footer class="flex justify-between bg-surface-100 dark:bg-surface-800 border-t border-surface p-2 text-sm text-muted-color transition-colors">
     <p>v{{ pkg.version }} &copy; {{ year }} Oleksii Stoliarchuk</p>
     <nav class="flex gap-3.5">
       <ul class="flex list-none gap-3.5">

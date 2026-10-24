@@ -14,6 +14,9 @@ export default mergeConfig(
     test: {
       environment: 'jsdom',
       include: ['src/**/__tests__/**/*.spec.ts'],
+      setupFiles: ['src/__tests__/setup.ts'],
+      // no PrimeUI license key is configured under test
+      onConsoleLog: (log) => !log.includes('[PrimeUI]'),
       exclude: [...configDefaults.exclude, 'e2e/**'],
       root: fileURLToPath(new URL('./', import.meta.url)),
       restoreMocks: true,

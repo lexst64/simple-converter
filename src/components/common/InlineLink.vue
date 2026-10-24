@@ -11,14 +11,14 @@ defineProps<{
   <RouterLink
     v-if="to"
     :to="to"
-    class="hover:underline hover:cursor-pointer text-blue-800 dark:text-blue-300"
+    class="hover:underline hover:cursor-pointer text-primary"
   >
     <slot />
   </RouterLink>
   <a
     v-else
     :href="href"
-    class="hover:underline hover:cursor-pointer text-blue-800 dark:text-blue-300"
+    class="hover:underline hover:cursor-pointer text-primary"
     target="_blank"
     rel="noopener noreferrer"
   >

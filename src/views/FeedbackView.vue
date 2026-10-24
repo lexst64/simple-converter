@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-import BaseButton from '@/components/common/BaseButton.vue'
-import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
-import SpinnerIcon from '@/components/icons/SpinnerIcon.vue'
+import Button from 'primevue/button'
+import Card from 'primevue/card'
+import InputText from 'primevue/inputtext'
+import Message from 'primevue/message'
+import Textarea from 'primevue/textarea'
 import { FeedbackService } from '@/services/feedback.service'
 import { useToastStore } from '@/stores/useToastStore'
 
@@ -104,118 +106,105 @@ const resetForm = () => {
 
 <template>
   <div class="max-w-xl mx-auto py-4">
-    <div
-      class="bg-white dark:bg-slate-800/90 shadow-md rounded-2xl p-6 md:p-8 border border-slate-200 dark:border-slate-700/80 transition-colors"
-    >
-      <div class="mb-6 text-center">
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-          Send Us Feedback
-        </h1>
-        <p class="hidden md:block text-sm text-slate-600 dark:text-slate-400 mt-1">
-          We'd love to hear your thoughts, suggestions, or bug reports.
-        </p>
-      </div>
-
-      <div
-        v-if="isSuccess"
-        class="flex flex-col items-center justify-center p-6 text-center space-y-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800/50"
-      >
-        <CheckCircleIcon class="text-emerald-600 dark:text-emerald-400" />
-        <div class="space-y-1">
-          <h2 class="text-lg font-semibold text-emerald-900 dark:text-emerald-200">
-            Thank you for your feedback!
-          </h2>
-          <p class="text-sm text-emerald-700 dark:text-emerald-400">
-            Your message has been delivered. We appreciate your time and effort in helping us
-            improve.
+    <Card class="p-2 md:p-4">
+      <template #title>
+        <div class="text-center">
+          <h1 class="text-2xl font-bold tracking-tight">Send Us Feedback</h1>
+          <p class="hidden md:block text-sm font-normal text-muted-color mt-1">
+            We'd love to hear your thoughts, suggestions, or bug reports.
           </p>
         </div>
-        <BaseButton secondary @click="resetForm"> Send another message </BaseButton>
-      </div>
-
-      <form v-else @submit.prevent="handleSubmit" class="space-y-5">
-        <!-- Hidden Honeypot Fields for Bot Protection -->
-        <input
-          type="checkbox"
-          name="botcheck"
-          v-model="botcheck"
-          class="hidden"
-          style="display: none !important"
-          tabindex="-1"
-          autocomplete="off"
-        />
-        <input
-          type="text"
-          name="website"
-          v-model="honeypot"
-          class="hidden"
-          style="display: none !important"
-          tabindex="-1"
-          autocomplete="off"
-        />
-
-        <div>
-          <label
-            for="email"
-            class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5"
-          >
-            Email address <span class="text-xs text-slate-500 font-normal">(optional)</span>
-          </label>
-          <input
-            id="email"
-            v-model="email"
-            type="email"
-            placeholder="email@example.com"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors"
-          />
-        </div>
-
-        <div>
-          <div class="flex justify-between items-center mb-1.5">
-            <label
-              for="message"
-              class="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Feedback message <span class="text-rose-500">*</span>
-            </label>
-            <span
-              class="text-xs font-mono"
-              :class="
-                message.trim().length >= MAX_MESSAGE_LENGTH
-                  ? 'text-amber-600 dark:text-amber-400 font-bold'
-                  : 'text-slate-500 dark:text-slate-400'
-              "
-            >
-              {{ message.trim().length }} / {{ MAX_MESSAGE_LENGTH }}
-            </span>
+      </template>
+      <template #content>
+        <Message v-if="isSuccess" severity="success" class="mt-4">
+          <div class="flex flex-col items-center justify-center p-4 text-center gap-4">
+            <i class="pi pi-check-circle text-4xl!" aria-hidden="true" />
+            <div class="space-y-1">
+              <h2 class="text-lg font-semibold">Thank you for your feedback!</h2>
+              <p class="text-sm font-normal">
+                Your message has been delivered. We appreciate your time and effort in helping us
+                improve.
+              </p>
+            </div>
+            <Button label="Send another message" severity="success" outlined @click="resetForm" />
           </div>
-          <textarea
-            id="message"
-            v-model="message"
-            rows="5"
-            required
-            placeholder="Share your thoughts, feature requests, or bugs... (Enter to send, Shift+Enter for new line)"
-            class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900/60 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 transition-colors resize-none md:resize-y min-h-30"
-            @keydown.enter.exact.prevent="handleSubmit"
-          ></textarea>
-        </div>
+        </Message>
 
-        <div class="flex justify-end pt-2">
-          <BaseButton
-            type="submit"
-            :disabled="
-              isSubmitting || !message.trim() || message.trim().length > MAX_MESSAGE_LENGTH
-            "
-            class="w-full sm:w-auto"
-          >
-            <span v-if="isSubmitting" class="flex items-center justify-center gap-2">
-              <SpinnerIcon class="text-white" />
-              Sending...
-            </span>
-            <span v-else>Submit</span>
-          </BaseButton>
-        </div>
-      </form>
-    </div>
+        <form v-else @submit.prevent="handleSubmit" class="space-y-5 mt-4">
+          <!-- Hidden Honeypot Fields for Bot Protection -->
+          <input
+            type="checkbox"
+            name="botcheck"
+            v-model="botcheck"
+            class="hidden"
+            style="display: none !important"
+            tabindex="-1"
+            autocomplete="off"
+          />
+          <input
+            type="text"
+            name="website"
+            v-model="honeypot"
+            class="hidden"
+            style="display: none !important"
+            tabindex="-1"
+            autocomplete="off"
+          />
+
+          <div class="flex flex-col gap-1.5">
+            <label for="email" class="text-sm font-medium">
+              Email address <span class="text-xs text-muted-color font-normal">(optional)</span>
+            </label>
+            <InputText
+              id="email"
+              v-model="email"
+              type="email"
+              placeholder="email@example.com"
+              fluid
+            />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between items-center">
+              <label for="message" class="text-sm font-medium">
+                Feedback message <span class="text-red-500">*</span>
+              </label>
+              <span
+                class="text-xs font-mono"
+                :class="
+                  message.trim().length >= MAX_MESSAGE_LENGTH
+                    ? 'text-amber-600 dark:text-amber-400 font-bold'
+                    : 'text-muted-color'
+                "
+              >
+                {{ message.trim().length }} / {{ MAX_MESSAGE_LENGTH }}
+              </span>
+            </div>
+            <Textarea
+              id="message"
+              v-model="message"
+              rows="5"
+              required
+              fluid
+              placeholder="Share your thoughts, feature requests, or bugs... (Enter to send, Shift+Enter for new line)"
+              class="resize-none md:resize-y min-h-30"
+              @keydown.enter.exact.prevent="handleSubmit"
+            />
+          </div>
+
+          <div class="flex justify-end pt-2">
+            <Button
+              type="submit"
+              :label="isSubmitting ? 'Sending...' : 'Submit'"
+              :loading="isSubmitting"
+              :disabled="
+                isSubmitting || !message.trim() || message.trim().length > MAX_MESSAGE_LENGTH
+              "
+              class="w-full sm:w-auto"
+            />
+          </div>
+        </form>
+      </template>
+    </Card>
   </div>
 </template>

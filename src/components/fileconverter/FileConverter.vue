@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
-import BaseButton from '@/components/common/BaseButton.vue'
+import Button from 'primevue/button'
+import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
 import FileItem from '@/components/fileconverter/FileItem.vue'
 import { ConverterService } from '@/services/converter.service'
@@ -67,11 +68,10 @@ const allFilesSelected = computed(() => {
   return selectable.length > 0 && selectable.every((f) => f.selected)
 })
 
-const toggleSelectAll = (event: Event) => {
-  const target = event.target as HTMLInputElement
+const toggleSelectAll = (checked: boolean) => {
   fileStore.files.forEach((file) => {
     if (!isSelectable(file)) return
-    file.selected = target.checked
+    file.selected = checked
   })
 }
 
@@ -215,12 +215,12 @@ const convert = async () => {
 <template>
   <FullScreenDropZone @files-dropped="handleFilesDropped">
     <div class="flex flex-col gap-2">
-      <div class="flex gap-2 items-center text-slate-700 dark:text-slate-300">
-        <input
-          type="checkbox"
-          :checked="allFilesSelected"
-          @change="toggleSelectAll"
-          class="h-4 w-4 accent-indigo-600 dark:accent-indigo-500 rounded cursor-pointer"
+      <div class="flex gap-2 items-center text-muted-color">
+        <Checkbox
+          :model-value="allFilesSelected"
+          binary
+          aria-label="Select all files"
+          @update:model-value="toggleSelectAll"
         />
         <p v-if="numSelectedFiles === 0">Total: {{ fileStore.files.length }}</p>
         <p v-else>Selected: {{ numSelectedFiles }}</p>
@@ -236,7 +236,7 @@ const convert = async () => {
       <FileUploader v-if="fileStore.files.length === 0" />
       <div
         v-else
-        class="flex flex-col border-2 rounded-md overflow-y-scroll scrollbar-hide border-indigo-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 transition-colors"
+        class="flex flex-col border rounded-border overflow-y-scroll scrollbar-hide border-surface bg-surface-0 dark:bg-surface-800 transition-colors"
       >
         <FileItem
           v-for="file in fileStore.files"
@@ -249,10 +249,19 @@ const convert = async () => {
           v-model:selected="file.selected"
         />
       </div>
-      <BaseButton secondary @click="openFileSelector" class="w-full">Add more files</BaseButton>
-      <BaseButton :disabled="isConvertDisabled()" @click="convert" class="w-full"
-        >Convert</BaseButton
-      >
+      <Button
+        label="Add more files"
+        icon="pi pi-plus"
+        outlined
+        class="w-full"
+        @click="openFileSelector"
+      />
+      <Button
+        label="Convert"
+        :disabled="isConvertDisabled()"
+        class="w-full"
+        @click="convert"
+      />
     </div>
   </FullScreenDropZone>
 </template>
