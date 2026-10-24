@@ -30,7 +30,7 @@ const targetFormat = ref<string | null>(null)
 watch(targetFormat, (val) => {
   if (!val) return
   fileStore.files.forEach((f) => {
-    if (f.selected) f.targetFormat = val
+    if (f.selected) fileStore.updateFile(f.id, { targetFormat: val })
   })
 })
 
@@ -71,7 +71,7 @@ const allFilesSelected = computed(() => {
 const toggleSelectAll = (checked: boolean) => {
   fileStore.files.forEach((file) => {
     if (!isSelectable(file)) return
-    file.selected = checked
+    fileStore.updateFile(file.id, { selected: checked })
   })
 }
 
@@ -91,15 +91,15 @@ const convert = async () => {
     const conversionPromises = selectedFiles.map(async (fileHolder) => {
       if (fileHolder.status === 'completed') return
 
-      fileStore.setSelected(fileHolder.id, false)
+      fileStore.updateFile(fileHolder.id, { selected: false })
 
       try {
         let uploadFileId: string
         // if previous convertion failed, skip uploading the same file again
         if (!fileHolder.uploadFileId) {
-          fileStore.setStatus(fileHolder.id, 'uploading')
+          fileStore.updateFile(fileHolder.id, { status: 'uploading' })
           uploadFileId = await ConverterService.uploadFile(fileHolder.file)
-          fileStore.setUploadFileId(fileHolder.id, uploadFileId)
+          fileStore.updateFile(fileHolder.id, { uploadFileId })
         } else {
           uploadFileId = fileHolder.uploadFileId
         }
@@ -107,7 +107,7 @@ const convert = async () => {
         const jobId = (
           await ConverterService.createConversionJob(uploadFileId, fileHolder.targetFormat!)
         )._id
-        fileStore.setProgress(fileHolder.id, 0)
+        fileStore.updateFile(fileHolder.id, { progress: 0 })
 
         await new Promise<void>((resolve, reject) => {
           const wsUrl = `${API_URL}/conversions/job/${jobId}/status`.replace(/^http/, 'ws')
@@ -135,20 +135,19 @@ const convert = async () => {
             }
 
             // TODO: handle file status better
-            fileStore.setStatus(
-              fileHolder.id,
-              statusData.status === 'pending' ? 'processing' : statusData.status,
-            )
-            fileStore.setProgress(fileHolder.id, statusData.progress)
+            fileStore.updateFile(fileHolder.id, {
+              status: statusData.status === 'pending' ? 'processing' : statusData.status,
+            })
+            fileStore.updateFile(fileHolder.id, { progress: statusData.progress })
 
             if (statusData.status === 'completed') {
               finished = true
               socket.close()
-              fileStore.setSelected(fileHolder.id, false)
+              fileStore.updateFile(fileHolder.id, { selected: false })
               ConverterService.getJob(jobId)
                 .then((job) => {
                   if (job.outputFileId) {
-                    fileStore.setOutputFileId(fileHolder.id, job.outputFileId)
+                    fileStore.updateFile(fileHolder.id, { outputFileId: job.outputFileId })
                     succeededCount++
                     if (!isBatch) {
                       toastStore.success(
@@ -165,13 +164,13 @@ const convert = async () => {
             } else if (statusData.status === 'failed') {
               finished = true
               socket.close()
-              fileStore.setSelected(fileHolder.id, true)
+              fileStore.updateFile(fileHolder.id, { selected: true })
               settle(new Error('Conversion failed'))
             }
           }
 
           socket.onerror = () => {
-            fileStore.setStatus(fileHolder.id, 'failed')
+            fileStore.updateFile(fileHolder.id, { status: 'failed' })
             socket.close()
             settle(new Error('WebSocket connection failed'))
           }
@@ -182,8 +181,8 @@ const convert = async () => {
         })
       } catch {
         failedCount++
-        fileStore.setSelected(fileHolder.id, true)
-        fileStore.setStatus(fileHolder.id, 'failed')
+        fileStore.updateFile(fileHolder.id, { selected: true })
+        fileStore.updateFile(fileHolder.id, { status: 'failed' })
         if (!isBatch) {
           toastStore.error(`Failed to convert "${fileHolder.file.name}".`, 'Conversion Failed')
         }
@@ -245,8 +244,10 @@ const convert = async () => {
           :is-loading="formatStore.isLoading"
           :is-error="formatStore.isError"
           :key="file.id"
-          v-model:target-format="file.targetFormat"
-          v-model:selected="file.selected"
+          :target-format="file.targetFormat"
+          :selected="file.selected"
+          @update:target-format="(val) => fileStore.updateFile(file.id, { targetFormat: val })"
+          @update:selected="(val) => fileStore.updateFile(file.id, { selected: val })"
         />
       </div>
       <Button
