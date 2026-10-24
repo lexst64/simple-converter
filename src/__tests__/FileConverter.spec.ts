@@ -9,6 +9,7 @@ import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { useFormatStore } from '@/stores/useFormatStore'
 import { useToastStore } from '@/stores/useToastStore'
 import { JobStatus, type Job } from '@/types/api'
+import { MAX_FILE_SIZE } from '@/utils'
 import { FakeWebSocket, makeFile } from './component-helpers'
 
 // Keep the real axios client (and its interceptors) out of component tests.
@@ -363,6 +364,42 @@ describe('FileConverter', () => {
 
     expect(wrapper.text()).toContain('Total: 3')
     expect(wrapper.text()).toContain('new.mp4')
+  })
+
+  it('skips oversized files picked through the hidden file input and reports them', async () => {
+    seedFiles(['a.mp4'])
+    const wrapper = mountConverter()
+    const input = wrapper.find('input[type="file"]')
+    const ok = makeFile('ok.mp4', MAX_FILE_SIZE)
+    Object.defineProperty(input.element, 'files', {
+      value: [makeFile('huge.mp4', MAX_FILE_SIZE + 1), ok],
+      configurable: true,
+    })
+    await input.trigger('change')
+
+    expect(useFileStore().files.map((f) => f.file)).toEqual([expect.anything(), ok])
+    expect(wrapper.text()).toContain('Total: 2')
+    expect(wrapper.text()).not.toContain('huge.mp4')
+    expect(useToastStore().toasts).toMatchObject([
+      { type: 'error', title: '1 File(s) Rejected', message: 'huge.mp4' },
+    ])
+  })
+
+  it('keeps the list unchanged when every picked file is oversized', async () => {
+    const store = seedFiles(['a.mp4'])
+    const before = [...store.files]
+    const wrapper = mountConverter()
+    const input = wrapper.find('input[type="file"]')
+    Object.defineProperty(input.element, 'files', {
+      value: [makeFile('huge.mp4', MAX_FILE_SIZE + 1), makeFile('huger.mp4', MAX_FILE_SIZE * 2)],
+      configurable: true,
+    })
+    await input.trigger('change')
+
+    expect(store.files).toEqual(before)
+    expect(useToastStore().toasts).toMatchObject([
+      { type: 'error', title: '2 File(s) Rejected', message: 'huge.mp4, huger.mp4' },
+    ])
   })
 
   it('shows the uploader when there are no files', () => {

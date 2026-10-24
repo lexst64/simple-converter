@@ -9,6 +9,7 @@ import { useConversionStore } from '@/stores/useConversionStore'
 import FullScreenDropZone from '@/components/common/FullScreenDropZone.vue'
 import FileUploader from '../FileUploader.vue'
 import { useFormatStore } from '@/stores/useFormatStore'
+import { useFileSizeLimit } from '@/composables/useFileSizeLimit'
 
 const handleFilesDropped = (files: File[]) => {
   fileStore.addFiles(files)
@@ -18,6 +19,7 @@ const fileStore = useFileStore()
 const formatStore = useFormatStore()
 // conversions are owned by the store, so they keep running when this component unmounts
 const conversionStore = useConversionStore()
+const { filterBySize } = useFileSizeLimit()
 const fileInputRef = ref<HTMLInputElement | null>(null)
 // target format chosen in the top-level selector; applied to all selected files
 const targetFormat = ref<string | null>(null)
@@ -35,11 +37,11 @@ const openFileSelector = () => {
 
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const files = Array.from(target.files || [])
-  if (!files || files.length === 0) return
-  fileStore.addFiles(files)
+  const files = filterBySize(Array.from(target.files || []))
   // reset value so selecting the same file again still triggers change
   target.value = ''
+  if (files.length === 0) return
+  fileStore.addFiles(files)
 }
 
 const isInFlight = (file: FileHolder) =>

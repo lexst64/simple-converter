@@ -3,19 +3,24 @@ import { useFileStore } from '@/stores/useFileStore'
 import { ref } from 'vue'
 import Button from 'primevue/button'
 import { useRouter } from 'vue-router'
+import { useFileSizeLimit } from '@/composables/useFileSizeLimit'
+import { formatBytes, MAX_FILE_SIZE } from '@/utils'
 
 const fileStore = useFileStore()
 const router = useRouter()
+const { filterBySize } = useFileSizeLimit()
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const maxSizeLabel = formatBytes(MAX_FILE_SIZE, 1)
 
 const onFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement
-  const files = Array.from(target.files || [])
-  if (!files || files.length === 0) return
-  fileStore.clearFiles()
-  fileStore.addFiles(files)
+  const files = filterBySize(Array.from(target.files || []))
   // reset value so selecting the same file again still triggers change
   target.value = ''
+  // keep the current list when nothing usable was picked
+  if (files.length === 0) return
+  fileStore.clearFiles()
+  fileStore.addFiles(files)
   router.push('/converter')
 }
 
@@ -33,7 +38,7 @@ const openFileSelector = () => {
       <Button label="Select files" icon="pi pi-upload" @click="openFileSelector" />
       <div class="text-xs text-muted-color">
         <span class="hidden md:inline">or drag-and-drop anywhere </span>
-        <span>(up to 1.0 GB per file)</span>
+        <span>(up to {{ maxSizeLabel }} per file)</span>
       </div>
     </div>
   </div>
