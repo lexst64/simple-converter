@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
+import Select from 'primevue/select'
 import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
 import { ConverterService } from '@/services/converter.service'
 
@@ -28,38 +29,42 @@ describe('FormatSelector', () => {
     })
   })
 
-  it('renders one upper-cased option per format', () => {
+  it('offers one upper-cased option per format', () => {
     const wrapper = mountSelector()
-    const options = wrapper.findAll('option')
-    expect(options.map((o) => o.text())).toEqual(['MP3', 'PNG'])
-    expect(options.map((o) => o.attributes('value'))).toEqual(['mp3', 'png'])
+    expect(wrapper.findComponent(Select).props('options')).toEqual([
+      { label: 'MP3', value: 'mp3' },
+      { label: 'PNG', value: 'png' },
+    ])
   })
 
   it('reflects and emits the targetFormat model', async () => {
     const wrapper = mountSelector({ targetFormat: 'png' })
-    expect((wrapper.find('select').element as HTMLSelectElement).value).toBe('png')
+    expect(wrapper.findComponent(Select).props('modelValue')).toBe('png')
+    expect(wrapper.text()).toContain('PNG')
 
-    await wrapper.find('select').setValue('mp3')
+    await wrapper.findComponent(Select).setValue('mp3')
     expect(wrapper.emitted('update:targetFormat')).toEqual([['mp3']])
   })
 
-  it('shows a loading placeholder instead of the select while loading', () => {
+  it('shows a disabled loading select while loading', () => {
     const wrapper = mountSelector({ isLoading: true, isError: true })
+    const select = wrapper.findComponent(Select)
     expect(wrapper.text()).toContain('Loading...')
-    expect(wrapper.find('select').exists()).toBe(false)
+    expect(select.props()).toMatchObject({ loading: true, disabled: true })
+    expect(wrapper.find('button[title="Retry fetching formats"]').exists()).toBe(false)
   })
 
   it('shows a disabled error select and a retry button on error', () => {
     const wrapper = mountSelector({ isError: true })
-    const select = wrapper.find('select')
-    expect(select.attributes('disabled')).toBeDefined()
+    const select = wrapper.findComponent(Select)
+    expect(select.props()).toMatchObject({ disabled: true, invalid: true })
     expect(select.text()).toBe('Error loading formats')
     expect(wrapper.find('button[title="Retry fetching formats"]').exists()).toBe(true)
   })
 
   it('refetches formats when retry is clicked', async () => {
     const wrapper = mountSelector({ isError: true })
-    await wrapper.find('button').trigger('click')
+    await wrapper.find('button[title="Retry fetching formats"]').trigger('click')
     expect(ConverterService.getSupportedFormats).toHaveBeenCalledOnce()
   })
 })

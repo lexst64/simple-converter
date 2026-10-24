@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import Accordion from 'primevue/accordion'
+import AccordionContent from 'primevue/accordioncontent'
+import AccordionHeader from 'primevue/accordionheader'
+import AccordionPanel from 'primevue/accordionpanel'
+import Badge from 'primevue/badge'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
 import HistorySkeleton from '@/components/history/HistorySkeleton.vue'
 import { useHistoryStore, type HistoryItem } from '@/stores/useHistoryStore'
@@ -33,10 +38,6 @@ const groupedItems = computed(() => {
 })
 
 const openCategory = ref<HistoryCategory | null>(null)
-
-function toggleCategory(category: HistoryCategory) {
-  openCategory.value = category
-}
 
 watch(
   groupedItems,
@@ -117,42 +118,36 @@ function handleDelete(id: string) {
     <div
       v-else-if="historyStore.items.length === 0"
       key="empty"
-      class="flex justify-center mt-12 text-slate-500 dark:text-slate-400"
+      class="flex justify-center mt-12 text-muted-color"
     >
       No previous convertions found
     </div>
-    <div v-else key="content" class="flex flex-col items-center gap-4 w-full">
-      <section
-        v-for="section in groupedItems"
-        :key="section.category"
-        class="flex w-full flex-col items-center gap-2"
-      >
-        <button
-          type="button"
-          class="w-full flex items-center justify-between py-2 px-3 bg-slate-100 dark:bg-slate-800/60 rounded-md cursor-pointer transition-colors"
-          @click="toggleCategory(section.category)"
-          :aria-expanded="openCategory === section.category"
-        >
-          <p class="text-sm font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+    <Accordion
+      v-else
+      key="content"
+      v-model:value="openCategory"
+      class="w-full"
+    >
+      <AccordionPanel v-for="section in groupedItems" :key="section.category" :value="section.category">
+        <AccordionHeader>
+          <span class="text-sm font-medium uppercase tracking-wide text-muted-color">
             {{ section.category }}
-          </p>
-          <span class="text-sm text-slate-400 dark:text-slate-500">{{ section.items.length }}</span>
-        </button>
-
-        <div
-          v-show="openCategory === section.category"
-          class="flex flex-col items-center w-full mt-2 gap-2"
-        >
-          <HistoryEntity
-            v-for="item in section.items"
-            :key="item.id"
-            :item="item"
-            class="flex flex-col w-full"
-            @delete="handleDelete"
-          />
-        </div>
-      </section>
-    </div>
+          </span>
+          <Badge :value="section.items.length" severity="secondary" class="ml-auto mr-3" />
+        </AccordionHeader>
+        <AccordionContent>
+          <div class="flex flex-col items-center w-full gap-2">
+            <HistoryEntity
+              v-for="item in section.items"
+              :key="item.id"
+              :item="item"
+              class="flex flex-col w-full"
+              @delete="handleDelete"
+            />
+          </div>
+        </AccordionContent>
+      </AccordionPanel>
+    </Accordion>
   </Transition>
 </template>
 

@@ -2,12 +2,9 @@
 import { computed, ref, onUnmounted } from 'vue'
 import { ConverterService } from '@/services/converter.service.ts'
 import { formatBytes } from '@/utils'
-import IconButton from '@/components/common/IconButton.vue'
-import SmallBadge from '@/components/common/SmallBadge.vue'
-import ArrowLongRight from '@/components/icons/ArrowLongRight.vue'
-import DownloadIcon from '@/components/icons/DownloadIcon.vue'
+import Button from 'primevue/button'
+import Tag from 'primevue/tag'
 import type { HistoryItem } from '@/components/history/TheHistory.vue'
-import TrashIcon from '@/components/icons/TrashIcon.vue'
 import { useToastStore } from '@/stores/useToastStore'
 
 const props = defineProps<{ item: HistoryItem }>()
@@ -85,49 +82,48 @@ const timeAgo = computed(() => {
 
 <template>
   <div
-    class="flex flex-col w-full md:flex-row md:items-center gap-3 rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f6fafe] dark:bg-slate-800/80 px-4 py-3 md:w-200 md:gap-4 md:px-5 transition-colors duration-200"
+    class="flex flex-col w-full md:flex-row md:items-center gap-3 rounded-2xl border border-surface bg-surface-0 dark:bg-surface-800 px-4 py-3 md:w-200 md:gap-4 md:px-5 transition-colors duration-200"
     :class="{ 'opacity-50 pointer-events-none': isDeleting }"
   >
     <div class="min-w-0 flex-1">
-      <p class="font-medium truncate text-slate-800 dark:text-slate-100">
+      <p class="font-medium truncate text-color">
         {{ props.item.fileName }}
       </p>
-      <div class="font-mono flex items-center gap-2 text-xs text-gray-500 dark:text-slate-400">
+      <div class="font-mono flex items-center gap-2 text-xs text-muted-color">
         <p>{{ formatBytes(props.item.fileSize) }} ▪ {{ timeAgo }}</p>
       </div>
     </div>
 
-    <div class="md:hidden w-full h-px bg-gray-300 dark:bg-slate-700"></div>
+    <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
     <div class="flex gap-2 justify-end">
       <div class="flex shrink-0 items-center gap-2 text-sm">
-        <SmallBadge
-          class="hidden bg-blue-100 text-blue-800 ring-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:ring-blue-800 md:inline-flex"
-        >
-          {{ props.item.initialFormat.toUpperCase() || 'unknown' }}
-        </SmallBadge>
-        <ArrowLongRight class="text-blue-500 dark:text-indigo-400" />
-        <SmallBadge
-          class="bg-blue-100 text-blue-800 ring-blue-200 dark:bg-blue-950/80 dark:text-blue-300 dark:ring-blue-800"
-        >
-          {{ props.item.targetFormat.toUpperCase() }}
-        </SmallBadge>
+        <Tag
+          rounded
+          class="hidden md:inline-flex"
+          :value="props.item.initialFormat.toUpperCase() || 'unknown'"
+        />
+        <i class="pi pi-arrow-right text-primary" aria-hidden="true" />
+        <Tag rounded :value="props.item.targetFormat.toUpperCase()" />
       </div>
-      <IconButton
-        @click="handleDownload"
-        :disabled="isDeleting || isDownloadDisabled"
+      <Button
+        icon="pi pi-download"
+        text
+        rounded
+        severity="secondary"
         aria-label="Download converted file"
-      >
-        <DownloadIcon />
-      </IconButton>
-      <IconButton
-        @click="handleDelete"
-        :disabled="isDeleting"
+        :disabled="isDeleting || isDownloadDisabled"
+        @click="handleDownload"
+      />
+      <Button
+        icon="pi pi-trash"
+        text
+        rounded
+        severity="danger"
         aria-label="Delete history item"
-        class="hover:bg-red-100 dark:hover:bg-red-950/50"
-      >
-        <TrashIcon />
-      </IconButton>
+        :disabled="isDeleting"
+        @click="handleDelete"
+      />
     </div>
   </div>
 </template>

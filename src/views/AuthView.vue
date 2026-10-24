@@ -95,7 +95,7 @@ onUnmounted(() => {
 
 <template>
   <div class="flex flex-col items-center justify-center gap-3">
-    <h3 class="text-slate-800 dark:text-slate-200">
+    <h3 class="text-color">
       Please, sign in to your Google account to use this app!
     </h3>
     <div ref="googleBtn" style="color-scheme: light"></div>

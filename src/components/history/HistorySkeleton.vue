@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BaseSkeleton from '@/components/common/BaseSkeleton.vue'
+import Skeleton from 'primevue/skeleton'
 
 interface Props {
   count?: number
@@ -14,9 +14,9 @@ withDefaults(defineProps<Props>(), {
   <div class="flex flex-col items-center gap-4 w-full" aria-busy="true" aria-label="Loading history items">
     <section class="flex w-full flex-col items-center gap-2">
       <!-- Category Header Skeleton -->
-      <div class="w-full flex items-center justify-between py-2.5 px-3 bg-slate-100 dark:bg-slate-800/60 rounded-md border border-blue-50 dark:border-slate-800">
-        <BaseSkeleton width="70px" height="0.875rem" />
-        <BaseSkeleton width="20px" height="0.875rem" />
+      <div class="w-full flex items-center justify-between py-4 px-4.5 border-b border-surface">
+        <Skeleton width="70px" height="0.875rem" />
+        <Skeleton width="20px" height="0.875rem" />
       </div>
 
       <!-- History Entity Item Skeletons -->
@@ -24,26 +24,26 @@ withDefaults(defineProps<Props>(), {
         <div
           v-for="n in count"
           :key="n"
-          class="flex flex-col w-full md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-blue-100 dark:border-slate-800 bg-[#f6fafe] dark:bg-slate-800/80 px-4 py-3 md:w-200 md:gap-4 md:px-5"
+          class="flex flex-col w-full md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-surface bg-surface-0 dark:bg-surface-800 px-4 py-3 md:w-200 md:gap-4 md:px-5"
         >
           <!-- Left info side -->
           <div class="min-w-0 flex-1 flex flex-col gap-2">
-            <BaseSkeleton width="55%" height="1.125rem" />
-            <BaseSkeleton width="35%" height="0.875rem" />
+            <Skeleton width="55%" height="1.125rem" />
+            <Skeleton width="35%" height="0.875rem" />
           </div>
 
           <!-- Divider for mobile -->
-          <div class="md:hidden w-full h-px bg-gray-200"></div>
+          <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
           <!-- Right badges & buttons side -->
           <div class="flex items-center gap-2 justify-end">
             <div class="flex shrink-0 items-center gap-2 text-sm">
-              <BaseSkeleton width="45px" height="1.5rem" borderRadius="9999px" class="hidden md:block" />
-              <BaseSkeleton width="16px" height="0.875rem" />
-              <BaseSkeleton width="45px" height="1.5rem" borderRadius="9999px" />
+              <Skeleton width="45px" height="1.5rem" border-radius="9999px" class="hidden md:block" />
+              <Skeleton width="16px" height="0.875rem" />
+              <Skeleton width="45px" height="1.5rem" border-radius="9999px" />
             </div>
-            <BaseSkeleton width="36px" height="36px" borderRadius="9999px" />
-            <BaseSkeleton width="36px" height="36px" borderRadius="9999px" />
+            <Skeleton shape="circle" size="2.5rem" />
+            <Skeleton shape="circle" size="2.5rem" />
           </div>
         </div>
       </div>

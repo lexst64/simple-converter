@@ -16,6 +16,7 @@ describe('config', () => {
     vi.stubEnv('VITE_API_URL', 'https://api.example.com')
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', 'client-id')
     vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', 'access-key')
+    vi.stubEnv('VITE_PRIMEUI_LICENSE', 'license-key')
 
     const config = await loadConfig()
 
@@ -23,6 +24,7 @@ describe('config', () => {
       apiUrl: 'https://api.example.com',
       googleClientId: 'client-id',
       web3formsAccessKey: 'access-key',
+      primeuiLicense: 'license-key',
     })
   })
 
@@ -30,12 +32,14 @@ describe('config', () => {
     vi.stubEnv('VITE_API_URL', undefined)
     vi.stubEnv('VITE_GOOGLE_CLIENT_ID', undefined)
     vi.stubEnv('VITE_WEB3FORMS_ACCESS_KEY', undefined)
+    vi.stubEnv('VITE_PRIMEUI_LICENSE', undefined)
 
     const config = await loadConfig()
 
     expect(config.apiUrl).toBe('')
     expect(config.googleClientId).toBe('')
     expect(config.web3formsAccessKey).toBe('')
+    expect(config.primeuiLicense).toBe('')
   })
 
   it('exposes the mode flags', async () => {

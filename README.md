@@ -1,6 +1,6 @@
 # Simple Converter Frontend
 
-A modern, fast, and user-friendly file conversion web application built with **Vue 3**, **Vite**, **TypeScript**, and **Tailwind CSS**. The application allows users to upload, convert, and download files of various video, image, and audio formats. It utilizes **Google OAuth** for user authentication and tracks conversion progress in real-time.
+A modern, fast, and user-friendly file conversion web application built with **Vue 3**, **Vite**, **TypeScript**, **PrimeVue** and **Tailwind CSS**. The application allows users to upload, convert, and download files of various video, image, and audio formats. It utilizes **Google OAuth** for user authentication and tracks conversion progress in real-time.
 
 ---
 

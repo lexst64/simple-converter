@@ -23,8 +23,8 @@ vi.mock('@/composables/useAuth', async () => {
 
 const emailLine = (w: ReturnType<typeof mount>) =>
   w.findAll('p').find((p) => p.text().startsWith('Email:'))!
-const link = (w: ReturnType<typeof mount>, text: string) =>
-  w.findAll('a').find((a) => a.text() === text)!
+const button = (w: ReturnType<typeof mount>, text: string) =>
+  w.findAll('button').find((b) => b.text() === text)!
 
 describe('MyProfileView', () => {
   beforeEach(() => {
@@ -40,17 +40,20 @@ describe('MyProfileView', () => {
   it('greets the user and shows their picture', () => {
     const wrapper = mount(MyProfileView)
     expect(wrapper.find('h1').text()).toBe('Hello, Alice!')
-    expect(wrapper.find('img').attributes('src')).toBe('https://img/a.png')
+    expect(wrapper.find('img').attributes()).toMatchObject({
+      src: 'https://img/a.png',
+      alt: 'Profile picture',
+    })
   })
 
   it('masks the email by default and toggles it with show/hide', async () => {
     const wrapper = mount(MyProfileView)
     expect(emailLine(wrapper).text()).toBe('Email: a******@example.com [show]')
 
-    await link(wrapper, '[show]').trigger('click')
+    await button(wrapper, '[show]').trigger('click')
     expect(emailLine(wrapper).text()).toBe('Email: alice@example.com [hide]')
 
-    await link(wrapper, '[hide]').trigger('click')
+    await button(wrapper, '[hide]').trigger('click')
     expect(emailLine(wrapper).text()).toBe('Email: a******@example.com [show]')
   })
 
@@ -60,9 +63,9 @@ describe('MyProfileView', () => {
     expect(emailLine(wrapper).text()).toContain('Invalid email format')
   })
 
-  it('calls logout when the logout link is clicked', async () => {
+  it('calls logout when the logout button is clicked', async () => {
     const wrapper = mount(MyProfileView)
-    await link(wrapper, 'Logout').trigger('click')
+    await button(wrapper, 'Logout').trigger('click')
     expect(auth.logout).toHaveBeenCalledOnce()
   })
 })
