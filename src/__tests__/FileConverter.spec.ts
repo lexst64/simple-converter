@@ -4,6 +4,7 @@ import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import Select from 'primevue/select'
 import FileConverter from '@/components/fileconverter/FileConverter.vue'
 import { ConverterService } from '@/services/converter.service'
+import { useConversionStore } from '@/stores/useConversionStore'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
 import { useFormatStore } from '@/stores/useFormatStore'
 import { useToastStore } from '@/stores/useToastStore'
@@ -226,20 +227,36 @@ describe('FileConverter', () => {
   })
 
   describe('convert flow', () => {
-    it('uploads, creates a job, follows progress over the socket and reports success', async () => {
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
+    // the pipeline itself is covered by useConversionStore.spec.ts; these check the UI wiring
+    const cancelButton = (w: ReturnType<typeof mountConverter>) =>
+      w.findAll('button').find((b) => b.text() === 'Cancel')
+
+    it('converts only the selected files through the conversion store', async () => {
+      const store = seedFiles(
+        ['a.mp4', 'b.mp4'],
+        [{ selected: true, targetFormat: 'mp3' }, { targetFormat: 'mp3' }],
+      )
+      const convert = vi.spyOn(useConversionStore(), 'convert')
       const wrapper = mountConverter()
 
       await convertButton(wrapper).trigger('click')
       await flushPromises()
 
-      expect(service.uploadFile).toHaveBeenCalledExactlyOnceWith(store.files[0]!.file)
-      expect(service.createConversionJob).toHaveBeenCalledExactlyOnceWith('up-1', 'mp3')
+      expect(convert).toHaveBeenCalledExactlyOnceWith([
+        expect.objectContaining({ id: store.files[0]!.id }),
+      ])
+      expect(service.uploadFile).toHaveBeenCalledTimes(1)
       expect(FakeWebSocket.instances).toHaveLength(1)
-      const socket = FakeWebSocket.instances[0]!
-      expect(socket.url).toBe('ws://api.test/conversions/job/job-for-up-1/status')
-      expect(socket.protocols).toEqual(['Bearer', 'tok'])
+    })
+
+    it('shows progress, then the completed file, and reports success', async () => {
+      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
+      const wrapper = mountConverter()
+
+      await convertButton(wrapper).trigger('click')
+      await flushPromises()
       expect(wrapper.text()).toContain('Total: 1')
+      const socket = FakeWebSocket.instances[0]!
 
       socket.send({ status: 'pending', progress: 0 })
       await flushPromises()
@@ -252,227 +269,85 @@ describe('FileConverter', () => {
 
       socket.send({ status: 'completed', progress: 100 })
       await flushPromises()
+      expect(store.files[0]).toMatchObject({ status: 'completed', selected: false })
+      expect(useToastStore().toasts).toMatchObject([
+        { type: 'success', title: 'Conversion Completed' },
+      ])
+    })
 
-      expect(socket.close).toHaveBeenCalled()
-      expect(service.getJob).toHaveBeenCalledExactlyOnceWith('job-for-up-1')
+    it('reselects a failed file so it can be retried', async () => {
+      seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
+      const wrapper = mountConverter()
+
+      await convertButton(wrapper).trigger('click')
+      await flushPromises()
+      FakeWebSocket.instances[0]!.send({ status: 'failed', progress: 30 })
+      await flushPromises()
+
+      expect(wrapper.text()).toContain('failed')
+      expect(wrapper.text()).toContain('Selected: 1')
+      expect(convertButton(wrapper).attributes('disabled')).toBeUndefined()
+    })
+
+    it('shows a Cancel button only while converting and cancels everything with it', async () => {
+      seedFiles(
+        ['a.mp4', 'b.mp4'],
+        [
+          { selected: true, targetFormat: 'mp3' },
+          { selected: true, targetFormat: 'mp3' },
+        ],
+      )
+      const wrapper = mountConverter()
+      expect(cancelButton(wrapper)).toBeUndefined()
+
+      await convertButton(wrapper).trigger('click')
+      await flushPromises()
+      expect(cancelButton(wrapper)).toBeDefined()
+
+      await cancelButton(wrapper)!.trigger('click')
+      await flushPromises()
+
+      expect(FakeWebSocket.instances.every((s) => s.close.mock.calls.length > 0)).toBe(true)
+      expect(useFileStore().files.map((f) => f.status)).toEqual(['cancelled', 'cancelled'])
+      expect(cancelButton(wrapper)).toBeUndefined()
+      expect(wrapper.text()).toContain('Total: 2')
+      expect(useToastStore().toasts).toEqual([])
+    })
+
+    it('makes cancelled files selectable again', async () => {
+      seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
+      const wrapper = mountConverter()
+
+      await convertButton(wrapper).trigger('click')
+      await flushPromises()
+      expect(itemCheckboxes(wrapper)[0]!.attributes('disabled')).toBeDefined()
+      await cancelButton(wrapper)!.trigger('click')
+      await flushPromises()
+
+      expect(itemCheckboxes(wrapper)[0]!.attributes('disabled')).toBeUndefined()
+      await headerCheckbox(wrapper).setValue(true)
+      expect(wrapper.text()).toContain('Selected: 1')
+      expect(convertButton(wrapper).attributes('disabled')).toBeUndefined()
+    })
+
+    it('keeps converting after the component unmounts', async () => {
+      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
+      const wrapper = mountConverter()
+
+      await convertButton(wrapper).trigger('click')
+      await flushPromises()
+      wrapper.unmount()
+
+      const socket = FakeWebSocket.instances[0]!
+      expect(socket.close).not.toHaveBeenCalled()
+      socket.send({ status: 'completed', progress: 100 })
+      await flushPromises()
+
       expect(store.files[0]).toMatchObject({
         status: 'completed',
         outputFileId: 'out-job-for-up-1',
-        uploadFileId: 'up-1',
-        selected: false,
       })
-      expect(useToastStore().toasts).toMatchObject([
-        {
-          type: 'success',
-          title: 'Conversion Completed',
-          message: '"a.mp4" was converted successfully!',
-        },
-      ])
-    })
-
-    it('marks the file failed, reselects it and shows an error toast on a failed message', async () => {
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      const socket = FakeWebSocket.instances[0]!
-      socket.send({ status: 'processing', progress: 30 })
-      socket.send({ status: 'failed', progress: 30 })
-      await flushPromises()
-
-      expect(socket.close).toHaveBeenCalled()
-      expect(service.getJob).not.toHaveBeenCalled()
-      expect(store.files[0]).toMatchObject({ status: 'failed', selected: true })
-      expect(wrapper.text()).toContain('failed')
-      expect(wrapper.text()).toContain('Selected: 1')
-      expect(useToastStore().toasts).toMatchObject([
-        { type: 'error', title: 'Conversion Failed', message: 'Failed to convert "a.mp4".' },
-      ])
-    })
-
-    it('fails the conversion when the socket errors', async () => {
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      FakeWebSocket.instances[0]!.fail()
-      await flushPromises()
-
-      expect(store.files[0]!.status).toBe('failed')
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
-    })
-
-    it('fails the conversion when the completed job has no output file', async () => {
-      service.getJob.mockResolvedValue(makeJob({ status: JobStatus.COMPLETED }))
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      FakeWebSocket.instances[0]!.send({ status: 'completed', progress: 100 })
-      await flushPromises()
-
-      expect(store.files[0]!.status).toBe('failed')
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
-    })
-
-    it('fails the conversion when the upload throws', async () => {
-      service.uploadFile.mockRejectedValue(new Error('upload failed'))
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-
-      expect(service.createConversionJob).not.toHaveBeenCalled()
-      expect(FakeWebSocket.instances).toHaveLength(0)
-      expect(store.files[0]).toMatchObject({ status: 'failed', selected: true })
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
-    })
-
-    it('skips the upload when the file already has an uploadFileId', async () => {
-      seedFiles(
-        ['a.mp4'],
-        [{ selected: true, targetFormat: 'mp3', status: 'failed', uploadFileId: 'up-existing' }],
-      )
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-
-      expect(service.uploadFile).not.toHaveBeenCalled()
-      expect(service.createConversionJob).toHaveBeenCalledExactlyOnceWith('up-existing', 'mp3')
-      expect(FakeWebSocket.instances[0]!.url).toContain('/job-for-up-existing/')
-    })
-
-    it('only converts selected files', async () => {
-      seedFiles(
-        ['a.mp4', 'b.mp4'],
-        [{ selected: true, targetFormat: 'mp3' }, { targetFormat: 'mp3' }],
-      )
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-
-      expect(service.uploadFile).toHaveBeenCalledTimes(1)
-      expect(FakeWebSocket.instances).toHaveLength(1)
-    })
-
-    describe('batch', () => {
-      const startBatch = async () => {
-        service.uploadFile.mockImplementation(async (file: File) => `up-${file.name}`)
-        seedFiles(
-          ['a.mp4', 'b.mp4'],
-          [
-            { selected: true, targetFormat: 'mp3' },
-            { selected: true, targetFormat: 'mp3' },
-          ],
-        )
-        const wrapper = mountConverter()
-        await convertButton(wrapper).trigger('click')
-        await flushPromises()
-        expect(FakeWebSocket.instances).toHaveLength(2)
-        return FakeWebSocket.instances as [FakeWebSocket, FakeWebSocket]
-      }
-
-      it('shows a single success toast when every file succeeds', async () => {
-        const [a, b] = await startBatch()
-        a.send({ status: 'completed', progress: 100 })
-        b.send({ status: 'completed', progress: 100 })
-        await flushPromises()
-
-        expect(useToastStore().toasts).toMatchObject([
-          {
-            type: 'success',
-            title: 'Batch Conversion Completed',
-            message: '2 files converted successfully!',
-          },
-        ])
-      })
-
-      it('shows a single error toast when every file fails', async () => {
-        const [a, b] = await startBatch()
-        a.send({ status: 'failed', progress: 0 })
-        b.fail()
-        await flushPromises()
-
-        expect(useToastStore().toasts).toMatchObject([
-          {
-            type: 'error',
-            title: 'Batch Conversion Failed',
-            message: 'Failed to convert 2 files.',
-          },
-        ])
-      })
-
-      it('shows a warning toast when some files fail', async () => {
-        const [a, b] = await startBatch()
-        a.send({ status: 'completed', progress: 100 })
-        b.send({ status: 'failed', progress: 0 })
-        await flushPromises()
-
-        expect(useToastStore().toasts).toMatchObject([
-          {
-            type: 'warning',
-            title: 'Batch Conversion Finished',
-            message: '1 files converted, 1 failed.',
-          },
-        ])
-      })
-
-      it('shows no toast until every file has settled', async () => {
-        const [a] = await startBatch()
-        a.send({ status: 'completed', progress: 100 })
-        await flushPromises()
-        expect(useToastStore().toasts).toEqual([])
-      })
-    })
-
-    it('fails the conversion when the socket closes without a final status', async () => {
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      const socket = FakeWebSocket.instances[0]!
-      socket.send({ status: 'processing', progress: 40 })
-      socket.serverClose(1006)
-      await flushPromises()
-
-      expect(store.files[0]!.status).toBe('failed')
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
-    })
-
-    it('fails the conversion when fetching the completed job throws', async () => {
-      service.getJob.mockRejectedValue(new Error('network'))
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      FakeWebSocket.instances[0]!.send({ status: 'completed', progress: 100 })
-      await flushPromises()
-
-      expect(store.files[0]).toMatchObject({ status: 'failed', selected: true })
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
-    })
-
-    it('fails the conversion when a status message is not valid JSON', async () => {
-      const store = seedFiles(['a.mp4'], [{ selected: true, targetFormat: 'mp3' }])
-      const wrapper = mountConverter()
-
-      await convertButton(wrapper).trigger('click')
-      await flushPromises()
-      const socket = FakeWebSocket.instances[0]!
-      socket.onmessage?.({ data: 'not json' })
-      await flushPromises()
-
-      expect(socket.close).toHaveBeenCalled()
-      expect(store.files[0]!.status).toBe('failed')
-      expect(useToastStore().toasts).toMatchObject([{ type: 'error', title: 'Conversion Failed' }])
+      expect(useConversionStore().isConverting).toBe(false)
     })
   })
 

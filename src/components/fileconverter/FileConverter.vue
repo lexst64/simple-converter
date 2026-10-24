@@ -4,12 +4,8 @@ import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
 import { computed, ref, watch } from 'vue'
 import FileItem from '@/components/fileconverter/FileItem.vue'
-import { ConverterService } from '@/services/converter.service'
-import { useAuth } from '@/composables/useAuth.ts'
-import { API_URL } from '@/api/client'
-import type { JobStatus } from '@/types/api.ts'
 import FormatSelector from '@/components/fileconverter/FormatSelector.vue'
-import { useToastStore } from '@/stores/useToastStore'
+import { useConversionStore } from '@/stores/useConversionStore'
 import FullScreenDropZone from '@/components/common/FullScreenDropZone.vue'
 import FileUploader from '../FileUploader.vue'
 import { useFormatStore } from '@/stores/useFormatStore'
@@ -18,12 +14,11 @@ const handleFilesDropped = (files: File[]) => {
   fileStore.addFiles(files)
 }
 
-const auth = useAuth()
-
 const fileStore = useFileStore()
 const formatStore = useFormatStore()
+// conversions are owned by the store, so they keep running when this component unmounts
+const conversionStore = useConversionStore()
 const fileInputRef = ref<HTMLInputElement | null>(null)
-const isConverting = ref(false)
 // target format chosen in the top-level selector; applied to all selected files
 const targetFormat = ref<string | null>(null)
 
@@ -47,20 +42,20 @@ const onFileChange = (event: Event) => {
   target.value = ''
 }
 
+const isInFlight = (file: FileHolder) =>
+  file.status === 'queued' || file.status === 'uploading' || file.status === 'processing'
+
 const isConvertDisabled = () => {
   return (
     numSelectedFiles.value === 0 ||
-    fileStore.files
-      .filter((f) => f.selected)
-      .some((f) => f.status === 'processing' || f.status === 'uploading') ||
+    fileStore.files.filter((f) => f.selected).some(isInFlight) ||
     fileStore.files.filter((f) => f.selected).some((f) => !f.targetFormat)
   )
 }
 
 const numSelectedFiles = computed(() => fileStore.files.filter((f) => f.selected).length)
 
-const isSelectable = (file: FileHolder) =>
-  file.status !== 'uploading' && file.status !== 'processing' && file.status !== 'completed'
+const isSelectable = (file: FileHolder) => !isInFlight(file) && file.status !== 'completed'
 
 // only files that can be selected count towards "all selected"
 const allFilesSelected = computed(() => {
@@ -75,140 +70,9 @@ const toggleSelectAll = (checked: boolean) => {
   })
 }
 
-const toastStore = useToastStore()
-
-const convert = async () => {
+const convert = () => {
   if (isConvertDisabled()) return
-
-  isConverting.value = true
-
-  const selectedFiles = fileStore.files.filter((f) => f.selected)
-  const isBatch = selectedFiles.length > 1
-  let succeededCount = 0
-  let failedCount = 0
-
-  try {
-    const conversionPromises = selectedFiles.map(async (fileHolder) => {
-      if (fileHolder.status === 'completed') return
-
-      fileStore.updateFile(fileHolder.id, { selected: false })
-
-      try {
-        let uploadFileId: string
-        // if previous convertion failed, skip uploading the same file again
-        if (!fileHolder.uploadFileId) {
-          fileStore.updateFile(fileHolder.id, { status: 'uploading' })
-          uploadFileId = await ConverterService.uploadFile(fileHolder.file)
-          fileStore.updateFile(fileHolder.id, { uploadFileId })
-        } else {
-          uploadFileId = fileHolder.uploadFileId
-        }
-
-        const jobId = (
-          await ConverterService.createConversionJob(uploadFileId, fileHolder.targetFormat!)
-        )._id
-        fileStore.updateFile(fileHolder.id, { progress: 0 })
-
-        await new Promise<void>((resolve, reject) => {
-          const wsUrl = `${API_URL}/conversions/job/${jobId}/status`.replace(/^http/, 'ws')
-          const socket = new WebSocket(wsUrl, ['Bearer', auth.token.value || ''])
-          // guards against settling more than once and against reacting to our own close()
-          let settled = false
-          let finished = false
-
-          const settle = (err?: Error) => {
-            if (settled) return
-            settled = true
-            if (err) reject(err)
-            else resolve()
-          }
-
-          socket.onmessage = (event) => {
-            let statusData: { status: JobStatus; progress: number }
-            try {
-              statusData = JSON.parse(event.data)
-            } catch {
-              finished = true
-              socket.close()
-              settle(new Error('Invalid status message'))
-              return
-            }
-
-            // TODO: handle file status better
-            fileStore.updateFile(fileHolder.id, {
-              status: statusData.status === 'pending' ? 'processing' : statusData.status,
-            })
-            fileStore.updateFile(fileHolder.id, { progress: statusData.progress })
-
-            if (statusData.status === 'completed') {
-              finished = true
-              socket.close()
-              fileStore.updateFile(fileHolder.id, { selected: false })
-              ConverterService.getJob(jobId)
-                .then((job) => {
-                  if (job.outputFileId) {
-                    fileStore.updateFile(fileHolder.id, { outputFileId: job.outputFileId })
-                    succeededCount++
-                    if (!isBatch) {
-                      toastStore.success(
-                        `"${fileHolder.file.name}" was converted successfully!`,
-                        'Conversion Completed',
-                      )
-                    }
-                    settle()
-                  } else {
-                    settle(new Error('Conversion failed'))
-                  }
-                })
-                .catch(() => settle(new Error('Failed to fetch conversion job')))
-            } else if (statusData.status === 'failed') {
-              finished = true
-              socket.close()
-              fileStore.updateFile(fileHolder.id, { selected: true })
-              settle(new Error('Conversion failed'))
-            }
-          }
-
-          socket.onerror = () => {
-            fileStore.updateFile(fileHolder.id, { status: 'failed' })
-            socket.close()
-            settle(new Error('WebSocket connection failed'))
-          }
-
-          socket.onclose = () => {
-            if (!finished) settle(new Error('WebSocket closed unexpectedly'))
-          }
-        })
-      } catch {
-        failedCount++
-        fileStore.updateFile(fileHolder.id, { selected: true })
-        fileStore.updateFile(fileHolder.id, { status: 'failed' })
-        if (!isBatch) {
-          toastStore.error(`Failed to convert "${fileHolder.file.name}".`, 'Conversion Failed')
-        }
-      }
-    })
-
-    await Promise.allSettled(conversionPromises)
-
-    if (isBatch) {
-      if (failedCount === 0) {
-        toastStore.success(
-          `${succeededCount} files converted successfully!`,
-          'Batch Conversion Completed',
-        )
-      } else if (succeededCount === 0) {
-        toastStore.error(`Failed to convert ${failedCount} files.`, 'Batch Conversion Failed')
-      } else {
-        toastStore.warning(
-          `${succeededCount} files converted, ${failedCount} failed.`,
-          'Batch Conversion Finished',
-        )
-      }
-    }
-  } finally {
-    isConverting.value = false
-  }
+  conversionStore.convert(fileStore.files.filter((f) => f.selected))
 }
 </script>
 <template>
@@ -257,12 +121,17 @@ const convert = async () => {
         class="w-full"
         @click="openFileSelector"
       />
-      <Button
-        label="Convert"
-        :disabled="isConvertDisabled()"
-        class="w-full"
-        @click="convert"
-      />
+      <div class="flex gap-2">
+        <Button label="Convert" :disabled="isConvertDisabled()" class="flex-1" @click="convert" />
+        <Button
+          v-if="conversionStore.isConverting"
+          label="Cancel"
+          icon="pi pi-times"
+          severity="danger"
+          outlined
+          @click="conversionStore.cancelAll"
+        />
+      </div>
     </div>
   </FullScreenDropZone>
 </template>

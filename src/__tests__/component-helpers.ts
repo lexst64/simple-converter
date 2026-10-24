@@ -28,7 +28,7 @@ export const makeDragEvent = (
   return event
 }
 
-/** Minimal stand-in for the browser WebSocket used by FileConverter. */
+/** Minimal stand-in for the browser WebSocket used by the conversion store. */
 export class FakeWebSocket {
   static instances: FakeWebSocket[] = []
 

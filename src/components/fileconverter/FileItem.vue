@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, watch, onUnmounted } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { useFileStore, type FileHolder } from '@/stores/useFileStore'
+import { useConversionStore } from '@/stores/useConversionStore'
 import { formatBytes, getExtFromFileName } from '@/utils'
 import Button from 'primevue/button'
 import Checkbox from 'primevue/checkbox'
@@ -12,6 +13,7 @@ import { useToastStore } from '@/stores/useToastStore.ts'
 
 const statusSeverities: Record<FileHolder['status'], TagProps['severity']> = {
   pending: 'secondary',
+  queued: 'secondary',
   uploading: 'info',
   processing: 'warn',
   failed: 'danger',
@@ -35,7 +37,13 @@ const props = withDefaults(
 const targetFormat = defineModel<string>('targetFormat')
 const selected = defineModel<boolean>('selected')
 const fileStore = useFileStore()
+const conversionStore = useConversionStore()
 const toastStore = useToastStore()
+
+// based on the real status, so no cancel button shows during the delayed completed transition
+const isCancellable = computed(() =>
+  ['queued', 'uploading', 'processing'].includes(props.file.status),
+)
 
 const isDownloadDisabled = ref(false)
 let downloadCooldownTimerId: number | null = null
@@ -109,6 +117,7 @@ onUnmounted(() => {
         v-model="selected"
         binary
         :disabled="
+          displayStatus === 'queued' ||
           displayStatus === 'uploading' ||
           displayStatus === 'processing' ||
           displayStatus === 'completed'
@@ -127,7 +136,9 @@ onUnmounted(() => {
     <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
     <div
-      v-if="displayStatus === 'pending' || displayStatus === 'failed'"
+      v-if="
+        displayStatus === 'pending' || displayStatus === 'failed' || displayStatus === 'cancelled'
+      "
       class="flex items-center gap-3 justify-end"
     >
       <Tag rounded :severity="getStatusSeverity(displayStatus)" :value="displayStatus" />
@@ -148,7 +159,10 @@ onUnmounted(() => {
       />
     </div>
     <div v-else class="flex items-center gap-3 justify-end w-full md:w-auto">
-      <div v-if="displayStatus === 'processing'" class="flex items-center gap-3 w-full md:w-48">
+      <div
+        v-if="displayStatus === 'uploading' || displayStatus === 'processing'"
+        class="flex items-center gap-3 w-full md:w-48"
+      >
         <ProgressBar :value="displayProgress" :show-value="false" class="flex-1 h-2.5!" />
         <span class="text-sm text-muted-color font-semibold w-11 text-right"
           >{{ displayProgress }}%</span
@@ -159,6 +173,16 @@ onUnmounted(() => {
         :severity="getStatusSeverity(displayStatus)"
         :value="displayStatus"
         class="capitalize"
+      />
+      <Button
+        v-if="isCancellable"
+        icon="pi pi-stop-circle"
+        text
+        rounded
+        severity="secondary"
+        size="small"
+        aria-label="Cancel conversion"
+        @click="() => conversionStore.cancelFile(file.id)"
       />
       <div v-if="displayStatus === 'completed'" class="flex items-center gap-3">
         <Tag rounded :value="file.targetFormat?.toUpperCase()" />
