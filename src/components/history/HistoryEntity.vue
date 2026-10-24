@@ -82,25 +82,23 @@ const timeAgo = computed(() => {
 
 <template>
   <div
-    class="flex flex-col w-full md:flex-row md:items-center gap-3 rounded-2xl border border-surface bg-surface-0 dark:bg-surface-800 px-4 py-3 md:w-200 md:gap-4 md:px-5 transition-colors duration-200"
+    class="w-full py-2 px-3 flex flex-col gap-3 md:flex-row md:justify-between md:items-center border-b border-surface text-color transition-colors"
     :class="{ 'opacity-50 pointer-events-none': isDeleting }"
   >
-    <div class="min-w-0 flex-1">
-      <p class="font-medium truncate text-color">
-        {{ props.item.fileName }}
+    <div class="min-w-0 md:max-w-[50%]">
+      <p class="truncate font-medium">{{ props.item.fileName }}</p>
+      <p class="font-mono text-muted-color text-xs">
+        {{ formatBytes(props.item.fileSize) }} ▪ {{ timeAgo }}
       </p>
-      <div class="font-mono flex items-center gap-2 text-xs text-muted-color">
-        <p>{{ formatBytes(props.item.fileSize) }} ▪ {{ timeAgo }}</p>
-      </div>
     </div>
 
     <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
-    <div class="flex gap-2 justify-end">
+    <div class="flex items-center gap-3 justify-end">
       <div class="flex shrink-0 items-center gap-2 text-sm">
         <Tag
           rounded
-          class="hidden md:inline-flex"
+          class="inline-flex"
           :value="props.item.initialFormat.toUpperCase() || 'unknown'"
         />
         <i class="pi pi-arrow-right text-primary" aria-hidden="true" />
@@ -111,6 +109,7 @@ const timeAgo = computed(() => {
         text
         rounded
         severity="secondary"
+        size="small"
         aria-label="Download converted file"
         :disabled="isDeleting || isDownloadDisabled"
         @click="handleDownload"
@@ -120,6 +119,7 @@ const timeAgo = computed(() => {
         text
         rounded
         severity="danger"
+        size="small"
         aria-label="Delete history item"
         :disabled="isDeleting"
         @click="handleDelete"
