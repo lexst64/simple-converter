@@ -29,6 +29,7 @@ const links: MenuItem[] = [
     <Menubar
       :model="links"
       breakpoint="768px"
+      :pt="{ start: 'mr-auto', end: 'ml-0! order-1', button: 'order-2' }"
       class="rounded-none! border-x-0! border-t-0! px-6 py-3 bg-surface-0/80! dark:bg-surface-900/85! backdrop-blur-md"
     >
       <template #start>
