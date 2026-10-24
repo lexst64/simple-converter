@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { formatBytes, getExtFromFileName } from '@/utils'
+import {
+  fileSizeLimitReason,
+  formatBytes,
+  getExtFromFileName,
+  MAX_FILE_SIZE,
+  splitBySize,
+} from '@/utils'
+import { makeFile } from './component-helpers'
 
 describe('formatBytes', () => {
   it('returns "0 B" for zero', () => {
@@ -73,5 +80,49 @@ describe('getExtFromFileName', () => {
 
   it('returns an empty string for a trailing dot', () => {
     expect(getExtFromFileName('file.')).toBe('')
+  })
+})
+
+describe('MAX_FILE_SIZE', () => {
+  it('is 1 GB', () => {
+    expect(MAX_FILE_SIZE).toBe(1073741824)
+    expect(formatBytes(MAX_FILE_SIZE, 1)).toBe('1.0 GB')
+  })
+})
+
+describe('fileSizeLimitReason', () => {
+  it('formats the limit with formatBytes', () => {
+    expect(fileSizeLimitReason(1024 * 1024)).toBe('File size exceeds 1.0 MB limit')
+    expect(fileSizeLimitReason(MAX_FILE_SIZE)).toBe('File size exceeds 1.0 GB limit')
+  })
+})
+
+describe('splitBySize', () => {
+  it('splits files at the default limit, keeping files exactly at the limit', () => {
+    const atLimit = makeFile('at.mp4', MAX_FILE_SIZE)
+    const over = makeFile('over.mp4', MAX_FILE_SIZE + 1)
+    const small = makeFile('small.mp4', 10)
+
+    expect(splitBySize([atLimit, over, small])).toEqual({
+      valid: [atLimit, small],
+      rejected: [{ file: over, reason: 'File size exceeds 1.0 GB limit' }],
+    })
+  })
+
+  it('uses a custom limit', () => {
+    const big = makeFile('big.mp4', 2 * 1024 * 1024)
+    expect(splitBySize([big], 1024 * 1024)).toEqual({
+      valid: [],
+      rejected: [{ file: big, reason: 'File size exceeds 1.0 MB limit' }],
+    })
+  })
+
+  it('treats a zero limit as no limit', () => {
+    const big = makeFile('big.mp4', MAX_FILE_SIZE * 2)
+    expect(splitBySize([big], 0)).toEqual({ valid: [big], rejected: [] })
+  })
+
+  it('returns empty lists for no files', () => {
+    expect(splitBySize([])).toEqual({ valid: [], rejected: [] })
   })
 })

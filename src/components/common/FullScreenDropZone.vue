@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import Tag from 'primevue/tag'
-import { formatBytes } from '@/utils'
-import { useToastStore } from '@/stores/useToastStore'
+import { formatBytes, fileSizeLimitReason, MAX_FILE_SIZE, type RejectedFile } from '@/utils'
+import { useFileSizeLimit } from '@/composables/useFileSizeLimit'
 import { useFormatStore } from '@/stores/useFormatStore'
 
-export interface RejectedFile {
-  file: File
-  reason: string
-}
+export type { RejectedFile }
 
 const props = withDefaults(
   defineProps<{
@@ -22,7 +19,7 @@ const props = withDefaults(
   {
     disabled: false,
     multiple: true,
-    maxSize: 1073741824,
+    maxSize: MAX_FILE_SIZE,
     customTitle: 'Drop files anywhere',
   },
 )
@@ -33,18 +30,11 @@ const emit = defineEmits<{
   (e: 'drag-change', isDragging: boolean): void
 }>()
 
-const toastStore = useToastStore()
+const { notifyRejected } = useFileSizeLimit()
 // listeners for declared emits never reach $attrs, so read them from the vnode props
 const vnodeProps = getCurrentInstance()?.vnode.props
 const hasInvalidFilesListener = () =>
   !!(vnodeProps?.onInvalidFiles || vnodeProps?.['onInvalid-files'])
-
-const handleInvalidFiles = (invalidFiles: RejectedFile[]) => {
-  toastStore.error(
-    `${invalidFiles.map((f) => f.file.name).join(', ')}`,
-    `${invalidFiles.length} File(s) Rejected`,
-  )
-}
 
 const isDragging = ref(false)
 const dragCounter = ref(0)
@@ -106,8 +96,7 @@ const validateFiles = (fileList: File[]): { valid: File[]; invalid: RejectedFile
     // Size check
     if (props.maxSize && file.size > props.maxSize) {
       isValid = false
-      const maxMb = (props.maxSize / (1024 * 1024)).toFixed(1)
-      reason = `File size exceeds ${maxMb} MB limit`
+      reason = fileSizeLimitReason(props.maxSize)
     }
 
     // Format / type check
@@ -203,7 +192,7 @@ const onDrop = (event: DragEvent) => {
   if (invalid.length > 0) {
     emit('invalid-files', invalid)
     if (!hasInvalidFilesListener()) {
-      handleInvalidFiles(invalid)
+      notifyRejected(invalid)
     }
   }
   if (valid.length > 0) {

@@ -8,6 +8,8 @@ const fileStore = useFileStore()
 const router = useRouter()
 
 const handleFilesDropped = (files: File[]) => {
+  // the drop zone already filtered out rejected files; keep the list if none are left
+  if (files.length === 0) return
   fileStore.clearFiles()
   fileStore.addFiles(files)
   router.push('/converter')
