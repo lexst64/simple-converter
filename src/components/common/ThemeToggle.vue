@@ -44,6 +44,7 @@ onMounted(() => {
     :label="themeStore.themeMode"
     icon-pos="left"
     class="capitalize"
+    :pt="{ label: 'max-md:hidden' }"
     aria-label="Toggle color theme"
     aria-haspopup="true"
     aria-controls="theme-menu"
