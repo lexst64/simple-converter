@@ -36,6 +36,19 @@ export interface Job {
   outputFileId?: string
 }
 
+export interface PageParams {
+  limit: number
+  offset: number
+}
+
+/** The backend sorts jobs newest first, clamps limit to 1-50 and counts every status in total. */
+export interface JobsPage {
+  jobs: Job[]
+  limit: number
+  offset: number
+  total: number
+}
+
 export interface ConversionStatusResponse {
   id: string
   status: JobStatus

@@ -1,5 +1,12 @@
 import { api } from '@/api/client'
-import type { Job, ConversionJobRequest, UserFile, SupportedFormats } from '@/types/api'
+import type {
+  Job,
+  ConversionJobRequest,
+  UserFile,
+  SupportedFormats,
+  JobsPage,
+  PageParams,
+} from '@/types/api'
 import axios from 'axios'
 
 export interface UploadOptions {
@@ -66,9 +73,8 @@ export class ConverterService {
     return (await api.get<Job>(`/conversions/job/${jobId}`)).data
   }
 
-  static async getJobs(): Promise<Job[]> {
-    const res = await api.get(`/conversions/job`, { params: { limit: 50, offset: 0 } })
-    return res.data.jobs as Job[]
+  static async getJobs({ limit, offset }: PageParams): Promise<JobsPage> {
+    return (await api.get<JobsPage>('/conversions/job', { params: { limit, offset } })).data
   }
 
   static async getFileDetails(fileId: string): Promise<UserFile> {

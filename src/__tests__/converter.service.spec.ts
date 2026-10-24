@@ -8,10 +8,11 @@ vi.mock('axios', () => ({
   default: { put: vi.fn() },
 }))
 
-vi.mock('@/api/client', () => ({ api: { post: vi.fn() } }))
+vi.mock('@/api/client', () => ({ api: { post: vi.fn(), get: vi.fn() } }))
 
 const put = vi.mocked(axios.put)
 const post = vi.mocked(api.post)
+const get = vi.mocked(api.get)
 
 describe('ConverterService.uploadFile', () => {
   beforeEach(() => {
@@ -56,5 +57,18 @@ describe('ConverterService.uploadFile', () => {
 
     expect(post.mock.calls[0]![2]).toEqual({ signal })
     expect(put.mock.calls[0]![2]).toMatchObject({ signal })
+  })
+})
+
+describe('ConverterService.getJobs', () => {
+  it('passes limit and offset and returns the page with its total', async () => {
+    const data = { jobs: [], limit: 20, offset: 40, total: 41 }
+    get.mockResolvedValue({ data })
+
+    await expect(ConverterService.getJobs({ limit: 20, offset: 40 })).resolves.toEqual(data)
+
+    expect(get).toHaveBeenCalledExactlyOnceWith('/conversions/job', {
+      params: { limit: 20, offset: 40 },
+    })
   })
 })
