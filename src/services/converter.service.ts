@@ -1,4 +1,4 @@
-import { api } from '@/main'
+import { api } from '@/api/client'
 import type { Job, ConversionJobRequest, UserFile, SupportedFormats } from '@/types/api'
 import axios from 'axios'
 

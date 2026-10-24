@@ -1,5 +1,5 @@
 import type { User } from '@/types/user'
-import { api } from '@/main'
+import { api } from '@/api/client'
 
 export class AuthService {
   static async getUser(): Promise<User> {

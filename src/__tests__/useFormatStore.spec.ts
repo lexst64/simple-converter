@@ -5,7 +5,7 @@ import { useFormatStore } from '@/stores/useFormatStore'
 import { useToastStore } from '@/stores/useToastStore'
 import type { SupportedFormats } from '@/types/api'
 
-// Never import the real service: it imports `api` from `@/main`, which mounts the app.
+// Never import the real service: it would make real HTTP calls via `api` from `@/api/client`.
 vi.mock('@/services/converter.service', () => ({
   ConverterService: {
     getSupportedFormats: vi.fn(),

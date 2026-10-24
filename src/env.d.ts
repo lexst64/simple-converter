@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 /// <reference types="google.accounts" />
+/// <reference types="pinia-plugin-persistedstate" />
 
 interface ImportMetaEnv {
   readonly VITE_API_URL?: string

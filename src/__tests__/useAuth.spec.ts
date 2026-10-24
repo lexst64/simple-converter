@@ -4,7 +4,7 @@ import type { User } from '@/types/user'
 
 const mocks = vi.hoisted(() => ({ getUser: vi.fn() }))
 
-// Never import the real service: it imports `api` from `@/main`, which mounts the app.
+// Never import the real service: it would make real HTTP calls via `api` from `@/api/client`.
 vi.mock('@/services/auth.service', () => ({
   AuthService: { getUser: mocks.getUser },
 }))
