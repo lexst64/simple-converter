@@ -5,6 +5,7 @@ import AccordionContent from 'primevue/accordioncontent'
 import AccordionHeader from 'primevue/accordionheader'
 import AccordionPanel from 'primevue/accordionpanel'
 import Badge from 'primevue/badge'
+import Button from 'primevue/button'
 import HistoryEntity from '@/components/history/HistoryEntity.vue'
 import HistorySkeleton from '@/components/history/HistorySkeleton.vue'
 import { useHistoryStore, type HistoryItem } from '@/stores/useHistoryStore'
@@ -116,39 +117,50 @@ function handleDelete(id: string) {
   <Transition name="fade" mode="out-in">
     <HistorySkeleton v-if="isLoading" key="skeleton" />
     <div
-      v-else-if="historyStore.items.length === 0"
+      v-else-if="historyStore.items.length === 0 && !historyStore.hasMore"
       key="empty"
       class="flex justify-center mt-12 text-muted-color"
     >
       No previous convertions found
     </div>
-    <Accordion
-      v-else
-      key="content"
-      v-model:value="openCategory"
-      class="w-full"
-    >
-      <AccordionPanel v-for="section in groupedItems" :key="section.category" :value="section.category">
-        <AccordionHeader>
-          <span class="text-sm font-medium uppercase tracking-wide text-muted-color">
-            {{ section.category }}
-          </span>
-          <Badge :value="section.items.length" severity="secondary" class="ml-auto mr-3" />
-        </AccordionHeader>
-        <AccordionContent>
-          <div
-            class="flex flex-col w-full border rounded-border overflow-hidden border-surface bg-surface-0 dark:bg-surface-800 transition-colors"
-          >
-            <HistoryEntity
-              v-for="item in section.items"
-              :key="item.id"
-              :item="item"
-              @delete="handleDelete"
-            />
-          </div>
-        </AccordionContent>
-      </AccordionPanel>
-    </Accordion>
+    <div v-else key="content" class="flex flex-col gap-4 w-full">
+      <Accordion v-if="historyStore.items.length > 0" v-model:value="openCategory" class="w-full">
+        <AccordionPanel
+          v-for="section in groupedItems"
+          :key="section.category"
+          :value="section.category"
+        >
+          <AccordionHeader>
+            <span class="text-sm font-medium uppercase tracking-wide text-muted-color">
+              {{ section.category }}
+            </span>
+            <Badge :value="section.items.length" severity="secondary" class="ml-auto mr-3" />
+          </AccordionHeader>
+          <AccordionContent>
+            <div
+              class="flex flex-col w-full border rounded-border overflow-hidden border-surface bg-surface-0 dark:bg-surface-800 transition-colors"
+            >
+              <HistoryEntity
+                v-for="item in section.items"
+                :key="item.id"
+                :item="item"
+                @delete="handleDelete"
+              />
+            </div>
+          </AccordionContent>
+        </AccordionPanel>
+      </Accordion>
+      <Button
+        v-if="historyStore.hasMore"
+        label="Load more"
+        icon="pi pi-angle-down"
+        outlined
+        class="w-full"
+        :loading="historyStore.isLoadingMore"
+        :disabled="historyStore.isFetching"
+        @click="historyStore.loadMore()"
+      />
+    </div>
   </Transition>
 </template>
 

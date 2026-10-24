@@ -3,8 +3,9 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia, type Pinia } from 'pinia'
 import TheHistory from '@/components/history/TheHistory.vue'
 import { ConverterService } from '@/services/converter.service'
-import { useHistoryStore, type HistoryItem } from '@/stores/useHistoryStore'
-import { JobStatus, type Job, type UserFile } from '@/types/api'
+import { HISTORY_PAGE_SIZE, useHistoryStore, type HistoryItem } from '@/stores/useHistoryStore'
+import { useToastStore } from '@/stores/useToastStore'
+import { JobStatus, type Job, type JobsPage, type UserFile } from '@/types/api'
 
 vi.mock('@/services/converter.service', () => ({
   ConverterService: {
@@ -45,6 +46,23 @@ const jobs: Job[] = [
   makeJob('running', at(9, 21), JobStatus.PROCESSING),
 ]
 
+const page = (list: Job[], total = list.length, offset = 0): JobsPage => ({
+  jobs: list,
+  total,
+  offset,
+  limit: HISTORY_PAGE_SIZE,
+})
+
+// 25 jobs: a full first page from today, then 5 from September
+const manyJobs = Array.from({ length: 25 }, (_, i) =>
+  i < HISTORY_PAGE_SIZE ? makeJob(`t${i}`, at(9, 21, 8)) : makeJob(`e${i}`, at(8, 1)),
+)
+
+const serveMany = () =>
+  service.getJobs.mockImplementation(async ({ limit, offset }) =>
+    page(manyJobs.slice(offset, offset + limit), manyJobs.length, offset),
+  )
+
 let pinia: Pinia
 
 const mountHistory = () => mount(TheHistory, { global: { plugins: [pinia] } })
@@ -71,7 +89,7 @@ describe('TheHistory', () => {
     pinia = createPinia()
     setActivePinia(pinia)
     vi.clearAllMocks()
-    service.getJobs.mockResolvedValue(jobs)
+    service.getJobs.mockResolvedValue(page(jobs))
     service.getFileDetails.mockImplementation(
       async (id: string) => ({ originalFileName: `${id.slice(4)}.mp3`, size: 1024 }) as UserFile,
     )
@@ -83,19 +101,19 @@ describe('TheHistory', () => {
   })
 
   it('shows the skeleton while the first fetch is in flight', async () => {
-    let resolve!: (j: Job[]) => void
+    let resolve!: (j: JobsPage) => void
     service.getJobs.mockReturnValue(new Promise((r) => (resolve = r)))
     const wrapper = mountHistory()
 
     expect(wrapper.find('[aria-label="Loading history items"]').exists()).toBe(true)
 
-    resolve([])
+    resolve(page([]))
     await flushPromises()
     expect(wrapper.find('[aria-label="Loading history items"]').exists()).toBe(false)
   })
 
   it('shows the empty state when there is no history', async () => {
-    service.getJobs.mockResolvedValue([])
+    service.getJobs.mockResolvedValue(page([]))
     const wrapper = mountHistory()
     await flushPromises()
     expect(wrapper.text()).toContain('No previous convertions found')
@@ -146,7 +164,9 @@ describe('TheHistory', () => {
   })
 
   it('omits empty categories and opens the first non-empty one', async () => {
-    service.getJobs.mockResolvedValue([makeJob('week', at(9, 19)), makeJob('older', at(8, 1))])
+    service.getJobs.mockResolvedValue(
+      page([makeJob('week', at(9, 19)), makeJob('older', at(8, 1))]),
+    )
     const wrapper = mountHistory()
     await flushPromises()
 
@@ -184,5 +204,74 @@ describe('TheHistory', () => {
 
     expect(service.deleteJob).toHaveBeenCalledExactlyOnceWith('today')
     expect(sections(wrapper)[0]).toMatchObject({ count: '1', files: ['today2.mp3'] })
+  })
+
+  describe('load more', () => {
+    const loadMoreButton = (w: ReturnType<typeof mountHistory>) =>
+      w.findAll('button').find((b) => b.text() === 'Load more')
+
+    it('hides the Load more button when the backend has no more jobs', async () => {
+      const wrapper = mountHistory()
+      await flushPromises()
+
+      expect(sections(wrapper)).toHaveLength(5)
+      expect(loadMoreButton(wrapper)).toBeUndefined()
+    })
+
+    it('loads the first page only and appends the next one on Load more', async () => {
+      serveMany()
+      const wrapper = mountHistory()
+      await flushPromises()
+
+      expect(service.getJobs).toHaveBeenCalledExactlyOnceWith({
+        limit: HISTORY_PAGE_SIZE,
+        offset: 0,
+      })
+      expect(sections(wrapper).map(({ title, count }) => ({ title, count }))).toEqual([
+        { title: 'today', count: '20' },
+      ])
+
+      await loadMoreButton(wrapper)!.trigger('click')
+      await flushPromises()
+
+      expect(service.getJobs).toHaveBeenLastCalledWith({ limit: HISTORY_PAGE_SIZE, offset: 20 })
+      expect(sections(wrapper).map(({ title, count }) => ({ title, count }))).toEqual([
+        { title: 'today', count: '20' },
+        { title: 'earlier', count: '5' },
+      ])
+      expect(loadMoreButton(wrapper)).toBeUndefined()
+    })
+
+    it('keeps the loaded items and shows a toast when Load more fails', async () => {
+      serveMany()
+      const wrapper = mountHistory()
+      await flushPromises()
+      service.getJobs.mockRejectedValueOnce(new Error('500'))
+
+      await loadMoreButton(wrapper)!.trigger('click')
+      await flushPromises()
+
+      expect(sections(wrapper).map(({ title, count }) => ({ title, count }))).toEqual([
+        { title: 'today', count: '20' },
+      ])
+      expect(loadMoreButton(wrapper)).toBeDefined()
+      expect(useToastStore().toasts).toEqual([
+        expect.objectContaining({
+          type: 'error',
+          message: 'Failed to load more conversion history.',
+        }),
+      ])
+    })
+
+    it('offers Load more instead of the empty state while older pages may hold completed jobs', async () => {
+      service.getJobs.mockImplementation(async ({ offset }) =>
+        page([makeJob(`r${offset}`, at(9, 21), JobStatus.FAILED)], 1000, offset),
+      )
+      const wrapper = mountHistory()
+      await flushPromises()
+
+      expect(wrapper.text()).not.toContain('No previous convertions found')
+      expect(loadMoreButton(wrapper)).toBeDefined()
+    })
   })
 })
