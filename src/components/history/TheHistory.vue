@@ -136,12 +136,13 @@ function handleDelete(id: string) {
           <Badge :value="section.items.length" severity="secondary" class="ml-auto mr-3" />
         </AccordionHeader>
         <AccordionContent>
-          <div class="flex flex-col items-center w-full gap-2">
+          <div
+            class="flex flex-col w-full border rounded-border overflow-hidden border-surface bg-surface-0 dark:bg-surface-800 transition-colors"
+          >
             <HistoryEntity
               v-for="item in section.items"
               :key="item.id"
               :item="item"
-              class="flex flex-col w-full"
               @delete="handleDelete"
             />
           </div>

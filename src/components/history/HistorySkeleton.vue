@@ -20,11 +20,13 @@ withDefaults(defineProps<Props>(), {
       </div>
 
       <!-- History Entity Item Skeletons -->
-      <div class="flex flex-col items-center w-full mt-2 gap-2">
+      <div
+        class="flex flex-col w-full mt-2 border rounded-border overflow-hidden border-surface bg-surface-0 dark:bg-surface-800"
+      >
         <div
           v-for="n in count"
           :key="n"
-          class="flex flex-col w-full md:flex-row md:items-center justify-between gap-3 rounded-2xl border border-surface bg-surface-0 dark:bg-surface-800 px-4 py-3 md:w-200 md:gap-4 md:px-5"
+          class="w-full py-2 px-3 flex flex-col gap-3 md:flex-row md:justify-between md:items-center border-b border-surface"
         >
           <!-- Left info side -->
           <div class="min-w-0 flex-1 flex flex-col gap-2">
@@ -36,14 +38,14 @@ withDefaults(defineProps<Props>(), {
           <div class="md:hidden w-full h-px bg-surface-200 dark:bg-surface-700"></div>
 
           <!-- Right badges & buttons side -->
-          <div class="flex items-center gap-2 justify-end">
+          <div class="flex items-center gap-3 justify-end">
             <div class="flex shrink-0 items-center gap-2 text-sm">
               <Skeleton width="45px" height="1.5rem" border-radius="9999px" class="hidden md:block" />
               <Skeleton width="16px" height="0.875rem" />
               <Skeleton width="45px" height="1.5rem" border-radius="9999px" />
             </div>
-            <Skeleton shape="circle" size="2.5rem" />
-            <Skeleton shape="circle" size="2.5rem" />
+            <Skeleton shape="circle" size="2rem" />
+            <Skeleton shape="circle" size="2rem" />
           </div>
         </div>
       </div>

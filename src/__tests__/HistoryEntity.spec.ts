@@ -78,7 +78,7 @@ describe('HistoryEntity', () => {
 
   it('shows no relative time when the timestamp is empty', () => {
     const wrapper = mount(HistoryEntity, { props: { item: makeItem({ timestamp: '' }) } })
-    expect(wrapper.find('.font-mono p').text()).toBe('2.00 KB ▪')
+    expect(wrapper.find('p.font-mono').text()).toBe('2.00 KB ▪')
   })
 
   it('downloads the output file and applies a 2s cooldown', async () => {
